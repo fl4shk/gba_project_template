@@ -24,6 +24,15 @@ extern "C"
 // Note that this won't work for copying to or from SRAM.
 void* memcpy( void* dst, const void* src, size_t n )
 {
+	auto copy_bytes_raw = []( u8* local_dst, const u8* local_src, 
+		u32 local_n ) -> void
+	{
+		for ( s32 i=local_n-1; i>=0; --i )
+		{
+			local_dst[i] = local_src[i];
+		}
+	};
+	
 	//memcpy8( dst, src, n );
 	
 	const u32 dst_unaligned = ((u32)dst) & 0x3;
@@ -62,19 +71,26 @@ void* memcpy( void* dst, const void* src, size_t n )
 			{
 				new_n -= num_unaligned_bytes;
 				
-				for ( u32 i=0; i<num_unaligned_bytes; ++i )
-				{
-					((u8*)dst)[i] = ((u8*)src)[i];
-				}
+				////for ( u32 i=0; i<num_unaligned_bytes; ++i )
+				//for ( s32 i=num_unaligned_bytes-1; i>=0; ++i )
+				//{
+				//	((u8*)dst)[i] = ((u8*)src)[i];
+				//}
+				
+				copy_bytes_raw( (u8*)dst, (const u8*)src,
+					num_unaligned_bytes );
 			}
 			else // if ( num_unaligned_bytes > n )
 			{
 				new_n = 0;
 				
-				for ( u32 i=0; i<n; ++i )
-				{
-					((u8*)dst)[i] = ((u8*)src)[i];
-				}
+				////for ( u32 i=0; i<n; ++i )
+				//for ( s32 i=n-1; i>=0; ++i )
+				//{
+				//	((u8*)dst)[i] = ((u8*)src)[i];
+				//}
+				
+				copy_bytes_raw( (u8*)dst, (const u8*)src, n );
 			}
 		}
 		
@@ -93,11 +109,16 @@ void* memcpy( void* dst, const void* src, size_t n )
 				new_src_residual_bytes_start = ( (u32)new_src ) 
 				+ ( num_words * sizeof(u32) );
 			
-			for ( u32 i=0; i<num_residual_bytes; ++i )
-			{
-				((u8*)new_dst_residual_bytes_start)[i] 
-					= ((u8*)new_src_residual_bytes_start)[i];
-			}
+			////for ( u32 i=0; i<num_residual_bytes; ++i )
+			//for ( s32 i=num_residual_bytes-1; i>=0; --i )
+			//{
+			//	((u8*)new_dst_residual_bytes_start)[i] 
+			//		= ((u8*)new_src_residual_bytes_start)[i];
+			//}
+			
+			copy_bytes_raw( (u8*)new_dst_residual_bytes_start,
+				(const u8*)new_src_residual_bytes_start, 
+				num_residual_bytes );
 		}
 	}
 	// Use SLOW copies if either dst or src are not aligned to 4 bytes,
@@ -105,7 +126,14 @@ void* memcpy( void* dst, const void* src, size_t n )
 	// Since I use aligned copies most of the time, this should be fine.
 	else
 	{
-		memcpy8( dst, src, n );
+		//memcpy8( dst, src, n );
+		
+		//for ( s32 i=n-1; i>=0; ++i )
+		//{
+		//	((u8*)dst)[i] = ((u8*)src)[i];
+		//}
+		
+		copy_bytes_raw( (u8*)dst, (const u8*)src, n );
 	}
 	
 	return dst;
@@ -120,6 +148,15 @@ void* memset( void* dst, int c, size_t n )
 	
 	const u32 to_write = ( ((u8)c) << 24 ) | ( ((u8)c) << 16 ) 
 		| ( ((u8)c) << 8 ) | ( ((u8)c) << 0 );
+	
+	auto write_bytes_raw = [to_write]( u8* local_dst, u32 local_n ) -> void
+	{
+		for ( s32 i=local_n-1; i>=0; --i )
+		{
+			//local_dst[i] = local_src[i];
+			local_dst[i] = (u8)to_write;
+		}
+	};
 	
 	
 	
@@ -142,19 +179,23 @@ void* memset( void* dst, int c, size_t n )
 		{
 			new_n -= num_unaligned_bytes;
 			
-			for ( u32 i=0; i<num_unaligned_bytes; ++i )
-			{
-				((u8*)dst)[i] = (u8)to_write;
-			}
+			////for ( u32 i=0; i<num_unaligned_bytes; ++i )
+			//for ( s32 i=num_unaligned_bytes-1; i>=0; ++i )
+			//{
+			//	((u8*)dst)[i] = (u8)to_write;
+			//}
+			write_bytes_raw( (u8*)dst, num_unaligned_bytes );
 		}
 		else // if ( num_unaligned_bytes > n )
 		{
 			new_n = 0;
 			
-			for ( u32 i=0; i<n; ++i )
-			{
-				((u8*)dst)[i] = (u8)to_write;
-			}
+			////for ( u32 i=0; i<n; ++i )
+			//for ( s32 i=n-1; i>=0; ++i )
+			//{
+			//	((u8*)dst)[i] = (u8)to_write;
+			//}
+			write_bytes_raw( (u8*)dst, n );
 		}
 	}
 	
@@ -171,10 +212,13 @@ void* memset( void* dst, int c, size_t n )
 		const u32 dst_residual_bytes_start = ((u32)new_dst) + ( num_words
 			* sizeof(u32) );
 		
-		for ( u32 i=0; i<num_residual_bytes; ++i )
-		{
-			((u8*)dst_residual_bytes_start)[i] = (u8)to_write;
-		}
+		////for ( u32 i=0; i<num_residual_bytes; ++i )
+		//for ( s32 i=num_residual_bytes-1; i>=0; ++i )
+		//{
+		//	((u8*)dst_residual_bytes_start)[i] = (u8)to_write;
+		//}
+		write_bytes_raw( (u8*)dst_residual_bytes_start, 
+			num_residual_bytes );
 	}
 	
 	
