@@ -27,6 +27,7 @@
 //#include "gba_specific_stuff/sound_reg_stuff.hpp"
 #include "gba_specific_stuff/timer_stuff.hpp"
 
+#include "game_engine_stuff/debug_vars.hpp"
 
 
 // This is an assembly function.  It doesn't do very much.
