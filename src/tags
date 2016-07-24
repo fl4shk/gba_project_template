@@ -1100,8 +1100,8 @@ ss_to_vec2_arr	gba_specific_stuff/oam_entry_classes.hpp	/^	static const vec2_u32
 ss_to_vec2_arr	gba_specific_stuff/oam_entry_classes.thumb.cpp	/^const vec2_u32 oam_entry::ss_to_vec2_arr[ss_count]$/;"	kind:m	class:oam_entry	file:
 swi_call	gba_specific_stuff/bios_function_wrappers.hpp	131;"	kind:d
 swi_call	gba_specific_stuff/bios_function_wrappers.hpp	133;"	kind:d
-test_str	main.thumb.cpp	/^static const char* test_str = "Birds2";$/;"	kind:v	file:
-test_str_size	main.thumb.cpp	/^static const u32 test_str_size = sizeof(test_str) \/ sizeof(char);$/;"	kind:v	file:
+test_str	main.thumb.cpp	/^static const char test_str[] = "Birds2";$/;"	kind:v	file:
+test_str_size	main.thumb.cpp	/^static const u32 test_str_size = ( sizeof(test_str) \/ sizeof(char) ) - 1;$/;"	kind:v	file:
 the_array	game_engine_stuff/array_2d_helper_class.hpp	/^	type* the_array;$/;"	kind:m	class:array_2d_helper	access:public
 the_array	game_engine_stuff/array_helper_class.hpp	/^	type* the_array;$/;"	kind:m	class:array_helper	access:public
 the_raw_array_group	game_engine_stuff/debug_vars.hpp	/^	static raw_array_group the_raw_array_group;$/;"	kind:m	class:debug_arr_group	access:protected
