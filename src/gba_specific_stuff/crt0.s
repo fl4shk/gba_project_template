@@ -90,7 +90,7 @@ next:
 	@@ldr r4, =memcpy32
 	
 	
-	@@ Branch to the slower_memcpy() function that is --IN ROM-- and use
+	@@ Branch to the slower_memcpy() function that is --IN IWRAM-- and use
 	@@ THAT to copy the .iwram_code section to IWRAM.
 	@ldr r4, =slower_memcpy
 	@ldr r5, =iwram_code_iwram_start
@@ -104,6 +104,9 @@ next:
 	@@bx_afa r4
 	@
 	@long_call_via_r6_fata_type_2
+	
+	@ Branch to the slower_memcpy() function that is --IN ROM-- and use
+	@ THAT to copy the .iwram_code section to IWRAM.
 	
 	long_call_via_r4_fatt slower_memcpy
 	
@@ -145,11 +148,13 @@ next:
 	@@@ r4 still contains the address of memcpy32 in IWRAM (horray for stack
 	@@@ manipulation)
 	
+	
 	@ r4 still contains the address of memcpy in IWRAM (horray for stack
 	@ manipulation)
 	@mov lr, pc
 	@bx r4
 	long_call_via_r4_fata_type_2
+	
 	
 	
 	@ Clear the .bss section (Fill with 0x00)
@@ -243,6 +248,7 @@ next:
 	ldr r0, =__init_array_start
 	ldr r1, =__init_array_load
 	ldr r2, =__init_array_end
+	
 	sub r2, r2, r0
 	@lsr r2, #0x02
 	
@@ -260,6 +266,7 @@ next:
 	long_call_via_r4_fata __libc_init_array
 	
 	
+.L_branch_to_asm_main
 	@ Switch to THUMB mode.
 	ldr r0, =asm_main + 1
 	bx r0
