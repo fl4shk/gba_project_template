@@ -52,10 +52,12 @@ int main()
 	
 	
 	irq_init();
+	irqEnable(irq_vblank);
 	
 	
 	for (;;)
 	{
+		debug_arr_group::clear_debug_vars();
 		clear_oam_mirror();
 		
 		// Key polling is done in game_manager::vblank_func()
