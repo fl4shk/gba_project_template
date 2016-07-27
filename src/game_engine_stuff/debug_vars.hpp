@@ -100,6 +100,7 @@ protected:		// variables
 public:		// and constants
 	// Please make sure that max_size is a multiple of 4.  max_size is the
 	// number of elements in arr.
+	///static constexpr u32 max_size = 16;
 	static constexpr u32 max_size = 16;
 	char arr[max_size];
 	
@@ -128,6 +129,11 @@ public:		// functions
 			real_size = n_real_size;
 		}
 	}
+	
+	inline void clear()
+	{
+		arr_memfill32( arr, 0, max_size );
+	}
 } __attribute__((_align4));
 
 
@@ -148,7 +154,7 @@ protected:		// static variables (raw debug arrays)
 	} __attribute__((_align4));
 	static raw_array_group the_raw_array_group;
 	
-public:		// static variables (array_helpers and an array_2d_helper)
+public:		// static variables (array_helpers)
 	static array_helper<vu32> curr_index_arr_helper;
 	
 	static array_helper<vu32> debug_u32_arr_helper;
