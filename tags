@@ -15,6 +15,7 @@ _iwram_code	src/gba_specific_stuff/attribute_defines.hpp	41;"	kind:d
 _packed	src/gba_specific_stuff/attribute_defines.hpp	52;"	kind:d
 _sram	src/gba_specific_stuff/attribute_defines.hpp	36;"	kind:d
 alignas4	src/gba_specific_stuff/attribute_defines.hpp	55;"	kind:d
+argv	util/update_non_main_source_files.py	/^argv = sys.argv$/;"	kind:v
 arr	src/game_engine_stuff/debug_vars.hpp	/^	char arr[max_size];$/;"	kind:m	class:debug_str	access:public
 arr_index_macro	src/game_engine_stuff/sa_stack_classes.hpp	33;"	kind:d
 arr_memcpy	src/gba_specific_stuff/asm_funcs.hpp	/^inline void* arr_memcpy( std::array< dst_type, size >& dst, $/;"	kind:f	signature:( std::array< dst_type, size >& dst, std::array< src_type, size >& src )
@@ -1063,9 +1064,11 @@ operator vec2<fixed24p8>	src/game_engine_stuff/vec2_class.hpp	/^	inline operator
 operator vec2<fixed24p8>	src/game_engine_stuff/vec2_class.hpp	/^inline vec2<fixed8p8>::operator vec2<fixed24p8>() const$/;"	kind:f	class:vec2	signature:() const
 operator vec2<fixed24p8>	src/game_engine_stuff/vec2_class.hpp	/^inline vec2<s32>::operator vec2<fixed24p8>() const$/;"	kind:f	class:vec2	signature:() const
 operator vec2<type>	src/game_engine_stuff/prev_curr_pair_class.hpp	/^	inline operator vec2<type>() const$/;"	kind:f	struct:prev_curr_pair	access:public	signature:() const
+os	util/update_non_main_source_files.py	/^import os$/;"	kind:i
 pa	src/gba_specific_stuff/oam_entry_classes.hpp	/^	fixed8p8 pa;$/;"	kind:m	class:oam_entry_affine	access:public
 pal_ram_size	src/gba_specific_stuff/gfx_reg_stuff.hpp	/^static const u32 pal_ram_size = 0x200;$/;"	kind:v
 pal_ram_size_in_u16	src/gba_specific_stuff/gfx_reg_stuff.hpp	/^static const u32 pal_ram_size_in_u16 = pal_ram_size \/ sizeof(u16);$/;"	kind:v
+path	util/update_non_main_source_files.py	/^path = os.path$/;"	kind:v
 pb	src/gba_specific_stuff/oam_entry_classes.hpp	/^	fixed8p8 pb;$/;"	kind:m	class:oam_entry_affine	access:public
 pc	src/gba_specific_stuff/oam_entry_classes.hpp	/^	fixed8p8 pc;$/;"	kind:m	class:oam_entry_affine	access:public
 pd	src/gba_specific_stuff/oam_entry_classes.hpp	/^	fixed8p8 pd;$/;"	kind:m	class:oam_entry_affine	access:public
@@ -1107,6 +1110,7 @@ push	src/game_engine_stuff/sa_stack_classes.hpp	/^	void push( const type& to_pus
 push_front	src/game_engine_stuff/sa_list_class_stuff.hpp	/^	int push_front( const type& to_push ) __attribute__((noinline))$/;"	kind:f	class:sa_list_backend	access:public	signature:( const type& to_push )
 push_front	src/game_engine_stuff/sa_list_class_stuff.hpp	/^	int push_front( const type& to_push )$/;"	kind:f	class:externally_allocated_sa_list	access:public	signature:( const type& to_push )
 push_front_old	src/game_engine_stuff/sa_list_class_stuff.hpp	/^	int push_front_old( const type& to_push )$/;"	kind:f	class:sa_list_backend	access:public	signature:( const type& to_push )
+quit	util/update_non_main_source_files.py	/^def quit() :$/;"	kind:f	access:public
 quotient	src/gba_specific_stuff/bios_function_wrappers.hpp	/^	s32 quotient;$/;"	kind:m	class:bios_div_result	access:public
 quotient_abs	src/gba_specific_stuff/bios_function_wrappers.hpp	/^	u32 quotient_abs;$/;"	kind:m	class:bios_div_result	access:public
 range_funcs_hpp	src/game_engine_stuff/range_funcs.hpp	20;"	kind:d
@@ -1390,8 +1394,10 @@ ss_enum_to_ss_attrs_arr	src/gba_specific_stuff/oam_entry_classes.hpp	/^	static c
 ss_enum_to_ss_attrs_arr	src/gba_specific_stuff/oam_entry_classes.thumb.cpp	/^const vec2_u32 oam_entry::ss_enum_to_ss_attrs_arr[ss_count]$/;"	kind:m	class:oam_entry	file:
 ss_to_vec2_arr	src/gba_specific_stuff/oam_entry_classes.hpp	/^	static const vec2_u32 ss_to_vec2_arr[ss_count];$/;"	kind:m	class:oam_entry	access:public
 ss_to_vec2_arr	src/gba_specific_stuff/oam_entry_classes.thumb.cpp	/^const vec2_u32 oam_entry::ss_to_vec2_arr[ss_count]$/;"	kind:m	class:oam_entry	file:
+subprocess	util/update_non_main_source_files.py	/^import subprocess$/;"	kind:i
 swi_call	src/gba_specific_stuff/bios_function_wrappers.hpp	131;"	kind:d
 swi_call	src/gba_specific_stuff/bios_function_wrappers.hpp	133;"	kind:d
+sys	util/update_non_main_source_files.py	/^import sys$/;"	kind:i
 test_str	src/main.thumb.cpp	/^static const char test_str[] = "Birds2";$/;"	kind:v	file:
 test_str_size	src/main.thumb.cpp	/^static const u32 test_str_size = ( sizeof(test_str) \/ sizeof(char) ) - 1;$/;"	kind:v	file:
 the_array	src/game_engine_stuff/array_2d_helper_class.hpp	/^	type* the_array;$/;"	kind:m	class:array_2d_helper	access:public
@@ -1512,6 +1518,7 @@ vec2_s64	src/game_engine_stuff/vec2_class.hpp	/^typedef vec2<u64> vec2_u64; type
 vec2_u16	src/game_engine_stuff/vec2_class.hpp	/^typedef vec2<u16> vec2_u16; typedef vec2<s16> vec2_s16;$/;"	kind:t
 vec2_u32	src/game_engine_stuff/vec2_class.hpp	/^typedef vec2<u32> vec2_u32; typedef vec2<s32> vec2_s32;$/;"	kind:t
 vec2_u64	src/game_engine_stuff/vec2_class.hpp	/^typedef vec2<u64> vec2_u64; typedef vec2<s64> vec2_s64;$/;"	kind:t
+verify_path_type_1	util/update_non_main_source_files.py	/^def verify_path_type_1() :$/;"	kind:f	access:public
 vs16	src/game_engine_stuff/misc_types.hpp	/^typedef volatile u16 vu16; typedef volatile s16 vs16;$/;"	kind:t
 vs32	src/game_engine_stuff/misc_types.hpp	/^typedef volatile u32 vu32; typedef volatile s32 vs32;$/;"	kind:t
 vs64	src/game_engine_stuff/misc_types.hpp	/^typedef volatile u64 vu64; typedef volatile s64 vs64;$/;"	kind:t
