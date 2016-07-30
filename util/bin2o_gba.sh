@@ -18,6 +18,12 @@
 # with GBA Project Template.  If not, see <http://www.gnu.org/licenses/>.
 
 
+if [ ! -d "$DEVKITARM" ]
+then
+	echo 'Please set $DEVKITARM in your environment'
+	echo "Exiting...."
+	exit 1
+fi
 
 #$DEVKITARM/bin/bin2s "$1" | $DEVKITARM/bin/arm-none-eabi-as -o "$1".o
 $DEVKITARM/bin/bin2s "$1" | $DEVKITARM/bin/arm-none-eabi-as -o "$2"
