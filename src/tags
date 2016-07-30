@@ -224,8 +224,8 @@ array_helper::the_array	game_engine_stuff/array_helper_class.hpp	/^	type* the_ar
 array_helper_class_hpp	game_engine_stuff/array_helper_class.hpp	20;"	kind:d
 arrsize	gba_specific_stuff/gfx_reg_stuff.hpp	/^	static const u32 arrsize = 16;$/;"	kind:m	struct:tile8	access:public
 arrsize	gba_specific_stuff/gfx_reg_stuff.hpp	/^	static const u32 arrsize = 8;$/;"	kind:m	struct:tile	access:public
-asm_comment	gba_specific_stuff/asm_funcs.hpp	26;"	kind:d
-asm_funcs_hpp	gba_specific_stuff/asm_funcs.hpp	21;"	kind:d
+asm_comment	gba_specific_stuff/asm_funcs.hpp	25;"	kind:d
+asm_funcs_hpp	gba_specific_stuff/asm_funcs.hpp	20;"	kind:d
 assign_horiz_side_left_x_positions	game_engine_stuff/coll_point_group_classes.hpp	/^	void assign_horiz_side_left_x_positions( const coll_box& the_coll_box, $/;"	kind:p	class:coll_point_group_16x16	access:protected	signature:( const coll_box& the_coll_box, vec2_f24p8& pt_tl, vec2_f24p8& pt_bl )
 assign_horiz_side_left_x_positions	game_engine_stuff/coll_point_group_classes.hpp	/^	void assign_horiz_side_left_x_positions( const coll_box& the_coll_box, $/;"	kind:p	class:coll_point_group_16x32	access:protected	signature:( const coll_box& the_coll_box, vec2_f24p8& pt_tl, vec2_f24p8& pt_bl )
 assign_horiz_side_left_x_positions	game_engine_stuff/coll_point_group_classes.thumb.cpp	/^void coll_point_group_16x16::assign_horiz_side_left_x_positions$/;"	kind:f	class:coll_point_group_16x16	signature:( const coll_box& the_coll_box, vec2_f24p8& pt_tl, vec2_f24p8& pt_bl )

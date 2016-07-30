@@ -16,7 +16,6 @@
 // with GBA Project Template.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 #ifndef asm_funcs_hpp
 #define asm_funcs_hpp
 
