@@ -4,6 +4,7 @@
 #rsync -avh --progress --dry-run --existing "$1"/src .
 #rsync -avh --progress --dry-run --existing "$1"/src .
 rsync -avuh --progress \
+	--exclude="util/update_non_main*.sh" \
 	--exclude="README.md" \
 	--exclude=".git" \
 	--exclude="src/main.thumb.cpp" \
@@ -13,6 +14,6 @@ rsync -avuh --progress \
 	--existing "$1"/ .
 
 
-find src -type f -exec sed -i 's/GBA Project Template/Sherwin'\''s Adventure/g' {} +
+find src -type f -exec sed -i 's/Sherwin'\''s Adventure/GBA Project Template/g' {} +
 
 
