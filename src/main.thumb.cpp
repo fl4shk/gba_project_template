@@ -74,4 +74,9 @@ int main()
 }
 
 
+// This is for updated ARM GCC when things like std::vector are used.
+extern "C" void __sync_synchronize()
+{
+}
+
 
