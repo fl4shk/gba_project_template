@@ -1,19 +1,19 @@
-// This file is part of GBA Project Template.
+// This file is part of Sherwin's Adventure.
 // 
 // Copyright 2015-2016 by Andrew Clark (FL4SHK).
 // 
-// GBA Project Template is free software: you can redistribute it and/or
+// Sherwin's Adventure is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or (at
 // your option) any later version.
 // 
-// GBA Project Template is distributed in the hope that it will be useful,
+// Sherwin's Adventure is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // General Public License for more details.
 // 
 // You should have received a copy of the GNU General Public License along
-// with GBA Project Template.  If not, see <http://www.gnu.org/licenses/>.
+// with Sherwin's Adventure.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #ifndef sa_stack_class_hpp
@@ -75,6 +75,15 @@ public:		// functions
 	inline const u32 get_size() const
 	{
 		return num_elems;
+	}
+	
+	inline bool can_push() const
+	{
+		return ( get_curr_index() <= get_size() );
+	}
+	inline bool can_pop() const
+	{
+		return ( get_curr_index() > 0 );
 	}
 	
 	inline void push( const u8* to_push_u8 )
@@ -323,19 +332,21 @@ class sa_free_list
 protected:		// variables
 	sa_free_list_backend the_sa_free_list_backend;
 	
-	template< typename type > friend class sa_list_backend;
-	template< typename type, u32 total_num_nodes > friend class
-		externally_allocated_sa_list;
+	//template< typename type > friend class sa_list_backend;
+	//template< typename type, u32 total_num_nodes > friend class
+	//	externally_allocated_sa_list;
+	template< typename type, u32 total_num_nodes, u32 num_lists >
+		friend class sa_array_of_lists;
 	
 public:		// variables
 	array< int, size > the_array;
 	u32 curr_index;
 	
 public:		// functions
-	inline sa_free_list() : the_sa_free_list_backend( the_array.data(),
-		&curr_index, get_size() ), curr_index(0)
+	inline sa_free_list() : the_sa_free_list_backend( the_array.data(), 
+		&curr_index, get_size() )
 	{
-		the_sa_free_list_backend.init();
+		//the_sa_free_list_backend.init();
 		
 		//for ( int i=get_size()-1; i>= 0; --i )
 		//{
