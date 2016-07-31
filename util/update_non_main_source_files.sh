@@ -25,7 +25,7 @@ fi
 #rsync -avh --progress --dry-run --existing "$1"/src .
 #rsync -avh --progress --dry-run --existing "$1"/src .
 rsync -avuh --progress \
-	--exclude="util/convert_project_name_in_license.sh" \
+	--exclude="$second_script" \
 	--exclude="README.md" \
 	--exclude=".git" \
 	--exclude="src/main.thumb.cpp" \
@@ -34,4 +34,5 @@ rsync -avuh --progress \
 	--exclude=".*.swp" --exclude=".*.swo" \
 	--existing "$1"/ .
 
-
+echo "Running \"$second_script\""
+$($second_script)
