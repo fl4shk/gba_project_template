@@ -221,7 +221,7 @@ $(MUSIC_OFILES) : $(OBJDIR)/%.bin.o : %.bin
 	util/bin2o_gba.sh $< $@
 
 
-
+# This sed script is basically a hack for dependency generation stuff.
 sed_script:=$(shell echo "sed -e 's/\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' -e '/^$$/ d' -e 's/$$/ :/'")
 
 # Here's where things get really messy.  Oh if only GNU Make had functions
