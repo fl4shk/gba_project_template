@@ -1,6 +1,6 @@
 #!/bin/bash
 
-second_script=./util/convert_project_name_in_license.sh
+second_script=util/convert_project_name_in_license.sh
 
 function quit()
 {

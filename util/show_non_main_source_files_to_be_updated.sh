@@ -1,6 +1,6 @@
 #!/bin/bash
 
-second_script=./util/convert_project_name_in_license.sh
+second_script=util/convert_project_name_in_license.sh
 
 function quit()
 {
@@ -8,15 +8,26 @@ function quit()
 	exit 1
 }
 
+echo "$second_script"
+echo "util/convert_project_name_in_license.sh"
+echo
+
 if [ ! -d "$1" ]
 then
 	echo "\"$1\" does not appear to be a valid directory."
 	quit
 fi
+if [ ! -f "$second_script" ]
+then
+	echo "\"$second_script\" doesn't exist"
+	quit
+fi
+
 
 #rsync -avh --progress --dry-run --existing "$1"/src .
 #rsync -avh --progress --dry-run --existing "$1"/src .
-rsync -avuh --progress --dry-run \
+rsync -avuh --progress  \
+	--existing --dry-run \
 	--exclude="$second_script" \
 	--exclude="README.md" \
 	--exclude=".git" \
@@ -29,4 +40,4 @@ rsync -avuh --progress --dry-run \
 	--exclude="src/tags" --exclude="*types_*.taghl" \
 	--exclude="tags" --exclude="*types_*.taghl" \
 	--exclude=".*.swp" --exclude=".*.swo" \
-	--existing "$1"/ .
+	"$1"/ .
