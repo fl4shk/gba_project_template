@@ -23,8 +23,8 @@
 #include "oam_entry_defines.hpp"
 #include "dma_stuff.hpp"
 #include "asm_funcs.hpp"
-#include "../game_engine_stuff/misc_bitwise_funcs.hpp"
-#include "../game_engine_stuff/fixed_classes.hpp"
+#include "../general_utility_stuff/misc_bitwise_funcs.hpp"
+#include "../general_utility_stuff/fixed_classes.hpp"
 
 
 class oam_entry;
