@@ -8,6 +8,7 @@ function quit()
 	exit 1
 }
 
+
 if [ ! -d "$1" ]
 then
 	echo "\"$1\" does not appear to be a valid directory."
@@ -22,9 +23,10 @@ then
 	quit
 fi
 
+
 #rsync -avh --progress --dry-run --existing "$1"/src .
 #rsync -avh --progress --dry-run --existing "$1"/src .
-rsync -avuh --progress \
+rsync -avuh --progress --existing \
 	--exclude="$second_script" \
 	--exclude="README.md" \
 	--exclude=".git" \
@@ -37,7 +39,7 @@ rsync -avuh --progress \
 	--exclude="src/tags" --exclude="*types_*.taghl" \
 	--exclude="tags" --exclude="*types_*.taghl" \
 	--exclude=".*.swp" --exclude=".*.swo" \
-	--existing "$1"/ .
+	"$1"/ .
 
 echo "Running \"$second_script\""
 $($second_script)

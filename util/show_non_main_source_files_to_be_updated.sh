@@ -8,26 +8,25 @@ function quit()
 	exit 1
 }
 
-echo "$second_script"
-echo "util/convert_project_name_in_license.sh"
-echo
 
 if [ ! -d "$1" ]
 then
 	echo "\"$1\" does not appear to be a valid directory."
 	quit
-fi
-if [ ! -f "$second_script" ]
+elif [ ! -f "$second_script" ]
 then
-	echo "\"$second_script\" doesn't exist"
+	echo "\"$second_script\" does not appear to exist."
+	quit
+elif [ ! -x "$second_script" ]
+then
+	echo "\"$second_script\" does not appear to be executable."
 	quit
 fi
 
 
 #rsync -avh --progress --dry-run --existing "$1"/src .
 #rsync -avh --progress --dry-run --existing "$1"/src .
-rsync -avuh --progress  \
-	--existing --dry-run \
+rsync -avuh --progress --existing --dry-run \
 	--exclude="$second_script" \
 	--exclude="README.md" \
 	--exclude=".git" \
