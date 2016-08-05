@@ -15,7 +15,7 @@ _iwram_bss	gba_specific_stuff/attribute_defines.hpp	35;"	kind:d
 _iwram_code	gba_specific_stuff/attribute_defines.hpp	41;"	kind:d
 _packed	gba_specific_stuff/attribute_defines.hpp	52;"	kind:d
 _sram	gba_specific_stuff/attribute_defines.hpp	36;"	kind:d
-alignas4	gba_specific_stuff/attribute_defines.hpp	55;"	kind:d
+alignas_regular	gba_specific_stuff/attribute_defines.hpp	55;"	kind:d
 arr	general_utility_stuff/debug_vars.hpp	/^	std::array< char, max_size > arr;$/;"	kind:m	class:debug_str	access:public
 arr_index_macro	general_utility_stuff/sa_stack_classes.hpp	33;"	kind:d
 arr_memcpy	gba_specific_stuff/asm_funcs.hpp	/^inline void* arr_memcpy( std::array< dst_type, size >& dst, $/;"	kind:f	signature:( std::array< dst_type, size >& dst, std::array< src_type, size >& src )
