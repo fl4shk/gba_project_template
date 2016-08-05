@@ -18,7 +18,7 @@
 
 #include "attribute_defines.hpp"
 #include "button_stuff.hpp"
-#include "../game_engine_stuff/prev_curr_pair_class.hpp"
+#include "../general_utility_stuff/prev_curr_pair_class.hpp"
 
 
 // Global variables to hold the key state

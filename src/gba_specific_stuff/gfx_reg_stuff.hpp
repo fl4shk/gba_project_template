@@ -19,11 +19,11 @@
 #ifndef gfx_reg_stuff_hpp
 #define gfx_reg_stuff_hpp
 
-#include "../game_engine_stuff/misc_types.hpp"
+#include "../general_utility_stuff/misc_types.hpp"
 #include "memory_map.hpp"
-#include "../game_engine_stuff/vec2_class.hpp"
-#include "../game_engine_stuff/prev_curr_pair_class.hpp"
-#include "../game_engine_stuff/misc_bitwise_funcs.hpp"
+#include "../general_utility_stuff/vec2_class.hpp"
+#include "../general_utility_stuff/prev_curr_pair_class.hpp"
+#include "../general_utility_stuff/misc_bitwise_funcs.hpp"
 
 
 /* ---- Some Helper Structs ---- */
@@ -472,6 +472,20 @@ inline void clamped_rgb15_f24p8_component_add( fixed24p8& component,
 	}
 }
 
+inline void clamped_rgb15_f8p8_component_add( fixed8p8& component,
+	const fixed8p8& amount_to_add, const fixed8p8& target_value )
+{
+	component += amount_to_add;
+	
+	if ( amount_to_add > (fixed8p8){0} && component > target_value )
+	{
+		component = target_value;
+	}
+	else if ( amount_to_add < (fixed8p8){0} && component < target_value )
+	{
+		component = target_value;
+	}
+}
 
 
 

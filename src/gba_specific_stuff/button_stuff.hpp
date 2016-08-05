@@ -19,10 +19,10 @@
 #ifndef button_stuff_hpp
 #define button_stuff_hpp
 
-#include "../game_engine_stuff/misc_types.hpp"
+#include "../general_utility_stuff/misc_types.hpp"
 #include "memory_map.hpp"
 
-#include "../game_engine_stuff/prev_curr_pair_class.hpp"
+#include "../general_utility_stuff/prev_curr_pair_class.hpp"
 
 // This stuff is shamelessly taken from TONC.
 //extern vu16 __key_curr, __key_prev;

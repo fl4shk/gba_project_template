@@ -60,6 +60,28 @@ void clear_debug_vars() __attribute__((_iwram_code));
 */
 
 
+#define list_of_debug_suffixes(macro) \
+	macro(u32) macro(s32) macro(f24p8) macro(f8p8) macro(str)
+
+#define macro_for_debug_u32_type_and_suffix(macro) \
+	macro( u32, u32 )
+#define macro_for_debug_s32_type_and_suffix(macro) \
+	macro( s32, s32 )
+#define macro_for_debug_fixed24p8_type_and_suffix(macro) \
+	macro( fixed24p8, f24p8 )
+#define macro_for_debug_fixed8p8_type_and_suffix(macro) \
+	macro( fixed8p8, f8p8 )
+#define macro_for_debug_str_type_and_suffix(macro) \
+	macro( debug_str, str )
+
+
+#define list_of_debug_types_and_suffixes(macro) \
+	macro_for_debug_u32_type_and_suffix(macro) \
+	macro_for_debug_s32_type_and_suffix(macro) \
+	macro_for_debug_fixed24p8_type_and_suffix(macro) \
+	macro_for_debug_fixed8p8_type_and_suffix(macro) \
+	macro_for_debug_str_type_and_suffix(macro)
+
 enum curr_debug_index_type
 {
 	cdit_u32,
@@ -111,14 +133,28 @@ public:		// and constants
 	std::array< char, max_size > arr;
 	
 public:		// functions
-	debug_str();
-	debug_str( u32 n_real_size );
-	debug_str( const debug_str& to_copy );
-	debug_str( const char* to_copy );
+	inline debug_str() : real_size(0)
+	{
+		clear();
+	}
+	inline debug_str( u32 n_real_size )
+	{
+		set_real_size(n_real_size);
+		//memfill32( arr, 0, max_size / sizeof(u32) );
+		//arr_memfill32( arr, 0, max_size );
+		clear();
+	}
+	inline debug_str( const debug_str& to_copy )
+	{
+		operator = (to_copy);
+	}
+	inline debug_str( const char* to_copy )
+	{
+		operator = (to_copy);
+	}
 	
 	debug_str& operator = ( const debug_str& to_copy );
-	debug_str& operator = ( const char* to_copy )
-		__attribute__((_iwram_code));
+	debug_str& operator = ( const char* to_copy );
 	
 	inline u32 get_real_size() const
 	{
@@ -183,11 +219,14 @@ public:		// static variables (array_helpers)
 	
 	static array_helper<debug_str> debug_str_arr_helper;
 	
-protected:		// functions
+//protected:		// functions
+public:		// functions
+	
 	static inline vu32* curr_index_arr()
 	{
 		return the_raw_array_group.curr_index_arr;
 	}
+	
 	static inline vu32* debug_u32_arr() 
 	{
 		return the_raw_array_group.debug_u32_arr;
@@ -240,148 +279,115 @@ public:		// functions
 	
 	static inline void write_u32_and_inc( u32 to_write )
 	{
-		////debug_u32_arr_helper.at(curr_index_arr_helper.at
-		////	(cdit_u32)++) = to_write;
-		//debug_u32_arr()[curr_index_arr()[cdit_u32]++] = to_write;
 		raw_write_debug_u32_and_inc(to_write);
 	}
 	static inline void write_s32_and_inc( s32 to_write )
 	{
-		////debug_s32_arr_helper.at(curr_index_arr_helper.at
-		////	(cdit_s32)++) = to_write;
-		//debug_s32_arr()[curr_index_arr()[cdit_s32]++] = to_write;
 		raw_write_debug_s32_and_inc(to_write);
 	}
 	static inline void write_f24p8_and_inc( const fixed24p8& to_write )
 	{
-		////debug_f24p8_arr_helper.at(curr_index_arr_helper.at
-		////	(cdit_f24p8)++) = to_write;
-		//debug_f24p8_arr()[curr_index_arr()[cdit_f24p8]++] = to_write;
 		raw_write_debug_f24p8_and_inc(to_write);
 	}
 	static inline void write_f8p8_and_inc( const fixed8p8& to_write )
 	{
-		////debug_f8p8_arr_helper.at(curr_index_arr_helper.at
-		////	(cdit_f8p8)++) = to_write;
-		//debug_f8p8_arr()[curr_index_arr()[cdit_f8p8]++] = to_write;
 		raw_write_debug_f8p8_and_inc(to_write);
 	}
 	
 	static inline void write_str_and_inc( const debug_str& to_write )
 	{
-		////debug_str_arr_helper.at(curr_index_arr_helper.at
-		////	(cdit_str)++) = to_write;
-		//debug_str_arr()[curr_index_arr()[cdit_str]++] = to_write;
 		raw_write_debug_str_and_inc(to_write);
 	}
 	
 	static inline void write_str_and_inc( const char* to_write )
 	{
-		////debug_str_arr_helper.at(curr_index_arr_helper.at
-		////	(cdit_str)++) = to_write;
-		//debug_str_arr()[curr_index_arr()[cdit_str]++] = to_write;
 		raw_write_debug_str_and_inc(to_write);
 	}
 	
 	
-	template< typename debug_arr_type, typename type >
-	friend inline void show_debug_values_group_backend
-		( debug_arr_type* debug_values_arr, vu32& curr_index, 
-		type to_show );
-	template< typename debug_arr_type, typename first_type, 
-		typename... remaining_types >
-	friend inline void show_debug_values_group_backend
-		( debug_arr_type* debug_values_arr, 
-		vu32& curr_index, first_type first_value, 
-		remaining_types... remaining_values );
-	
-	template< typename... all_the_types >
-	friend void show_debug_u32_group( all_the_types... all_the_values );
-	
-	template< typename... all_the_types >
-	friend void show_debug_s32_group( all_the_types... all_the_values );
-	
-	template< typename... all_the_types >
-	friend void show_debug_f24p8_group( all_the_types... all_the_values );
-	
-	template< typename... all_the_types >
-	friend void show_debug_f8p8_group( all_the_types... all_the_values );
-	
-	template< typename... all_the_types >
-	friend void show_debug_str_group( all_the_types... all_the_values );
 	
 } __attribute__((_align4));
 
 
 
-template< typename debug_arr_type, typename type >
-inline void show_debug_values_group_backend
-	( debug_arr_type* debug_values_arr, vu32& curr_index, type to_show )
-	__attribute__((always_inline));
-template< typename debug_arr_type, typename type >
-inline void show_debug_values_group_backend
-	( debug_arr_type* debug_values_arr, vu32& curr_index, type to_show )
-{
-	debug_values_arr[curr_index++] = to_show;
-}
 
-template< typename debug_arr_type, typename first_type, 
-	typename... remaining_types >
-inline void show_debug_values_group_backend
-	( debug_arr_type* debug_values_arr, vu32& curr_index, 
-	first_type first_value, remaining_types... remaining_values )
-	__attribute__((always_inline));
-template< typename debug_arr_type, typename first_type, 
-	typename... remaining_types >
-inline void show_debug_values_group_backend
-	( debug_arr_type* debug_values_arr, vu32& curr_index, 
-	first_type first_value, remaining_types... remaining_values )
+
+
+//template< typename debug_arr_type, typename type >
+//void show_debug_values_group_backend( debug_arr_type* debug_values_arr, 
+//	vu32& curr_index, const u32 total_num_args, type* all_values_arr ) 
+//	__attribute__((noinline));
+template< typename debug_arr_type, typename type >
+void show_debug_values_group_backend( debug_arr_type* debug_values_arr, 
+	vu32& curr_index, const u32 total_num_args, const type* all_values_arr )
 {
-	//asm_comment("first_value");
-	show_debug_values_group_backend( debug_values_arr, curr_index, 
-		first_value );
+	//asm_comment("show_debug_values_group_backend()");
 	
-	//asm_comment("remaining_values...");
-	show_debug_values_group_backend( debug_values_arr, curr_index,
-		remaining_values... );
+	//asm_comment("Before old_curr_index");
+	const u32 old_curr_index = curr_index;
+	
+	//asm_comment("Before curr_index = old_curr_index + total_num_args");
+	
+	//curr_index += total_num_args;
+	// Turns out that curr_index = old_curr_index + total_num_args is
+	// FASTER than curr_index += total_num_args with the code that gets
+	// generated.
+	curr_index = old_curr_index + total_num_args;
+	
+	//asm_comment("Before for loop");
+	for ( s32 i=total_num_args-1; i>=0; --i )
+	{
+		debug_values_arr[old_curr_index + i] = all_values_arr[i];
+	}
+	
+	//asm_comment("end of show_debug_values_group_backend()");
 }
 
 
-#define generate_func_contents(suffix) \
-asm_comment("show_debug_" #suffix "_group()"); \
-show_debug_values_group_backend( debug_arr_group::the_raw_array_group \
-	.debug_##suffix##_arr, debug_arr_group::the_raw_array_group \
-	.curr_index_arr[cdit_##suffix], all_the_values... );
+
+// type is the actual type, and suffix is the type's suffix.  Sometimes,
+// type == suffix, especially with generic types.
+#define generate_func_contents( type, suffix ) \
+asm_comment("show_debug_" #suffix "_group()" ); \
+static constexpr size_t total_num_args = sizeof...(all_the_values); \
+type all_values_arr[total_num_args]; \
+assign_to_array( all_values_arr, all_the_values... ); \
+show_debug_values_group_backend \
+	( debug_arr_group::debug_##suffix##_arr(), \
+	debug_arr_group::curr_index_arr()[cdit_##suffix], total_num_args, \
+	all_values_arr );
 
 template< typename... all_the_types >
-void show_debug_u32_group( all_the_types... all_the_values )
+inline void show_debug_u32_group( const all_the_types&... all_the_values )
 {
-	generate_func_contents(u32);
+	macro_for_debug_u32_type_and_suffix(generate_func_contents);
+}
+
+
+template< typename... all_the_types >
+inline void show_debug_s32_group( const all_the_types&... all_the_values )
+{
+	macro_for_debug_s32_type_and_suffix(generate_func_contents);
 }
 
 template< typename... all_the_types >
-void show_debug_s32_group( all_the_types... all_the_values )
+inline void show_debug_f24p8_group( const all_the_types&... all_the_values )
 {
-	generate_func_contents(s32);
+	macro_for_debug_fixed24p8_type_and_suffix(generate_func_contents);
 }
 
 template< typename... all_the_types >
-void show_debug_f24p8_group( all_the_types... all_the_values )
+inline void show_debug_f8p8_group( const all_the_types&... all_the_values )
 {
-	generate_func_contents(f24p8);
+	macro_for_debug_fixed8p8_type_and_suffix(generate_func_contents);
 }
 
 template< typename... all_the_types >
-void show_debug_f8p8_group( all_the_types... all_the_values )
+inline void show_debug_str_group( const all_the_types&... all_the_values )
 {
-	generate_func_contents(f8p8);
+	macro_for_debug_str_type_and_suffix(generate_func_contents);
 }
 
-template< typename... all_the_types >
-void show_debug_str_group( all_the_types... all_the_values )
-{
-	generate_func_contents(str);
-}
 
 #undef generate_func_contents
 

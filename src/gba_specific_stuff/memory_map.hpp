@@ -19,7 +19,7 @@
 #ifndef memory_map_hpp
 #define memory_map_hpp
 
-#include "../game_engine_stuff/misc_types.hpp"
+#include "../general_utility_stuff/misc_types.hpp"
 
 
 #define mem_ewram 0x02000000

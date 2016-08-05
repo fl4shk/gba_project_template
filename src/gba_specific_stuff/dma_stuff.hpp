@@ -19,7 +19,7 @@
 #ifndef dma_stuff_hpp
 #define dma_stuff_hpp
 
-#include "../game_engine_stuff/misc_types.hpp"
+#include "../general_utility_stuff/misc_types.hpp"
 #include "memory_map.hpp"
 
 

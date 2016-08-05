@@ -19,7 +19,7 @@
 #ifndef timer_stuff_hpp
 #define timer_stuff_hpp
 
-#include "../game_engine_stuff/misc_types.hpp"
+#include "../general_utility_stuff/misc_types.hpp"
 #include "memory_map.hpp"
 #include "asm_funcs.hpp"
 

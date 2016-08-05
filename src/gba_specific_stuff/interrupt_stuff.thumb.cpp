@@ -21,7 +21,7 @@
 
 #include "maxmod.h"
 
-#include "../game_engine_stuff/debug_vars.hpp"
+#include "../general_utility_stuff/debug_vars.hpp"
 
 
 extern "C" void maxmod_vblank_updater_func();

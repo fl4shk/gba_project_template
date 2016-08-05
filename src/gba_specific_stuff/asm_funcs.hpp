@@ -19,7 +19,7 @@
 #ifndef asm_funcs_hpp
 #define asm_funcs_hpp
 
-#include "../game_engine_stuff/misc_types.hpp"
+#include "../general_utility_stuff/misc_types.hpp"
 #include "attribute_defines.hpp"
 
 #define asm_comment(stuff) \

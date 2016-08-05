@@ -19,7 +19,7 @@
 #ifndef interrupt_stuff_hpp
 #define interrupt_stuff_hpp
 
-#include "../game_engine_stuff/misc_types.hpp"
+#include "../general_utility_stuff/misc_types.hpp"
 #include "memory_map.hpp"
 #include "attribute_defines.hpp"
 #include "dma_stuff.hpp"

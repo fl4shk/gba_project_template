@@ -20,7 +20,7 @@
 #define bios_function_wrappers_hpp
 
 #include "attribute_defines.hpp"
-#include "../game_engine_stuff/misc_types.hpp"
+#include "../general_utility_stuff/misc_types.hpp"
 #include "interrupt_stuff.hpp"
 
 
