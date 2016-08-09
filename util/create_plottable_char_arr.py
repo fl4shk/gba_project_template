@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 
-
 # This file is part of GBA Project Template.
 # 
 # Copyright 2015-2016 by Andrew Clark (FL4SHK).
