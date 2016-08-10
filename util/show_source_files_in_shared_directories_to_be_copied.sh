@@ -64,19 +64,19 @@ shared_src_dirs=($("$third_script" . "$1"))
 ##	\"$1\"/ ."
 #
 
-#echo ${shared_src_dirs[@]}
-for dir in "${shared_src_dirs[@]}"
-do
-	echo "$dir"
-done
-
+##echo ${shared_src_dirs[@]}
 #for dir in "${shared_src_dirs[@]}"
 #do
-#	bash -c "rsync -avuh --progress --dry-run \
-#		$most_rsync_args[@] \
-#		--exclude=\"$second_script\" \
-#		\"$1\"/\"$dir\"/ ./\"$dir\""
+#	echo "$dir"
 #done
+
+for dir in "${shared_src_dirs[@]}"
+do
+	bash -c "rsync -avh --progress --dry-run \
+		$most_rsync_args[@] \
+		--exclude=\"$second_script\" \
+		\"$1\"/\"$dir\"/ ./\"$dir\""
+done
 
 #echo "Running \"$second_script\""
 #$($second_script)
