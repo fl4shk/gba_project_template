@@ -163,6 +163,7 @@ void sa_list_test()
 	test_list.push_front('a');
 	test_list.push_front('d');
 	test_list.push_front('f');
+	test_list.push_front('a');
 	show_profile_stop();
 	
 	
