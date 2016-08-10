@@ -72,7 +72,7 @@ shared_src_dirs=($("$third_script" . "$1"))
 
 for dir in "${shared_src_dirs[@]}"
 do
-	bash -c "rsync -avh --progress --dry-run \
+	bash -c "rsync -avuh --progress --dry-run \
 		$most_rsync_args[@] \
 		--exclude=\"$second_script\" \
 		\"$1\"/\"$dir\"/ ./\"$dir\""

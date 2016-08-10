@@ -44,7 +44,7 @@ public:		// variables
 	static constexpr u32 shift = 8;
 	static constexpr u32 frac_mask = ( 1 << shift ) - 1;
 	
-	s32 data;
+	s32 data = 0;
 	
 public:		// functions
 	static constexpr inline u32 get_shift()
@@ -299,7 +299,7 @@ public:		// variables
 	static constexpr u32 shift = 8;
 	static constexpr u32 frac_mask = ( 1 << shift ) - 1;
 	
-	s16 data;
+	s16 data = 0;
 	
 public:		// functions
 	static constexpr inline u32 get_shift()
