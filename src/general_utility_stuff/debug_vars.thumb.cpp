@@ -87,6 +87,18 @@ debug_str& debug_str::operator = ( const char* to_copy )
 	return *this;
 }
 
+vu32 (& curr_index_arr)[curr_index_arr_size]
+	= debug_arr_group::the_raw_array_group.curr_index_arr;
+vu32 (& debug_u32_arr)[debug_u32_arr_size]
+	= debug_arr_group::the_raw_array_group.debug_u32_arr;
+vs32 (& debug_s32_arr)[debug_s32_arr_size]
+	= debug_arr_group::the_raw_array_group.debug_s32_arr;
+fixed24p8 (& debug_f24p8_arr)[debug_f24p8_arr_size]
+	= debug_arr_group::the_raw_array_group.debug_f24p8_arr;
+fixed8p8 (& debug_f8p8_arr)[debug_f8p8_arr_size]
+	= debug_arr_group::the_raw_array_group.debug_f8p8_arr;
+debug_str (& debug_str_arr)[debug_str_arr_size]
+	= debug_arr_group::the_raw_array_group.debug_str_arr;
 
 
 // static variables (raw debug arrays)
@@ -135,8 +147,10 @@ void debug_arr_group::clear_debug_vars()
 	//memfill32( debug_str_arr(), 0, debug_str_arr_helper.get_size() 
 	//	* sizeof(debug_str) / sizeof(u32) );
 	
-	memfill32( &the_raw_array_group, 0, sizeof(raw_array_group) 
-		/ sizeof(u32) );
+	//memfill32( &the_raw_array_group, 0, sizeof(raw_array_group) 
+	//	/ sizeof(u32) );
+	
+	memset( &the_raw_array_group, 0, sizeof(raw_array_group) );
 }
 
 

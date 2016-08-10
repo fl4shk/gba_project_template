@@ -543,8 +543,10 @@ public:		// typedefs
 	
 public:		// variables
 	static constexpr u32 frac_mask = ( 1 << shift ) - 1;
-	static constexpr u32 underlying_type_is_signed 
-		= ( underlying_type(-1) < underlying_type(0) );
+	//static constexpr u32 underlying_type_is_signed 
+	//	= ( underlying_type(-1) < underlying_type(0) );
+	static constexpr u32 underlying_type_is_signed
+		= type_is_signed<underlying_type>();
 	
 	underlying_type data;
 	

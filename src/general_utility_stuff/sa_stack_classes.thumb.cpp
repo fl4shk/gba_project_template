@@ -38,7 +38,8 @@ void sa_pod_stack_backend::pop()
 void sa_pod_stack_backend::write_to_the_array_u8( const u8* to_write_u8,
 	u32 non_u8_index )
 {
-	u32 start_index_u8 = arr_index_macro( get_type_size(), non_u8_index );
+	u32 start_index_u8 = arr_byte_index_macro( get_type_size(), 
+		non_u8_index );
 	
 	for ( u32 i=0; i<get_type_size(); ++i )
 	{

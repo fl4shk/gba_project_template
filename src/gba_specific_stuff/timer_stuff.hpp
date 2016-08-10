@@ -24,17 +24,26 @@
 #include "asm_funcs.hpp"
 
 
-// Timer Counter/Reload (R/W)
-#define reg_tm0cnt_l		*((vu16*)(mem_io + 0x100))
-#define reg_tm1cnt_l		*((vu16*)(mem_io + 0x104))
-#define reg_tm2cnt_l		*((vu16*)(mem_io + 0x108))
-#define reg_tm3cnt_l		*((vu16*)(mem_io + 0x10c))
+// Timer Counter/Reload, AKA Timer Data (R/W)
+#define reg_tm0data				*((vu16*)(mem_io + 0x100))
+#define reg_tm1data				*((vu16*)(mem_io + 0x104))
+#define reg_tm2data				*((vu16*)(mem_io + 0x108))
+#define reg_tm3data				*((vu16*)(mem_io + 0x10c))
 
 // Timer Control (R/W)
-#define reg_tm0cnt_h		*((vu16*)(mem_io + 0x102))
-#define reg_tm1cnt_h		*((vu16*)(mem_io + 0x106))
-#define reg_tm2cnt_h		*((vu16*)(mem_io + 0x10a))
-#define reg_tm3cnt_h		*((vu16*)(mem_io + 0x10e))
+#define reg_tm0cnt				*((vu16*)(mem_io + 0x102))
+#define reg_tm1cnt				*((vu16*)(mem_io + 0x106))
+#define reg_tm2cnt				*((vu16*)(mem_io + 0x10a))
+#define reg_tm3cnt				*((vu16*)(mem_io + 0x10e))
+
+
+// 32-bit "versions" of the timer registers (R/W)
+#define reg_tmcnt_full_arr		((vu32*)(mem_io + 0x100))
+#define reg_tm0cnt_full			( reg_tmcnt_full_arr[0] )
+#define reg_tm1cnt_full			( reg_tmcnt_full_arr[1] )
+#define reg_tm2cnt_full			( reg_tmcnt_full_arr[2] )
+#define reg_tm3cnt_full			( reg_tmcnt_full_arr[3] )
+
 
 
 
@@ -73,7 +82,7 @@
 
 
 // Here is an extra thing for 
-inline constexpr u16 calc_timer_freq( float freq )
+constexpr inline u16 calc_timer_freq( float freq )
 {
 	//if ( freq > 0.0f )
 	//{

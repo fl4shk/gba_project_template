@@ -27,7 +27,7 @@
 //#include "gba_specific_stuff/sound_reg_stuff.hpp"
 #include "gba_specific_stuff/timer_stuff.hpp"
 
-#include "game_engine_stuff/debug_vars.hpp"
+#include "general_utility_stuff/debug_vars.hpp"
 
 
 // This is an assembly function.  It doesn't do very much.
@@ -45,6 +45,10 @@ static const u32 test_str_size = ( sizeof(test_str) / sizeof(char) ) - 1;
 
 int main()
 {
+	irq_init();
+	irqEnable(irq_vblank);
+	
+	
 	//arr_memfill8( (u8*)ewram_test_arr, '#', ewram_test_arr_size );
 	memset( ewram_test_arr, '#', ewram_test_arr_size );
 	
@@ -52,10 +56,6 @@ int main()
 	
 	//memcpy( &ewram_test_arr[1], test_str, 5 );
 	memset( &ewram_test_arr[1], '3', 9 );
-	
-	
-	irq_init();
-	irqEnable(irq_vblank);
 	
 	
 	for (;;)

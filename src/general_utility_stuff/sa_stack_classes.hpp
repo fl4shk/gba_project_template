@@ -30,11 +30,16 @@ using std::array;
 
 
 
-#define arr_index_macro( the_type_size, index_to_array_of_types ) \
+#define arr_byte_index_macro( the_type_size, index_to_array_of_types ) \
 	the_type_size * index_to_array_of_types
 
-#define arr_size_macro( type, the_num_arr_elems ) \
-	arr_index_macro( sizeof(type), the_num_arr_elems )
+#define arr_byte_size_macro( type, the_num_arr_elems ) \
+	arr_byte_index_macro( sizeof(type), the_num_arr_elems )
+template< typename type >
+inline size_t arr_byte_size( size_t the_num_arr_elems )
+{
+	return ( sizeof(type) * the_num_arr_elems );
+}
 
 
 // A backend to a statically allocated stack of plain old data 
@@ -346,10 +351,12 @@ protected:		// variables
 	//template< typename type > friend class sa_list_backend;
 	//template< typename type, u32 total_num_nodes > friend class
 	//	externally_allocated_sa_list;
+	template< typename type, u32 total_num_nodes > 
+		friend class regular_sa_list_base;
 	template< typename type, u32 total_num_nodes, u32 num_lists >
 		friend class sa_array_of_lists;
 	
-public:		// variables
+protected:		// variables
 	//array< int, size > the_array;
 	array< s16, size > the_array __attribute__((_align4));
 	u32 next_index;

@@ -19,6 +19,7 @@
 
 ret=( "--exclude=\"README.md\""
 	"--exclude=\".gitignore\""
+	"--exclude=\".gdb_history\""
 	"--exclude=\".git\""
 	"--exclude=\"objs\""
 	"--exclude=\"deps\""

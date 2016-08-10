@@ -139,5 +139,12 @@ inline void copy_to_array( type* all_values_arr,
 
 
 
+template< typename type >
+constexpr inline bool type_is_signed()
+{
+	return ( (type)(-1) < (type)(0) );
+}
+
+
 
 #endif		// misc_utility_funcs_hpp

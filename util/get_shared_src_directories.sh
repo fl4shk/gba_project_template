@@ -21,8 +21,8 @@
 first_dir=$(realpath $1)
 second_dir=$(realpath $2)
 
-echo "$first_dir"
-echo "$second_dir"
+#echo "$first_dir"
+#echo "$second_dir"
 
 #echo
 #echo
@@ -34,10 +34,12 @@ first_list=($(find "src" -type d -exec echo {} +))
 cd "$second_dir"
 second_list=($(find "src" -type d -exec echo {} +))
 
+
 banned_dir="src"
 
 
 shared_src_dirs=()
+
 for val_i in "${first_list[@]}"
 do
 	for val_j in "${second_list[@]}"

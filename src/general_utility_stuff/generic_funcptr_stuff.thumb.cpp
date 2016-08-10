@@ -16,40 +16,22 @@
 // with GBA Project Template.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "interrupt_stuff.hpp"
-#include "gfx_reg_stuff.hpp"
-//#include "bg_helper_class.hpp"
-
-#include "maxmod.h"
+#include "generic_funcptr_stuff.hpp"
 
 
-
-
-// This function is currently only intended to service the VBlank
-// and Timer 0 interrupts.  I might add support for other interrupts later
-// on, but there is currently no need.
-void isr_main()
+extern "C"
 {
-	// Before we leave this function, we have to acknowledge that VBlank
-	// IRQ was serviced.
-	if ( reg_if & irq_vblank )
-	{
-		//mmFrame();
-		isr_table[intr_vblank]();
-		
-		// Acknowledge the VBlank interrupt.
-		reg_ifbios = irq_vblank;
-		reg_if = irq_vblank;
-	}
-	
-	
-	if ( reg_if & irq_timer0 )
-	{
-		isr_table[intr_timer0]();
-		
-		// Acknowledge the timer 0 interrupt.
-		reg_ifbios = irq_timer0;
-		reg_if = irq_timer0;
-	}
+
+void generic_binary_func_shared_backend( void* a, void* b,
+	generic_void_2arg_fp the_fp )
+{
+	(*the_fp)( a, b );
 }
 
+u32 generic_u32_func_shared_backend( void* a, void* b,
+	generic_u32_2arg_fp the_fp )
+{
+	return (*the_fp)( a, b );
+}
+
+}
