@@ -297,23 +297,190 @@ void* sa_list_backend::unlink_at( s32 node_index )
 	return node_at_node_index.ptr_to_the_data;
 }
 
+s32 sa_list_backend::insertion_sort()
+{
+	s32& the_front_node_index = get_front_node_index();
+	
+	// Don't do anything if this list has zero or one nodes.
+	if ( the_front_node_index < 0 )
+	{
+		return the_front_node_index;
+	}
+	//if ( get_node_at(the_front_node_index).next_node_index() < 0 )
+	if ( get_next_node_index_at_node_index(the_front_node_index) < 0 )
+	{
+		return the_front_node_index;
+	}
+	
+	
+	////s32 temp_front_node_index = -1;
+	////sa_list_backend<type> sorted_list( &temp_front_node_index, 
+	////	the_node_array, ptr_to_the_free_list_backend, 
+	////	total_num_nodes );
+	//externally_allocated_sa_list<type> sorted_list( the_node_array, 
+	//	ptr_to_the_free_list_backend, get_total_num_nodes() );
+	sa_list_backend sorted_list(*this);
+	
+	s32& temp_front_node_index = sorted_list.get_front_node_index();
+	
+	
+	static constexpr u32 prev_index_low_arr_size = 20;
+	s32 prev_index_low_arr[prev_index_low_arr_size];
+	
+	//for ( s32 i=prev_index_low_arr_size-1; i>=0; --i )
+	//{
+	//	prev_index_low_arr[i] = 0;
+	//}
+	arr_memfill32( prev_index_low_arr, 0, prev_index_low_arr_size );
+	
+	
+	s32 curr_node_index = temp_front_node_index;
+	
+	for ( s32 i=the_front_node_index;
+		i!=-1;  )
+		//i=get_node_at(i).next_node_index() )
+	{
+		u32 num_extra_low_indices = 0;
+		
+		
+		s32 index_low = i;
+		
+		//sa_list_node<type>* node_at_j;
+		sa_list_node_contents node_at_j;
+		
+		//type* the_data_at_index_low = &get_node_at(index_low).the_data;
+		void* the_data_at_index_low = get_node_data_at(index_low);
+		
+		// Find the lowest value at or after i.
+		for ( s32 j=index_low;
+			j!=-1; 
+			//j=node_at_j->next_node_index() )
+			j=node_at_j.next_node_index() )
+		{
+			//node_at_j = &get_node_at(j);
+			node_at_j = get_node_contents_at(j);
+			
+			//if ( node_at_j->the_data 
+			//	< *the_data_at_index_low )
+			if ( call_specific_type_less_func( node_at_j.ptr_to_the_data,
+				the_data_at_index_low ) )
+			{
+				if ( num_extra_low_indices + 1 
+					< prev_index_low_arr_size )
+				{
+					prev_index_low_arr[num_extra_low_indices++]
+						= index_low;
+				}
+				
+				index_low = j;
+				
+				//the_data_at_index_low = &get_node_at(index_low).the
+				//the_data_at_index_low = &node_at_j->the_data;
+				the_data_at_index_low = node_at_j.ptr_to_the_data;
+			}
+		}
+		
+		//sa_list_node<type>& node_at_index_low = get_node_at(index_low);
+		////const type data_to_move = node_at_index_low.the_data;
+		////type&& data_to_move = node_at_index_low.the_data
+		sa_list_node_contents node_at_index_low = get_node_contents_at
+			(index_low);
+		
+		if ( i == index_low )
+		{
+			i = node_at_index_low.next_node_index();
+		}
+		
+		//////erase_at(index_low);
+		////type&& data_to_move = unlink_at(index_low);
+		//void* data_to_move = unlink_at(index_low);
+		void* data_to_move = node_at_index_low.ptr_to_the_data;
+		unlink_at(index_low);
+		
+		if ( temp_front_node_index < 0 )
+		{
+			//sorted_list.push_front(std::move(data_to_move));
+			sorted_list.push_front( data_to_move, true );
+			curr_node_index = temp_front_node_index;
+		}
+		else
+		{
+			//sorted_list.insert_after( curr_node_index, 
+			//	std::move(data_to_move) );
+			//curr_node_index = sorted_list.get_node_at(curr_node_index)
+			//	.next_node_index();
+			sorted_list.insert_after( curr_node_index,
+				data_to_move, true );
+			curr_node_index = sorted_list.get_next_node_index_at_node_index
+				(curr_node_index);
+		}
+		
+		
+		for ( u32 j=0; j<num_extra_low_indices; ++j )
+		{
+			s32& curr_prev_index_low = prev_index_low_arr[j];
+			
+			//sa_list_node<type>& node_at_curr_prev_index_low 
+			//	= get_node_at(curr_prev_index_low);
+			sa_list_node_contents node_at_curr_prev_index_low
+				= get_node_contents_at(curr_prev_index_low);
+			
+			if ( i == curr_prev_index_low )
+			{
+				i = node_at_curr_prev_index_low.next_node_index();
+			}
+			
+			//type&& curr_data_to_move = unlink_at(curr_prev_index_low);
+			void* curr_data_to_move = node_at_curr_prev_index_low
+				.ptr_to_the_data;
+			unlink_at(curr_prev_index_low);
+			
+			//if ( temp_front_node_index < 0 )
+			//{
+			//	//sorted_list.push_front(std::move(data_to_move));
+			//	sorted_list.push_front( data_to_move, true );
+			//	curr_node_index = temp_front_node_index;
+			//}
+			//else
+			{
+				//sorted_list.insert_after( curr_node_index, 
+				//	std::move(curr_data_to_move) );
+				//curr_node_index = sorted_list.get_node_at
+				//	(curr_node_index).next_node_index();
+				sorted_list.insert_after( curr_node_index,
+					curr_data_to_move, true );
+				curr_node_index = sorted_list
+					.get_next_node_index_at_node_index(curr_node_index);
+			}
+		}
+	}
+	
+	
+	the_front_node_index = temp_front_node_index;
+	
+	temp_front_node_index = -1;
+	
+	
+	return the_front_node_index;
+}
 
 
 s32 sa_list_backend::merge_sort()
 {
-	u32 num_remaining_sublists = 0;
+	//u32 num_remaining_sublists = 0;
+	//
+	//sa_list_node_contents node_at_i;
+	//
+	//for ( s32 i=get_front_node_index();
+	//	i>=0;
+	//	i=node_at_i.next_node_index() )
+	//{
+	//	node_at_i = get_node_contents_at(i);
+	//	
+	//	
+	//}
 	
-	sa_list_node_contents node_at_i;
-	
-	for ( s32 i=get_front_node_index();
-		i>=0;
-		i=node_at_i.next_node_index() )
-	{
-		node_at_i = get_node_contents_at(i);
-		
-		
-	}
-	
+	return get_front_node_index();
 	
 }
 

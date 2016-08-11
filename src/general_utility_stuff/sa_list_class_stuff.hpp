@@ -187,7 +187,6 @@ public:		// functions
 	static inline auto get_the_specific_type_copy_fp()
 	{
 		return get_generic_void_2arg_fp(&specific_type_copy);
-		//return get_generic_void_2arg_fp(&specific_type_copy_2<type>);
 	}
 	static inline auto get_the_specific_type_move_fp()
 	{
@@ -293,6 +292,10 @@ protected:		// functions
 			s_get_node_index_pair_fp,
 			s_conv_node_to_contents_fp );
 	}
+	inline sa_list_backend( sa_list_backend& to_copy )
+	{
+		init(to_copy);
+	}
 	
 	void init( void* n_the_node_array, 
 		sa_free_list_backend* n_ptr_to_the_free_list_backend,
@@ -307,6 +310,24 @@ protected:		// functions
 		decltype(get_node_data_fp) n_get_node_data_fp, 
 		decltype(get_node_index_pair_fp) n_get_node_index_pair_fp,
 		decltype(conv_node_to_contents_fp) n_conv_node_to_contents_fp );
+	
+	inline void init( sa_list_backend& to_copy )
+	{
+		init( to_copy.get_the_node_array(), 
+			to_copy.get_ptr_to_the_free_list_backend(),
+			to_copy.get_total_num_nodes(), 
+			to_copy.get_specific_type_size(),
+			to_copy.get_whole_node_size(), 
+			
+			to_copy.get_the_specific_type_copy_fp(), 
+			to_copy.get_the_specific_type_move_fp(), 
+			to_copy.get_the_specific_type_reset_fp(),
+			to_copy.get_the_specific_type_less_fp(), 
+			
+			to_copy.get_the_get_node_data_fp(), 
+			to_copy.get_the_get_node_index_pair_fp(),
+			to_copy.get_the_conv_node_to_contents_fp() );
+	}
 	
 	
 	inline s32& get_front_node_index()
@@ -356,6 +377,35 @@ protected:		// functions
 	inline u32 get_whole_node_size() const
 	{
 		return whole_node_size;
+	}
+	
+	inline generic_void_2arg_fp get_the_specific_type_copy_fp()
+	{
+		return specific_type_copy_fp;
+	}
+	inline generic_void_2arg_fp get_the_specific_type_move_fp()
+	{
+		return specific_type_move_fp;
+	}
+	inline generic_void_1arg_fp get_the_specific_type_reset_fp()
+	{
+		return specific_type_reset_fp;
+	}
+	inline generic_u32_2arg_fp get_the_specific_type_less_fp()
+	{
+		return specific_type_less_fp;
+	}
+	inline generic_void_ptr_1arg_fp get_the_get_node_data_fp()
+	{
+		return get_node_data_fp;
+	}
+	inline generic_vec2_s16_ptr_1arg_fp get_the_get_node_index_pair_fp()
+	{
+		return get_node_index_pair_fp;
+	}
+	inline generic_void_2arg_fp get_the_conv_node_to_contents_fp()
+	{
+		return conv_node_to_contents_fp;
 	}
 	
 	
@@ -531,6 +581,7 @@ protected:		// functions
 	//s32 insertion_sort( void* the_externally_allocated_sa_list, 
 	//	s32 (*ptr_to_insertion_sort_inline)() ) 
 	//	__attribute__((_iwram_code));
+	s32 insertion_sort() __attribute__((_iwram_code));
 	
 	s32 merge_sort() __attribute__((_iwram_code));
 	
@@ -1255,9 +1306,7 @@ public:		// functions
 	}
 	
 	
-protected:		// functions
-	//s32 insertion_sort() __attribute__((noinline))
-	inline s32 insertion_sort_inline()
+	inline s32 insertion_sort_old_3()
 	{
 		s32& the_front_node_index = get_front_node_index();
 		
@@ -1394,14 +1443,11 @@ protected:		// functions
 		return the_front_node_index;
 	}
 	
-public:		// functions
-	//inline s32 call_insertion_sort_in_iwram()
-	s32 insertion_sort()
+	inline s32 insertion_sort()
 	{
-		//return the_sa_list_backend.insertion_sort( this,
-		//	&externally_allocated_sa_list<type>::insertion_sort_inline );
-		return insertion_sort_inline();
+		return the_sa_list_backend.insertion_sort();
 	}
+	
 	
 	inline s32 merge_sort()
 	{

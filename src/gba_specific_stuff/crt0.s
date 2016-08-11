@@ -156,6 +156,14 @@ next:
 	long_call_via_r4_fata_type_2
 	
 	
+.L_copy_text_hot_code_to_iwram:
+	ldr r0, =text_hot_iwram_start
+	ldr r1, =text_hot_rom_start
+	
+	ldr r2, =text_hot_section_size
+	long_call_via_r4_fata_type_2
+	
+	
 	
 	@ Clear the .bss section (Fill with 0x00)
 .L_clear_bss:
@@ -244,34 +252,11 @@ next:
 	long_call_via_r4_fata_type_2
 	
 	
-.L_copy_preinit_array_section_from_rom_to_ewram:
-	ldr r0, =__preinit_array_start
-	ldr r1, =__preinit_array_load
-	ldr r2, =__preinit_array_end
-	sub r2, r2, r0
-	long_call_via_r4_fata_type_2
-	
 .L_copy_init_array_section_from_rom_to_ewram:
 	ldr r0, =__init_array_start
 	ldr r1, =__init_array_load
 	ldr r2, =__init_array_end
 	sub r2, r2, r0
-	long_call_via_r4_fata_type_2
-	
-.L_copy_fini_array_section_from_rom_to_ewram:
-	ldr r0, =__fini_array_start
-	ldr r1, =__fini_array_load
-	ldr r2, =__fini_array_end
-	sub r2, r2, r0
-	
-	long_call_via_r4_fata_type_2
-	
-.L_copy_jcr_section_from_rom_to_ewram:
-	ldr r0, =__jcr_start
-	ldr r1, =__jcr_load
-	ldr r2, =__jcr_end
-	sub r2, r2, r0
-	
 	long_call_via_r4_fata_type_2
 	
 	
@@ -327,8 +312,8 @@ _blx_r3_stub:
 
 
 
-@.section ".asm_text","ax",%progbits
-.text
+.section ".asm_text","ax",%progbits
+@.text
 .align 2
 .do_thumb
 .thumb_func

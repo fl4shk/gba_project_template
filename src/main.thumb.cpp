@@ -186,7 +186,7 @@ void sa_list_test()
 	profile_start();
 	//sort_test_list();
 	//test_list.insertion_sort_old_2();
-	test_list.insertion_sort();
+	//test_list.insertion_sort();
 	//test_list.merge_sort();
 	show_profile_stop();
 	
