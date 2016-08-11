@@ -596,13 +596,13 @@ public:		// functions
 			extras_type::get_the_get_node_index_pair_fp(),
 			extras_type::get_the_conv_node_to_contents_fp() );
 		
-		//auto specific_type_copy = []( type* a, type* b ) -> void 
+		//static auto specific_type_copy = []( type* a, type* b ) -> void 
 		//	{ *a = *b; };
-		//auto specific_type_move = []( type* a, type* b ) -> void
+		//static auto specific_type_move = []( type* a, type* b ) -> void
 		//	{ *a = std::move(*b); };
-		//auto specific_type_reset = []( type* a ) -> void
+		//static auto specific_type_reset = []( type* a ) -> void
 		//	{ *a = type(); };
-		//auto specific_type_less = []( type* a, type* b ) -> u32
+		//static auto specific_type_less = []( type* a, type* b ) -> u32
 		//	{ return (*a) < (*b); };
 		//
 		//
@@ -610,6 +610,7 @@ public:		// functions
 		//the_sa_list_backend.init( get_the_node_array(),
 		//	ptr_to_the_free_list_backend, get_total_num_nodes(),
 		//	sizeof(type), sizeof(sa_list_node<type>),
+		//	
 		//	reinterpret_cast<generic_void_2arg_fp>(&specific_type_copy),
 		//	reinterpret_cast<generic_void_2arg_fp>(&specific_type_move),
 		//	reinterpret_cast<generic_void_1arg_fp>(&specific_type_reset),

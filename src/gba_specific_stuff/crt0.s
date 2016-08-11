@@ -244,21 +244,38 @@ next:
 	long_call_via_r4_fata_type_2
 	
 	
+.L_copy_preinit_array_section_from_rom_to_ewram:
+	ldr r0, =__preinit_array_start
+	ldr r1, =__preinit_array_load
+	ldr r2, =__preinit_array_end
+	sub r2, r2, r0
+	long_call_via_r4_fata_type_2
+	
 .L_copy_init_array_section_from_rom_to_ewram:
 	ldr r0, =__init_array_start
 	ldr r1, =__init_array_load
 	ldr r2, =__init_array_end
-	
 	sub r2, r2, r0
-	@lsr r2, #0x02
+	long_call_via_r4_fata_type_2
 	
+.L_copy_fini_array_section_from_rom_to_ewram:
+	ldr r0, =__fini_array_start
+	ldr r1, =__fini_array_load
+	ldr r2, =__fini_array_end
+	sub r2, r2, r0
 	
-	@@ldr r4, =memcpy
-	@mov lr, pc
-	@bx r4
+	long_call_via_r4_fata_type_2
+	
+.L_copy_jcr_section_from_rom_to_ewram:
+	ldr r0, =__jcr_start
+	ldr r1, =__jcr_load
+	ldr r2, =__jcr_end
+	sub r2, r2, r0
+	
 	long_call_via_r4_fata_type_2
 	
 	
+.L_call_the__libc_init_array:
 	@@ Call the global C++ constructors
 	@ldr r4, =__libc_init_array
 	@mov lr, pc

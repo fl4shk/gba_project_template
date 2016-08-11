@@ -31,32 +31,10 @@ SECTIONS
 	
 	startup_section_size = SIZEOF(.startup);
 	
-	/* The reason why the .iwram_code stuff has been moved to this part of
-	 * this linker script is to work around a bug in GCC that causes the
-	 * section attribute to be ignored for template functions. */
-	/* Code to be copied to IWRAM */
-	.iwram_code :
-	{
-		/* The start of code to be copied to IWRAM*/
-		iwram_code_rom_start = LOADADDR(.iwram_code);
-		
-		iwram_code_iwram_start = .;
-		
-		/* *(.iwram_code); */
-		
-		/* .text.hot* is put into IWRAM.  This is to bypass a bug in GCC
-		 * that causes the section attribute to be ignored for template
-		 * functions. */
-		*( .iwram_code .text.hot* );
-		
-		. = ALIGN(4);
-	} >iwram AT >rom
-	
-	iwram_code_section_size = SIZEOF(.iwram_code);
 	
 	.text :
 	{
-		CREATE_OBJECT_SYMBOLS
+		/* CREATE_OBJECT_SYMBOLS */
 		 *(.text .text.* .gnu.linkonce.t.*)
 		/* *(.text .gnu.linkonce.t.*) */
 		*(.plt)
@@ -64,8 +42,8 @@ SECTIONS
 		*(.glue_7t) *(.glue_7)
 		
 		
-		. = ALIGN(4);
 		
+		/* 
 		KEEP(*crtbegin.o(.ctors))
 		KEEP(*(EXCLUDE_FILE(*crtend.o) .ctors))
 		KEEP(*(SORT(.ctors.*)))
@@ -74,12 +52,16 @@ SECTIONS
 		KEEP(*(EXCLUDE_FILE(*crtend.o) .dtors))
 		KEEP(*(SORT(.dtors.*)))
 		KEEP(*ctrend.o(.dtors))
+		*/
 		
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
+		/* SORT(CONSTRUCTORS); */
 		
-		
+		/*
 		*(.init)
 		*(.fini)
+		*/
+		. = ALIGN(4);
 	} >rom
 	
 	text_section_size = SIZEOF(.text);
@@ -93,7 +75,45 @@ SECTIONS
 	
 	.ARM.attributes : { *(.ARM.attributes) } >rom
 	
+	.ctors :
+	{
+		/*	gcc uses crtbegin.o to find the start of the constructors, so
+			we make sure it is first.  Because this is a wildcard, it
+			doesn't matter if the user does not actually link against
+			crtbegin.o; the linker won't look for a file to match a
+			wildcard.  The wildcard also means that it doesn't matter which
+			directory crtbegin.o is in.  */
+		KEEP (*crtbegin.o(.ctors))
+		KEEP (*(EXCLUDE_FILE (*crtend.o) .ctors))
+		KEEP (*(SORT(.ctors.*)))
+		KEEP (*(.ctors))
+		. = ALIGN(4);   /* REQUIRED. LD is flaky without it. */
+	} >rom = 0
 	
+	.dtors :
+	{
+		KEEP (*crtbegin.o(.dtors))
+		KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))
+		KEEP (*(SORT(.dtors.*)))
+		KEEP (*(.dtors))
+		. = ALIGN(4);   /* REQUIRED. LD is flaky without it. */
+	} >rom = 0
+	
+	
+	.eh_frame :
+	{
+		KEEP (*(.eh_frame))
+		. = ALIGN(4);   /* REQUIRED. LD is flaky without it. */
+	} >rom = 0
+	
+	.gcc_except_table :
+	{
+		*(.gcc_except_table)
+		. = ALIGN(4);   /* REQUIRED. LD is flaky without it. */
+	} >rom = 0
+	
+	
+	/* 
 	.init_array : ALIGN(4)
 	{
 		__init_array_load = LOADADDR(.init_array);
@@ -102,9 +122,56 @@ SECTIONS
 		*(SORT_BY_INIT_PRIORITY(.init_array.*))
 		__init_array_end = .;
 	} >ewram AT >rom
+	init_array_section_size = SIZEOF(.init_array); 
+	*/
 	
+	
+	.preinit_array : ALIGN(4)
+	{
+		__preinit_array_load = LOADADDR(.preinit_array);
+		__preinit_array_start = ABSOLUTE(.);
+		KEEP (*(.preinit_array))
+		__preinit_array_end = ABSOLUTE(.);
+	} >ewram AT >rom
+	
+	/* __init_lma = __preinit_lma + SIZEOF(.preinit_array); */
+	preinit_array_section_size = SIZEOF(.preinit_array);
+	
+	.init_array : ALIGN(4)
+	{
+		__init_array_load = LOADADDR(.init_array);
+		__init_array_start = ABSOLUTE(.);
+		KEEP (*(SORT(.init_array.*)))
+		KEEP (*(.init_array))
+		__init_array_end = ABSOLUTE(.);
+	} >ewram AT >rom
+	
+	/* __fini_lma = __init_lma + SIZEOF(.init_array); */
 	init_array_section_size = SIZEOF(.init_array);
 	
+	.fini_array : ALIGN(4)
+	{
+		__fini_array_load = LOADADDR(.fini_array);
+		__fini_array_start = ABSOLUTE(.);
+		KEEP (*(SORT(.fini_array.*)))
+		KEEP (*(.fini_array))
+		__fini_array_end = ABSOLUTE(.);
+	} >ewram AT >rom
+	
+	fini_array_section_size = SIZEOF(.fini_array);
+	
+	/* __jcr_lma = __fini_lma + SIZEOF(.fini_array); */
+	/* .jcr        ALIGN(4)    : AT (__jcr_lma) { KEEP (*(.jcr)) } >ewram */
+	
+	.jcr : ALIGN(4)
+	{
+		__jcr_load = LOADADDR(.jcr);
+		__jcr_start = ABSOLUTE(.);
+		KEEP (*(.jcr))
+		__jcr_end = ABSOLUTE(.);
+	} >ewram AT >rom
+	
+	jcr_section_size = SIZEOF(.jcr);
 	
 	/* Initialized data in EWRAM */
 	.data :
@@ -135,6 +202,28 @@ SECTIONS
 	
 	iwram_data_section_size = SIZEOF(.iwram_data);
 	
+	
+	/* There's a bug in GCC that causes the section attribute of template
+	 * functions to be ignored, */
+	/* Code to be copied to IWRAM */
+	.iwram_code :
+	{
+		/* The start of code to be copied to IWRAM*/
+		iwram_code_rom_start = LOADADDR(.iwram_code);
+		
+		iwram_code_iwram_start = .;
+		
+		*(.iwram_code); 
+		
+		/* .text.hot* is put into IWRAM.  This is to bypass a bug in GCC
+		 * that causes the section attribute to be ignored for template
+		 * functions. */
+		*(.text.hot.*);
+		
+		. = ALIGN(4);
+	} >iwram AT >rom
+	
+	iwram_code_section_size = SIZEOF(.iwram_code);
 	
 	
 	/* MaxMOD puts code in the .iwram segment, so it will be treated as such
@@ -209,7 +298,7 @@ SECTIONS
 	bss_section_size = SIZEOF(.bss);
 	
 	
-	total_ewram_var_size = init_array_section_size + data_section_size + bss_section_size;
+	total_ewram_var_size = preinit_array_section_size + init_array_section_size + fini_array_section_size + data_section_size + bss_section_size;
 	total_ewram_code_size = ewram_code_section_size;
 	total_ewram_usage = total_ewram_var_size + total_ewram_code_size;
 	
