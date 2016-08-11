@@ -23,16 +23,17 @@
 void sa_list_backend::init( void* n_the_node_array, 
 	sa_free_list_backend* n_ptr_to_the_free_list_backend,
 	u32 n_total_num_nodes, u32 n_specific_type_size,
-	u32 n_whole_node_size,
+	u32 n_whole_node_size, 
 	
-	decltype(specific_type_copy_fp) n_specific_type_copy_fp, 
-	decltype(specific_type_move_fp) n_specific_type_move_fp, 
-	decltype(specific_type_reset_fp) n_specific_type_reset_fp,
-	decltype(specific_type_less_fp) n_specific_type_less_fp, 
+	generic_void_2arg_fp n_specific_type_copy_fp, 
+	generic_void_2arg_fp n_specific_type_move_fp,
+	generic_void_1arg_fp n_specific_type_reset_fp, 
+	generic_u32_2arg_fp n_specific_type_less_fp, 
 	
-	decltype(get_node_data_fp) n_get_node_data_fp, 
-	decltype(get_node_index_pair_fp) n_get_node_index_pair_fp,
-	decltype(conv_node_to_contents_fp) n_conv_node_to_contents_fp )
+	generic_void_ptr_1arg_fp n_get_node_data_fp, 
+	generic_vec2_s16_ptr_1arg_fp n_get_node_index_pair_fp,
+	generic_void_2arg_fp n_conv_node_to_contents_fp,
+	generic_void_2arg_fp n_loop_with_j_during_insertion_sort_fp )
 {
 	the_node_array = n_the_node_array;
 	ptr_to_the_free_list_backend = n_ptr_to_the_free_list_backend;
@@ -50,8 +51,31 @@ void sa_list_backend::init( void* n_the_node_array,
 	get_node_index_pair_fp = n_get_node_index_pair_fp;
 	
 	conv_node_to_contents_fp = n_conv_node_to_contents_fp;
+	loop_with_j_during_insertion_sort_fp
+		= n_loop_with_j_during_insertion_sort_fp;
 }
 
+void sa_list_backend::fully_deallocate()
+{
+	s32& the_front_node_index = get_front_node_index();
+	//while ( get_front_node_index() != -1 )
+	while ( the_front_node_index >= 0 )
+	{
+		//erase_at(get_front_node_index());
+		erase_at(the_front_node_index);
+	}
+}
+
+void sa_list_backend::fully_deallocate_via_unlink()
+{
+	s32& the_front_node_index = get_front_node_index();
+	//while ( get_front_node_index() != -1 )
+	while ( the_front_node_index >= 0 )
+	{
+		//unlink_at(get_front_node_index());
+		unlink_at(the_front_node_index);
+	}
+}
 
 
 s32 sa_list_backend::push_front( const void* to_push,
@@ -312,7 +336,6 @@ s32 sa_list_backend::insertion_sort()
 		return the_front_node_index;
 	}
 	
-	
 	////s32 temp_front_node_index = -1;
 	////sa_list_backend<type> sorted_list( &temp_front_node_index, 
 	////	the_node_array, ptr_to_the_free_list_backend, 
@@ -323,66 +346,20 @@ s32 sa_list_backend::insertion_sort()
 	
 	s32& temp_front_node_index = sorted_list.get_front_node_index();
 	
-	
-	static constexpr u32 prev_index_low_arr_size = 20;
-	s32 prev_index_low_arr[prev_index_low_arr_size];
-	
-	//for ( s32 i=prev_index_low_arr_size-1; i>=0; --i )
-	//{
-	//	prev_index_low_arr[i] = 0;
-	//}
-	arr_memfill32( prev_index_low_arr, 0, prev_index_low_arr_size );
-	
-	
 	s32 curr_node_index = temp_front_node_index;
 	
 	for ( s32 i=the_front_node_index;
 		i!=-1;  )
-		//i=get_node_at(i).next_node_index() )
+		////i=get_node_at(i).next_node_index() )
+		//i=get_next_node_index_at_node_index(i) )
 	{
-		u32 num_extra_low_indices = 0;
-		
-		
 		s32 index_low = i;
 		
-		//sa_list_node<type>* node_at_j;
-		sa_list_node_contents node_at_j;
-		
-		//type* the_data_at_index_low = &get_node_at(index_low).the_data;
-		void* the_data_at_index_low = get_node_data_at(index_low);
-		
-		// Find the lowest value at or after i.
-		for ( s32 j=index_low;
-			j!=-1; 
-			//j=node_at_j->next_node_index() )
-			j=node_at_j.next_node_index() )
-		{
-			//node_at_j = &get_node_at(j);
-			node_at_j = get_node_contents_at(j);
-			
-			//if ( node_at_j->the_data 
-			//	< *the_data_at_index_low )
-			if ( call_specific_type_less_func( node_at_j.ptr_to_the_data,
-				the_data_at_index_low ) )
-			{
-				if ( num_extra_low_indices + 1 
-					< prev_index_low_arr_size )
-				{
-					prev_index_low_arr[num_extra_low_indices++]
-						= index_low;
-				}
-				
-				index_low = j;
-				
-				//the_data_at_index_low = &get_node_at(index_low).the
-				//the_data_at_index_low = &node_at_j->the_data;
-				the_data_at_index_low = node_at_j.ptr_to_the_data;
-			}
-		}
+		(*get_the_loop_with_j_during_insertion_sort_fp())
+			( get_the_node_array(), &index_low );
 		
 		//sa_list_node<type>& node_at_index_low = get_node_at(index_low);
-		////const type data_to_move = node_at_index_low.the_data;
-		////type&& data_to_move = node_at_index_low.the_data
+		//const type data_to_move = node_at_index_low.the_data;
 		sa_list_node_contents node_at_index_low = get_node_contents_at
 			(index_low);
 		
@@ -391,68 +368,27 @@ s32 sa_list_backend::insertion_sort()
 			i = node_at_index_low.next_node_index();
 		}
 		
-		//////erase_at(index_low);
-		////type&& data_to_move = unlink_at(index_low);
-		//void* data_to_move = unlink_at(index_low);
-		void* data_to_move = node_at_index_low.ptr_to_the_data;
-		unlink_at(index_low);
+		//erase_at(index_low);
+		void* data_to_move = unlink_at(index_low);
 		
 		if ( temp_front_node_index < 0 )
 		{
-			//sorted_list.push_front(std::move(data_to_move));
+			//sorted_list.push_front(data_to_move);
 			sorted_list.push_front( data_to_move, true );
 			curr_node_index = temp_front_node_index;
 		}
 		else
 		{
-			//sorted_list.insert_after( curr_node_index, 
-			//	std::move(data_to_move) );
+			//sorted_list.insert_after( curr_node_index, data_to_move );
 			//curr_node_index = sorted_list.get_node_at(curr_node_index)
 			//	.next_node_index();
-			sorted_list.insert_after( curr_node_index,
-				data_to_move, true );
+			
+			sorted_list.insert_after( curr_node_index, data_to_move, 
+				true );
 			curr_node_index = sorted_list.get_next_node_index_at_node_index
 				(curr_node_index);
 		}
 		
-		
-		for ( u32 j=0; j<num_extra_low_indices; ++j )
-		{
-			s32& curr_prev_index_low = prev_index_low_arr[j];
-			
-			//sa_list_node<type>& node_at_curr_prev_index_low 
-			//	= get_node_at(curr_prev_index_low);
-			sa_list_node_contents node_at_curr_prev_index_low
-				= get_node_contents_at(curr_prev_index_low);
-			
-			if ( i == curr_prev_index_low )
-			{
-				i = node_at_curr_prev_index_low.next_node_index();
-			}
-			
-			//type&& curr_data_to_move = unlink_at(curr_prev_index_low);
-			void* curr_data_to_move = node_at_curr_prev_index_low
-				.ptr_to_the_data;
-			unlink_at(curr_prev_index_low);
-			
-			//if ( temp_front_node_index < 0 )
-			//{
-			//	//sorted_list.push_front(std::move(data_to_move));
-			//	sorted_list.push_front( data_to_move, true );
-			//	curr_node_index = temp_front_node_index;
-			//}
-			//else
-			{
-				//sorted_list.insert_after( curr_node_index, 
-				//	std::move(curr_data_to_move) );
-				//curr_node_index = sorted_list.get_node_at
-				//	(curr_node_index).next_node_index();
-				sorted_list.insert_after( curr_node_index,
-					curr_data_to_move, true );
-				curr_node_index = sorted_list
-					.get_next_node_index_at_node_index(curr_node_index);
-			}
-		}
 	}
 	
 	
@@ -481,6 +417,5 @@ s32 sa_list_backend::merge_sort()
 	//}
 	
 	return get_front_node_index();
-	
 }
 

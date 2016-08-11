@@ -193,7 +193,9 @@ EFILES=$(CXX_EFILES) $(ARM_CXX_EFILES)
 all : all_pre $(OFILES)
 	@echo
 	$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_map.txt
-	$(OBJCOPY) -O binary -R .iwram -R .sram $(PROJ).elf $(PROJ).gba
+	@#$(OBJCOPY) -O binary -R .iwram -R .sram $(PROJ).elf $(PROJ).gba
+	$(OBJCOPY) -O binary -S -g -R .iwram -R .sram $(PROJ).elf $(PROJ).gba
+	@#$(OBJCOPY) -O binary -S -g $(PROJ).elf $(PROJ).gba
 	./do_gbafix.sh
 
 all_objs : all_pre $(OFILES)

@@ -161,8 +161,11 @@ next:
 	ldr r1, =text_hot_rom_start
 	
 	ldr r2, =text_hot_section_size
+	@cmp r2, #0x0
+	@ble .L_done_copying_text_hot_to_iwram
 	long_call_via_r4_fata_type_2
 	
+.L_done_copying_text_hot_to_iwram:
 	
 	
 	@ Clear the .bss section (Fill with 0x00)

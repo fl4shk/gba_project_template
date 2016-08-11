@@ -94,6 +94,10 @@ protected:		// functions
 	{
 		the_externally_allocated_sa_list.fully_deallocate();
 	}
+	inline void fully_deallocate_via_unlink()
+	{
+		the_externally_allocated_sa_list.fully_deallocate_via_unlink();
+	}
 	
 	
 	inline s32 push_front( const type& to_push )
@@ -216,6 +220,10 @@ public:		// functions
 	{
 		specific_regular_sa_list_base::fully_deallocate();
 	}
+	inline void fully_deallocate_via_unlink()
+	{
+		specific_regular_sa_list_base::fully_deallocate_via_unlink();
+	}
 	
 	
 	inline s32 push_front( const type& to_push )
@@ -332,6 +340,10 @@ public:		// functions
 	inline void fully_deallocate()
 	{
 		specific_regular_sa_list_base::fully_deallocate();
+	}
+	inline void fully_deallocate_via_unlink()
+	{
+		specific_regular_sa_list_base::fully_deallocate_via_unlink();
 	}
 	
 	

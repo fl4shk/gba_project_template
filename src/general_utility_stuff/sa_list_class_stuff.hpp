@@ -141,43 +141,76 @@ class sa_list_extras
 {
 protected:		// functions
 	static void specific_type_copy( type* a, type* b )
-		__attribute__((_template_iwram_code))
+		__attribute__((_text_hot_section))
 	{
 		*a = *b;
 	}
 	static void specific_type_move( type* a, type* b )
-		__attribute__((_template_iwram_code))
+		__attribute__((_text_hot_section))
 	{
 		*a = std::move(*b);
 	}
 	static void specific_type_reset( type* to_reset )
-		__attribute__((_template_iwram_code))
+		__attribute__((_text_hot_section))
 	{
 		*to_reset = type();
 	}
 	static u32 specific_type_less( type* a, type* b )
-		__attribute__((_template_iwram_code))
+		__attribute__((_text_hot_section))
 	{
 		return ( (*a) < (*b) );
 	}
 	
 	static void* get_sa_list_node_data( sa_list_node<type>* to_get_from )
-		__attribute__((_template_iwram_code))
+		__attribute__((_text_hot_section))
 	{
 		return &to_get_from->the_data;
 	}
 	static vec2_s16* get_sa_list_node_index_pair
 		( sa_list_node<type>* to_get_from )
-		__attribute__((_template_iwram_code))
+		__attribute__((_text_hot_section))
 	{
 		return &to_get_from->node_index_pair;
 	}
 	static void conv_node_to_contents( sa_list_node_contents* ret,
 		sa_list_node<type>* to_convert )
-		__attribute__((_template_iwram_code))
+		__attribute__((_text_hot_section))
 	{
 		ret->ptr_to_the_data = &to_convert->the_data;
 		ret->ptr_to_node_index_pair = &to_convert->node_index_pair;
+	}
+	
+	// Instead of having the ENTIRE insertion_sort function be duplicated
+	// for EVERY externally_allocated_sa_list instantiation, only duplicate
+	// the inner loop.  This seems pretty good to me.
+	static void loop_with_j_during_insertion_sort
+		( sa_list_node<type>* the_node_array, s32* ptr_to_index_low )
+		__attribute__((_text_hot_section))
+	{
+		sa_list_node<type>* node_at_j;
+		
+		s32& index_low = *ptr_to_index_low;
+		
+		type* the_data_at_index_low = &(the_node_array[index_low]
+			.the_data);
+		
+		// Find the lowest value at or after i.
+		for ( s32 j=index_low;
+			j!=-1; 
+			j=node_at_j->next_node_index() )
+		{
+			//node_at_j = &get_node_at(j);
+			node_at_j = &(the_node_array[j]);
+			
+			//if ( node_at_j->the_data 
+			//	< get_node_at(index_low).the_data )
+			if ( node_at_j->the_data < *the_data_at_index_low )
+			{
+				index_low = j;
+				
+				the_data_at_index_low = &(node_at_j->the_data);
+			}
+		}
 	}
 	
 	
@@ -213,6 +246,12 @@ public:		// functions
 	static inline auto get_the_conv_node_to_contents_fp()
 	{
 		return get_generic_void_2arg_fp(&conv_node_to_contents);
+	}
+	
+	static inline auto get_the_loop_with_j_during_insertion_sort_fp()
+	{
+		return get_generic_void_2arg_fp
+			(&loop_with_j_during_insertion_sort);
 	}
 	
 } __attribute__((_align4));
@@ -256,8 +295,8 @@ protected:		// variables
 	generic_void_ptr_1arg_fp get_node_data_fp = 0;
 	generic_vec2_s16_ptr_1arg_fp get_node_index_pair_fp = 0;
 	
-	generic_void_2arg_fp conv_node_to_contents_fp = 0;
-	
+	generic_void_2arg_fp conv_node_to_contents_fp = 0,
+		loop_with_j_during_insertion_sort_fp = 0;
 	
 	template< typename type > friend class externally_allocated_sa_list;
 	
@@ -272,14 +311,15 @@ protected:		// functions
 		u32 s_total_num_nodes, u32 s_specific_type_size,
 		u32 s_whole_node_size, 
 		
-		decltype(specific_type_copy_fp) s_specific_type_copy_fp, 
-		decltype(specific_type_move_fp) s_specific_type_move_fp,
-		decltype(specific_type_reset_fp) s_specific_type_reset_fp, 
-		decltype(specific_type_less_fp) s_specific_type_less_fp, 
+		generic_void_2arg_fp s_specific_type_copy_fp, 
+		generic_void_2arg_fp s_specific_type_move_fp,
+		generic_void_1arg_fp s_specific_type_reset_fp, 
+		generic_u32_2arg_fp s_specific_type_less_fp, 
 		
-		decltype(get_node_data_fp) s_get_node_data_fp, 
-		decltype(get_node_index_pair_fp) s_get_node_index_pair_fp,
-		decltype(conv_node_to_contents_fp) s_conv_node_to_contents_fp )
+		generic_void_ptr_1arg_fp s_get_node_data_fp, 
+		generic_vec2_s16_ptr_1arg_fp s_get_node_index_pair_fp,
+		generic_void_2arg_fp s_conv_node_to_contents_fp,
+		generic_void_2arg_fp s_loop_with_j_during_insertion_sort_fp )
 	{
 		init( s_the_node_array, s_ptr_to_the_free_list_backend,
 			s_total_num_nodes, s_specific_type_size, s_whole_node_size,
@@ -290,7 +330,8 @@ protected:		// functions
 			
 			s_get_node_data_fp, 
 			s_get_node_index_pair_fp,
-			s_conv_node_to_contents_fp );
+			s_conv_node_to_contents_fp,
+			s_loop_with_j_during_insertion_sort_fp );
 	}
 	inline sa_list_backend( sa_list_backend& to_copy )
 	{
@@ -302,14 +343,15 @@ protected:		// functions
 		u32 n_total_num_nodes, u32 n_specific_type_size,
 		u32 n_whole_node_size, 
 		
-		decltype(specific_type_copy_fp) n_specific_type_copy_fp, 
-		decltype(specific_type_move_fp) n_specific_type_move_fp, 
-		decltype(specific_type_reset_fp) n_specific_type_reset_fp,
-		decltype(specific_type_less_fp) n_specific_type_less_fp, 
+		generic_void_2arg_fp n_specific_type_copy_fp, 
+		generic_void_2arg_fp n_specific_type_move_fp,
+		generic_void_1arg_fp n_specific_type_reset_fp, 
+		generic_u32_2arg_fp n_specific_type_less_fp, 
 		
-		decltype(get_node_data_fp) n_get_node_data_fp, 
-		decltype(get_node_index_pair_fp) n_get_node_index_pair_fp,
-		decltype(conv_node_to_contents_fp) n_conv_node_to_contents_fp );
+		generic_void_ptr_1arg_fp n_get_node_data_fp, 
+		generic_vec2_s16_ptr_1arg_fp n_get_node_index_pair_fp,
+		generic_void_2arg_fp n_conv_node_to_contents_fp,
+		generic_void_2arg_fp n_loop_with_j_during_insertion_sort_fp );
 	
 	inline void init( sa_list_backend& to_copy )
 	{
@@ -326,7 +368,8 @@ protected:		// functions
 			
 			to_copy.get_the_get_node_data_fp(), 
 			to_copy.get_the_get_node_index_pair_fp(),
-			to_copy.get_the_conv_node_to_contents_fp() );
+			to_copy.get_the_conv_node_to_contents_fp(),
+			to_copy.get_the_loop_with_j_during_insertion_sort_fp() );
 	}
 	
 	
@@ -407,11 +450,16 @@ protected:		// functions
 	{
 		return conv_node_to_contents_fp;
 	}
+	inline generic_void_2arg_fp
+		get_the_loop_with_j_during_insertion_sort_fp()
+	{
+		return loop_with_j_during_insertion_sort_fp;
+	}
 	
 	
 	inline uintptr_t get_addr_of_node_at( s32 node_index ) const
 	{
-		return reinterpret_cast<uintptr_t>(the_node_array)
+		return reinterpret_cast<uintptr_t>(get_the_node_array())
 			+ arr_byte_index_macro( whole_node_size, node_index );
 	}
 	
@@ -420,7 +468,7 @@ protected:		// functions
 	// These three functions are intended to be used sparingly.  They make
 	// most sense to use when their result is the ONLY part of a node that
 	// is relevant, and in that case it is still best to ONLY CALL them
-	// ONCE.
+	// ONCE PER NODE.
 	inline void* get_node_data_at_node_index( s32 node_index )
 	{
 		return get_node_data_at(get_addr_of_node_at(node_index));
@@ -443,11 +491,12 @@ protected:		// functions
 	
 	inline void* get_node_data_at( uintptr_t addr )
 	{
-		return (*get_node_data_fp)(reinterpret_cast<void*>(addr));
+		return (*get_the_get_node_data_fp())(reinterpret_cast<void*>
+			(addr));
 	}
 	inline vec2_s16* get_node_index_pair_at( uintptr_t addr )
 	{
-		return (*get_node_index_pair_fp)
+		return (*get_the_get_node_index_pair_fp())
 			(reinterpret_cast<void*>(addr));
 	}
 	inline s16& get_next_node_index_at( uintptr_t addr )
@@ -470,7 +519,7 @@ protected:		// functions
 		
 		sa_list_node_contents ret;
 		
-		(*conv_node_to_contents_fp)( &ret, 
+		(*get_the_conv_node_to_contents_fp())( &ret, 
 			reinterpret_cast<void*>(addr_of_node) );
 		
 		return ret;
@@ -480,24 +529,24 @@ protected:		// functions
 	// Make sure to call this with node DATA!
 	inline void copy_node_data( void* dst_node_data, void* src_node_data )
 	{
-		(*specific_type_copy_fp)( dst_node_data,
+		(*get_the_specific_type_copy_fp())( dst_node_data,
 			const_cast<void*>(src_node_data) );
 	}
 	inline void copy_node_data( void* dst_node_data, 
 		const void* src_node_data )
 	{
-		(*specific_type_copy_fp)( dst_node_data, 
+		(*get_the_specific_type_copy_fp())( dst_node_data, 
 			const_cast<void*>(src_node_data) );
 	}
 	inline void move_node_data( void* dst_node_data, void* src_node_data )
 	{
-		(*specific_type_move_fp)( dst_node_data,
+		(*get_the_specific_type_move_fp())( dst_node_data,
 			const_cast<void*>(src_node_data) );
 	}
 	inline void move_node_data( void* dst_node_data, 
 		const void* src_node_data )
 	{
-		(*specific_type_move_fp)( dst_node_data,
+		(*get_the_specific_type_move_fp())( dst_node_data,
 			const_cast<void*>(src_node_data) );
 	}
 	
@@ -542,48 +591,56 @@ protected:		// functions
 	inline u32 call_specific_type_less_func( void* node_a_data, 
 		void* node_b_data )
 	{
-		return (*specific_type_less_fp)( const_cast<void*>(node_a_data), 
+		return (*get_the_specific_type_less_fp())
+			( const_cast<void*>(node_a_data), 
 			const_cast<void*>(node_b_data) );
 	}
 	inline u32 call_specific_type_less_func( const void* node_a_data, 
 		void* node_b_data )
 	{
-		return (*specific_type_less_fp)( const_cast<void*>(node_a_data), 
+		return (*get_the_specific_type_less_fp())
+			( const_cast<void*>(node_a_data), 
 			const_cast<void*>(node_b_data) );
 	}
 	inline u32 call_specific_type_less_func( void* node_a_data, 
 		const void* node_b_data )
 	{
-		return (*specific_type_less_fp)( const_cast<void*>(node_a_data), 
+		return (*get_the_specific_type_less_fp())
+			( const_cast<void*>(node_a_data), 
 			const_cast<void*>(node_b_data) );
 	}
 	inline u32 call_specific_type_less_func( const void* node_a_data, 
 		const void* node_b_data )
 	{
-		return (*specific_type_less_fp)( const_cast<void*>(node_a_data), 
+		return (*get_the_specific_type_less_fp())
+			( const_cast<void*>(node_a_data), 
 			const_cast<void*>(node_b_data) );
 	}
 	
-	s32 push_front( const void* to_push, u32 can_move_value=false ) 
-		__attribute__((_iwram_code));
+	void fully_deallocate() __attribute__((_iwram_code));
+	void fully_deallocate_via_unlink() __attribute__((_iwram_code));
+	
+	s32 push_front( const void* to_push, u32 can_move_value=false )
+		__attribute__((_iwram_code,noinline));
 	s32 insert_before( s32 node_index, const void* to_insert,
-		u32 can_move_value=false ) __attribute__((_iwram_code));
+		u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
 	s32 insert_after( s32 node_index, const void* to_insert, 
-		u32 can_move_value=false ) __attribute__((_iwram_code));
+		u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
 	
 	
 	inline void erase_at( s32 node_index )
 	{
-		(*specific_type_reset_fp)(unlink_at(node_index));
+		(*get_the_specific_type_reset_fp())(unlink_at(node_index));
 	}
-	void* unlink_at( s32 node_index ) __attribute__((_iwram_code));
+	void* unlink_at( s32 node_index ) 
+		__attribute__((_iwram_code,noinline));
 	
-	//s32 insertion_sort( void* the_externally_allocated_sa_list, 
-	//	s32 (*ptr_to_insertion_sort_inline)() ) 
-	//	__attribute__((_iwram_code));
-	s32 insertion_sort() __attribute__((_iwram_code));
+	//s32 insertion_sort() __attribute__((_iwram_code));
+	//s32 insertion_sort() __attribute__((_text_hot_section));
+	s32 insertion_sort();
 	
-	s32 merge_sort() __attribute__((_iwram_code));
+	//s32 merge_sort() __attribute__((_iwram_code));
+	s32 merge_sort();
 	
 	
 } __attribute__((_align4));
@@ -645,7 +702,8 @@ public:		// functions
 			
 			extras_type::get_the_get_node_data_fp(),
 			extras_type::get_the_get_node_index_pair_fp(),
-			extras_type::get_the_conv_node_to_contents_fp() );
+			extras_type::get_the_conv_node_to_contents_fp(),
+			extras_type::get_the_loop_with_j_during_insertion_sort_fp() );
 		
 		//static auto specific_type_copy = []( type* a, type* b ) -> void 
 		//	{ *a = *b; };
@@ -729,16 +787,13 @@ public:		// functions
 	}
 	
 	
-	
-	void fully_deallocate() __attribute__((noinline))
+	inline void fully_deallocate()
 	{
-		s32& the_front_node_index = get_front_node_index();
-		//while ( get_front_node_index() != -1 )
-		while ( the_front_node_index >= 0 )
-		{
-			//erase_at(get_front_node_index());
-			erase_at(the_front_node_index);
-		}
+		the_sa_list_backend.fully_deallocate();
+	}
+	inline void fully_deallocate_via_unlink()
+	{
+		the_sa_list_backend.fully_deallocate_via_unlink();
 	}
 	
 	//s32 push_front_old( const type& to_push )
@@ -1222,7 +1277,8 @@ public:		// functions
 	//}
 	
 	
-	s32 insertion_sort_old_2() __attribute__((noinline))
+	s32 insertion_sort_old_2() 
+		__attribute__((_text_hot_section,noinline))
 	{
 		s32& the_front_node_index = get_front_node_index();
 		
@@ -1273,115 +1329,8 @@ public:		// functions
 			}
 			
 			sa_list_node<type>& node_at_index_low = get_node_at(index_low);
-			const type data_to_move = node_at_index_low.the_data;
-			
-			if ( i == index_low )
-			{
-				i = node_at_index_low.next_node_index();
-			}
-			
-			erase_at(index_low);
-			
-			if ( temp_front_node_index < 0 )
-			{
-				sorted_list.push_front(data_to_move);
-				curr_node_index = temp_front_node_index;
-			}
-			else
-			{
-				sorted_list.insert_after( curr_node_index, data_to_move );
-				curr_node_index = sorted_list.get_node_at(curr_node_index)
-					.next_node_index();
-			}
-			
-		}
-		
-		
-		the_front_node_index = temp_front_node_index;
-		
-		temp_front_node_index = -1;
-		
-		
-		return the_front_node_index;
-	}
-	
-	
-	inline s32 insertion_sort_old_3()
-	{
-		s32& the_front_node_index = get_front_node_index();
-		
-		// Don't do anything if this list has zero or one nodes.
-		if ( the_front_node_index < 0 )
-		{
-			return the_front_node_index;
-		}
-		if ( get_node_at(the_front_node_index).next_node_index() < 0 )
-		{
-			return the_front_node_index;
-		}
-		
-		
-		//s32 temp_front_node_index = -1;
-		//sa_list_backend<type> sorted_list( &temp_front_node_index, 
-		//	the_node_array, ptr_to_the_free_list_backend, 
-		//	total_num_nodes );
-		externally_allocated_sa_list<type> sorted_list( the_node_array, 
-			ptr_to_the_free_list_backend, get_total_num_nodes() );
-		
-		s32& temp_front_node_index = sorted_list.get_front_node_index();
-		
-		
-		static constexpr u32 prev_index_low_arr_size = 20;
-		s32 prev_index_low_arr[prev_index_low_arr_size];
-		
-		for ( s32 i=prev_index_low_arr_size-1; i>=0; --i )
-		{
-			prev_index_low_arr[i] = 0;
-		}
-		
-		
-		s32 curr_node_index = temp_front_node_index;
-		
-		for ( s32 i=the_front_node_index;
-			i!=-1;  )
-			//i=get_node_at(i).next_node_index() )
-		{
-			u32 num_extra_low_indices = 0;
-			
-			
-			s32 index_low = i;
-			
-			sa_list_node<type>* node_at_j;
-			
-			type* the_data_at_index_low = &get_node_at(index_low).the_data;
-			
-			// Find the lowest value at or after i.
-			for ( s32 j=index_low;
-				j!=-1; 
-				j=node_at_j->next_node_index() )
-			{
-				node_at_j = &get_node_at(j);
-				
-				if ( node_at_j->the_data 
-					< *the_data_at_index_low )
-				{
-					if ( num_extra_low_indices + 1 
-						< prev_index_low_arr_size )
-					{
-						prev_index_low_arr[num_extra_low_indices++]
-							= index_low;
-					}
-					
-					index_low = j;
-					
-					//the_data_at_index_low = &get_node_at(index_low).the
-					the_data_at_index_low = &node_at_j->the_data;
-				}
-			}
-			
-			sa_list_node<type>& node_at_index_low = get_node_at(index_low);
 			//const type data_to_move = node_at_index_low.the_data;
-			//type&& data_to_move = node_at_index_low.the_data
+			//type* data_to_move = &node_at_index_low.the_data;
 			
 			if ( i == index_low )
 			{
@@ -1404,34 +1353,6 @@ public:		// functions
 					.next_node_index();
 			}
 			
-			
-			for ( u32 j=0; j<num_extra_low_indices; ++j )
-			{
-				s32& curr_prev_index_low = prev_index_low_arr[j];
-				
-				sa_list_node<type>& node_at_curr_prev_index_low 
-					= get_node_at(curr_prev_index_low);
-				
-				if ( i == curr_prev_index_low )
-				{
-					i = node_at_curr_prev_index_low.next_node_index();
-				}
-				
-				type&& curr_data_to_move = unlink_at(curr_prev_index_low);
-				
-				//if ( temp_front_node_index < 0 )
-				//{
-				//	sorted_list.push_front(std::move(data_to_move));
-				//	curr_node_index = temp_front_node_index;
-				//}
-				//else
-				{
-					sorted_list.insert_after( curr_node_index, 
-						std::move(curr_data_to_move) );
-					curr_node_index = sorted_list.get_node_at
-						(curr_node_index).next_node_index();
-				}
-			}
 		}
 		
 		
@@ -1442,6 +1363,7 @@ public:		// functions
 		
 		return the_front_node_index;
 	}
+	
 	
 	inline s32 insertion_sort()
 	{

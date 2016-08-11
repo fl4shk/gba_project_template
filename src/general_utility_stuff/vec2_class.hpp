@@ -357,7 +357,8 @@ inline vec2<type> custom_abs( const vec2<type>& val )
 }
 
 
-// These are not actually hacks because they contain plain old data.
+// These are not actually hacks because the specific vec2's contain plain
+// old data.
 inline vec2_s16& copy_vec2_s16_via_ptr( vec2_s16& to_assign, 
 	const vec2_s16& to_copy )
 {

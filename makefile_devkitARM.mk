@@ -60,13 +60,16 @@ DEBUG=yeah do debug
 #DEBUG_OPTIMIZATION_LEVEL=-O2
 DEBUG_OPTIMIZATION_LEVEL=-O3
 
+
+#REGULAR_OPTIMIZATION_LEVEL=-O1
+#REGULAR_OPTIMIZATION_LEVEL=-Og
 #REGULAR_OPTIMIZATION_LEVEL=-O2
 REGULAR_OPTIMIZATION_LEVEL=-O3
 
 
 GLOBAL_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi \
 	-I$(DEVKITPRO)/libgba/include -nostartfiles \
-	-fno-rtti -ffast-math 
+	-fno-rtti -ffast-math
 
 ifdef DEBUG
 	##DEBUG_FLAGS=-gdwarf-2 -ggdb -gstrict-dwarf -g
@@ -197,7 +200,9 @@ EFILES=$(CXX_EFILES) $(ARM_CXX_EFILES)
 all : all_pre $(OFILES)
 	@echo
 	$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_map.txt
-	$(OBJCOPY) -O binary -R .iwram -R .sram $(PROJ).elf $(PROJ).gba
+	@#$(OBJCOPY) -O binary -R .iwram -R .sram $(PROJ).elf $(PROJ).gba
+	$(OBJCOPY) -O binary -S -g -R .iwram -R .sram $(PROJ).elf $(PROJ).gba
+	@#$(OBJCOPY) -O binary -S -g $(PROJ).elf $(PROJ).gba
 	./do_gbafix.sh
 
 all_objs : all_pre $(OFILES)

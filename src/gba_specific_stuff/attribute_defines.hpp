@@ -45,8 +45,13 @@
 // section attribute to be ignored when dealing with template functions.
 // By slightly changing linkscript.ld, I was able to trick ld into placing
 // template functions with the "hot" attribute into IWRAM.  This has got to
-// be a hack of some sort, but it had to be done.
-#define _template_iwram_code hot
+// be a hack of some sort.
+
+// When using an optimization level less than -O2, the .text.hot section
+// does not seem to be generated.  Perhaps there's some -f... flag (or
+// flags) that would cause the .text.hot to be generated at less than -O2.
+#define _text_hot_section hot
+//#define _text_hot_section_forced hot,optimize("O3")
 
 /* ---- End of #defines for Sections ---- */
 
@@ -60,6 +65,7 @@
 #define _packed packed
 
 
+// This is for C++'s built-in alignment, which finally exists!
 #define alignas_regular alignas(4)
 
 
