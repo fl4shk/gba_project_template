@@ -31,10 +31,34 @@ SECTIONS
 	
 	startup_section_size = SIZEOF(.startup);
 	
+	/* The reason why the .iwram_code stuff has been moved to this part of
+	 * this linker script is to work around a bug in GCC that causes the
+	 * section attribute to be ignored for template functions. */
+	/* Code to be copied to IWRAM */
+	.iwram_code :
+	{
+		/* The start of code to be copied to IWRAM*/
+		iwram_code_rom_start = LOADADDR(.iwram_code);
+		
+		iwram_code_iwram_start = .;
+		
+		/* *(.iwram_code); */
+		
+		/* .text.hot* is put into IWRAM.  This is to bypass a bug in GCC
+		 * that causes the section attribute to be ignored for template
+		 * functions. */
+		*( .iwram_code .text.hot* );
+		
+		. = ALIGN(4);
+	} >iwram AT >rom
+	
+	iwram_code_section_size = SIZEOF(.iwram_code);
+	
 	.text :
 	{
 		CREATE_OBJECT_SYMBOLS
-		*(.text .text.* .gnu.linkonce.t.*)
+		 *(.text .text.* .gnu.linkonce.t.*)
+		/* *(.text .gnu.linkonce.t.*) */
 		*(.plt)
 		*(.gnu_warning)
 		*(.glue_7t) *(.glue_7)
@@ -111,20 +135,6 @@ SECTIONS
 	
 	iwram_data_section_size = SIZEOF(.iwram_data);
 	
-	/* Code to be copied to IWRAM */
-	.iwram_code :
-	{
-		/* The start of code to be copied to IWRAM*/
-		iwram_code_rom_start = LOADADDR(.iwram_code);
-		
-		iwram_code_iwram_start = .;
-		
-		*(.iwram_code);
-		
-		. = ALIGN(4);
-	} >iwram AT >rom
-	
-	iwram_code_section_size = SIZEOF(.iwram_code);
 	
 	
 	/* MaxMOD puts code in the .iwram segment, so it will be treated as such
@@ -171,6 +181,9 @@ SECTIONS
 		
 		ewram_code_ewram_start = .;
 		*(.ewram_code);
+		
+		/* *(.text .text.* .gnu.linkonce.t.*) */
+		/* *(.text.*) */
 		
 		. = ALIGN(4);
 	} >ewram AT >rom

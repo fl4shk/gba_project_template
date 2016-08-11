@@ -29,6 +29,8 @@
 #include "generic_funcptr_stuff.hpp"
 
 
+#include <functional>
+
 
 // A non-template class intended to be used by the sa_list_backend class.
 class sa_list_node_contents
@@ -132,43 +134,47 @@ protected:		// functions
 
 
 
-
 // A group of functions to use as function pointers in the sa_list_backend
 // class.
 template< typename type >
 class sa_list_extras
 {
 protected:		// functions
-	static void specific_type_copy( type* instance_a, 
-		type* instance_b )
+	static void specific_type_copy( type* a, type* b )
+		__attribute__((_template_iwram_code))
 	{
-		*instance_a = *instance_b;
+		*a = *b;
 	}
-	static void specific_type_move( type* instance_a,
-		type* instance_b )
+	static void specific_type_move( type* a, type* b )
+		__attribute__((_template_iwram_code))
 	{
-		*instance_a = std::move(*instance_b);
+		*a = std::move(*b);
 	}
 	static void specific_type_reset( type* to_reset )
+		__attribute__((_template_iwram_code))
 	{
 		*to_reset = type();
 	}
-	static u32 specific_type_less( type* instance_a, type* instance_b )
+	static u32 specific_type_less( type* a, type* b )
+		__attribute__((_template_iwram_code))
 	{
-		return ( (*instance_a) < (*instance_b) );
+		return ( (*a) < (*b) );
 	}
 	
 	static void* get_sa_list_node_data( sa_list_node<type>* to_get_from )
+		__attribute__((_template_iwram_code))
 	{
 		return &to_get_from->the_data;
 	}
 	static vec2_s16* get_sa_list_node_index_pair
 		( sa_list_node<type>* to_get_from )
+		__attribute__((_template_iwram_code))
 	{
 		return &to_get_from->node_index_pair;
 	}
 	static void conv_node_to_contents( sa_list_node_contents* ret,
 		sa_list_node<type>* to_convert )
+		__attribute__((_template_iwram_code))
 	{
 		ret->ptr_to_the_data = &to_convert->the_data;
 		ret->ptr_to_node_index_pair = &to_convert->node_index_pair;
@@ -181,6 +187,7 @@ public:		// functions
 	static inline auto get_the_specific_type_copy_fp()
 	{
 		return get_generic_void_2arg_fp(&specific_type_copy);
+		//return get_generic_void_2arg_fp(&specific_type_copy_2<type>);
 	}
 	static inline auto get_the_specific_type_move_fp()
 	{
@@ -219,6 +226,8 @@ class sa_list_backend
 protected:		// types
 	
 protected:		// variables
+	u32 size = 0;
+	
 	s32 front_node_index = -1;
 	
 	// the_node_array as a void pointer.
@@ -519,11 +528,15 @@ protected:		// functions
 	}
 	void* unlink_at( s32 node_index ) __attribute__((_iwram_code));
 	
+	//s32 insertion_sort( void* the_externally_allocated_sa_list, 
+	//	s32 (*ptr_to_insertion_sort_inline)() ) 
+	//	__attribute__((_iwram_code));
 	
 	s32 merge_sort() __attribute__((_iwram_code));
 	
 	
 } __attribute__((_align4));
+
 
 
 
@@ -562,9 +575,10 @@ public:		// functions
 		fully_deallocate();
 	}
 	
-	inline void init( sa_list_node<type>* n_the_node_array, 
+	
+	void init( sa_list_node<type>* n_the_node_array, 
 		sa_free_list_backend* n_ptr_to_the_free_list_backend,
-		u32 n_total_num_nodes )
+		u32 n_total_num_nodes ) __attribute__((noinline))
 	{
 		the_node_array = n_the_node_array;
 		ptr_to_the_free_list_backend = n_ptr_to_the_free_list_backend;
@@ -581,6 +595,29 @@ public:		// functions
 			extras_type::get_the_get_node_data_fp(),
 			extras_type::get_the_get_node_index_pair_fp(),
 			extras_type::get_the_conv_node_to_contents_fp() );
+		
+		//auto specific_type_copy = []( type* a, type* b ) -> void 
+		//	{ *a = *b; };
+		//auto specific_type_move = []( type* a, type* b ) -> void
+		//	{ *a = std::move(*b); };
+		//auto specific_type_reset = []( type* a ) -> void
+		//	{ *a = type(); };
+		//auto specific_type_less = []( type* a, type* b ) -> u32
+		//	{ return (*a) < (*b); };
+		//
+		//
+		//asm_comment("the_sa_list_backend.init()");
+		//the_sa_list_backend.init( get_the_node_array(),
+		//	ptr_to_the_free_list_backend, get_total_num_nodes(),
+		//	sizeof(type), sizeof(sa_list_node<type>),
+		//	reinterpret_cast<generic_void_2arg_fp>(&specific_type_copy),
+		//	reinterpret_cast<generic_void_2arg_fp>(&specific_type_move),
+		//	reinterpret_cast<generic_void_1arg_fp>(&specific_type_reset),
+		//	reinterpret_cast<generic_u32_2arg_fp>(&specific_type_less), 
+		//	
+		//	extras_type::get_the_get_node_data_fp(),
+		//	extras_type::get_the_get_node_index_pair_fp(),
+		//	extras_type::get_the_conv_node_to_contents_fp() );
 	}
 	
 	inline s32& get_front_node_index()
@@ -1217,7 +1254,9 @@ public:		// functions
 	}
 	
 	
-	s32 insertion_sort() __attribute__((noinline))
+protected:		// functions
+	//s32 insertion_sort() __attribute__((noinline))
+	inline s32 insertion_sort_inline()
 	{
 		s32& the_front_node_index = get_front_node_index();
 		
@@ -1352,6 +1391,15 @@ public:		// functions
 		
 		
 		return the_front_node_index;
+	}
+	
+public:		// functions
+	//inline s32 call_insertion_sort_in_iwram()
+	s32 insertion_sort()
+	{
+		//return the_sa_list_backend.insertion_sort( this,
+		//	&externally_allocated_sa_list<type>::insertion_sort_inline );
+		return insertion_sort_inline();
 	}
 	
 	inline s32 merge_sort()

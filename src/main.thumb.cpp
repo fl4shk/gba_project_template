@@ -141,7 +141,11 @@ inline void show_test_list()
 	show_small_regular_sa_list_as_str(test_list);
 }
 
-
+//void sort_test_list() __attribute__((_iwram_code,noinline));
+//void sort_test_list()
+//{
+//	test_list.insertion_sort();
+//}
 
 
 
@@ -149,10 +153,6 @@ void sa_list_test()
 {
 	// Part 1
 	profile_start();
-	//for ( u32 i='a'; i<='a' + 19; ++i )
-	//{
-	//	test_list.push_front(i);
-	//}
 	test_list.push_front('d');
 	test_list.push_front('c');
 	test_list.push_front('e');
@@ -184,6 +184,7 @@ void sa_list_test()
 	
 	// Part 3
 	profile_start();
+	//sort_test_list();
 	//test_list.insertion_sort_old_2();
 	test_list.insertion_sort();
 	//test_list.merge_sort();

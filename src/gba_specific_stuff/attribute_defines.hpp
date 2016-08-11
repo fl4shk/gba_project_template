@@ -40,6 +40,14 @@
 #define _ewram_code section(".ewram_code")
 #define _iwram_code section(".iwram_code")
 
+
+// There's a bug that I encountered in GCC (as of 5.3.0) that causes the
+// section attribute to be ignored when dealing with template functions.
+// By slightly changing linkscript.ld, I was able to trick ld into placing
+// template functions with the "hot" attribute into IWRAM.  This has got to
+// be a hack of some sort, but it had to be done.
+#define _template_iwram_code hot
+
 /* ---- End of #defines for Sections ---- */
 
 

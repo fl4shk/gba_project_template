@@ -56,14 +56,15 @@ list_of_types_to_make_ptr_typedefs_for(generate_ptr_typedef)
 
 
 template< typename type >
-inline auto get_generic_void_1arg_fp( void (*to_cast)( type* ) )
+inline generic_void_1arg_fp get_generic_void_1arg_fp
+	( void (*to_cast)( type* ) )
 {
 	return reinterpret_cast<generic_void_1arg_fp>(to_cast);
 }
 
 
 template< typename type_1, typename type_2 >
-inline auto get_generic_void_2arg_fp
+inline generic_void_2arg_fp get_generic_void_2arg_fp
 	( void (*to_cast)( type_1*, type_2* ) )
 {
 	return reinterpret_cast<generic_void_2arg_fp>(to_cast);
@@ -71,34 +72,35 @@ inline auto get_generic_void_2arg_fp
 
 
 template< typename type_1, typename type_2, typename type_3 >
-inline auto get_generic_void_3arg_fp
+inline generic_void_3arg_fp get_generic_void_3arg_fp
 	( void (*to_cast)( type_1*, type_2*, type_3* ) )
 {
 	return reinterpret_cast<generic_void_3arg_fp>(to_cast);
 }
 
 template< typename type_1, typename type_2 >
-inline auto get_generic_u32_2arg_fp
+inline generic_u32_2arg_fp get_generic_u32_2arg_fp
 	( u32 (*to_cast)( type_1*, type_2* ) )
 {
 	return reinterpret_cast<generic_u32_2arg_fp>(to_cast);
 }
 
 template< typename type >
-inline auto get_generic_void_ptr_1arg_fp
+inline generic_void_ptr_1arg_fp get_generic_void_ptr_1arg_fp
 	( void_ptr (*to_cast)( type* ) )
 {
 	return reinterpret_cast<generic_void_ptr_1arg_fp>(to_cast);
 }
 
 template< typename type >
-inline auto get_generic_s16_ptr_1arg_fp( s16_ptr (*to_cast)( type* ) )
+inline generic_s16_ptr_1arg_fp get_generic_s16_ptr_1arg_fp
+	( s16_ptr (*to_cast)( type* ) )
 {
 	return reinterpret_cast<generic_s16_ptr_1arg_fp>(to_cast);
 }
 
 template< typename type >
-inline auto get_generic_vec2_s16_ptr_1arg_fp
+inline generic_vec2_s16_ptr_1arg_fp get_generic_vec2_s16_ptr_1arg_fp
 	( vec2_s16_ptr (*to_cast)( type* ) )
 {
 	return reinterpret_cast<generic_vec2_s16_ptr_1arg_fp>(to_cast);
@@ -218,7 +220,6 @@ inline u32 generic_less( const type& a, const type& b )
 		[]( const type* a2, const type* b2 ) -> u32
 		{ return ( (*a2) < (*b2) ); } );
 }
-
 
 
 
