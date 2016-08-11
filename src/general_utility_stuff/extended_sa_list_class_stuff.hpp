@@ -138,6 +138,7 @@ protected:		// functions
 			std::move(to_insert) );
 	}
 	
+	
 	inline void erase_at( s32 node_index )
 	{
 		the_externally_allocated_sa_list.erase_at(node_index);
@@ -390,7 +391,6 @@ public:		// functions
 	{
 		specific_regular_sa_list_base::erase_at(node_index);
 	}
-	
 	inline s32 insertion_sort_old_2()
 	{
 		return specific_regular_sa_list_base::insertion_sort_old_2();

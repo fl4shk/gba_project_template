@@ -927,7 +927,7 @@ init	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^void sa_list_backend:
 init	general_utility_stuff/sa_stack_classes.hpp	/^	void init( type* s_ptr_to_the_array, u32 s_num_elems, $/;"	kind:f	class:sa_stack_backend	access:public	signature:( type* s_ptr_to_the_array, u32 s_num_elems, u32* s_ptr_to_next_index )
 init	general_utility_stuff/sa_stack_classes.hpp	/^	void init();$/;"	kind:p	class:sa_free_list_backend	access:public	signature:()
 init	general_utility_stuff/sa_stack_classes.thumb.cpp	/^void sa_free_list_backend::init()$/;"	kind:f	class:sa_free_list_backend	signature:()
-init_test_list_with_deallocate_profile	main.thumb.cpp	/^void init_test_list_with_deallocate_profile()$/;"	kind:f	signature:()
+init_test_list_and_profile_deallocate	main.thumb.cpp	/^void init_test_list_and_profile_deallocate()$/;"	kind:f	signature:()
 insert_after	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insert_after( s32 node_index, const type& to_insert )$/;"	kind:f	class:regular_sa_list	access:public	signature:( s32 node_index, const type& to_insert )
 insert_after	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insert_after( s32 node_index, const type& to_insert )$/;"	kind:f	class:regular_sa_list_base	access:protected	signature:( s32 node_index, const type& to_insert )
 insert_after	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insert_after( s32 node_index, type&& to_insert )$/;"	kind:f	class:regular_sa_list	access:public	signature:( s32 node_index, type&& to_insert )
@@ -936,6 +936,7 @@ insert_after	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline s32 insert_
 insert_after	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline s32 insert_after( s32 node_index, type&& to_insert )$/;"	kind:f	class:externally_allocated_sa_list	access:public	signature:( s32 node_index, type&& to_insert )
 insert_after	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 insert_after( s32 node_index, const void* to_insert, $/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 node_index, const void* to_insert, u32 can_move_value=false )
 insert_after	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^s32 sa_list_backend::insert_after( s32 node_index, const void* to_insert,$/;"	kind:f	class:sa_list_backend	signature:( s32 node_index, const void* to_insert, u32 can_move_value )
+insert_after_without_alloc	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 insert_after_without_alloc( s32 node_index_to_insert_after, $/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 node_index_to_insert_after, s32 to_move_node_index, u32 can_move_value=false )
 insert_and_sort	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insert_and_sort( const type& to_insert )$/;"	kind:f	class:sorted_always_sa_list	access:public	signature:( const type& to_insert )
 insert_and_sort	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insert_and_sort( type&& to_insert )$/;"	kind:f	class:sorted_always_sa_list	access:public	signature:( type&& to_insert )
 insert_before	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insert_before( s32 node_index, const type& to_insert )$/;"	kind:f	class:regular_sa_list	access:public	signature:( s32 node_index, const type& to_insert )
@@ -950,7 +951,7 @@ insertion_sort	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline 
 insertion_sort	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insertion_sort()$/;"	kind:f	class:regular_sa_list_base	access:protected	signature:()
 insertion_sort	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insertion_sort()$/;"	kind:f	class:sorted_always_sa_list	access:public	signature:()
 insertion_sort	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline s32 insertion_sort()$/;"	kind:f	class:externally_allocated_sa_list	access:public	signature:()
-insertion_sort	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 insertion_sort();$/;"	kind:p	class:sa_list_backend	access:protected	signature:()
+insertion_sort	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 insertion_sort() __attribute__((_iwram_code));$/;"	kind:p	class:sa_list_backend	access:protected	signature:()
 insertion_sort	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^s32 sa_list_backend::insertion_sort()$/;"	kind:f	class:sa_list_backend	signature:()
 insertion_sort_old_2	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insertion_sort_old_2()$/;"	kind:f	class:regular_sa_list	access:public	signature:()
 insertion_sort_old_2	general_utility_stuff/extended_sa_list_class_stuff.hpp	/^	inline s32 insertion_sort_old_2()$/;"	kind:f	class:regular_sa_list_base	access:protected	signature:()
@@ -1486,6 +1487,7 @@ push_front	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline s32 push_fron
 push_front	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline s32 push_front( type&& to_push )$/;"	kind:f	class:externally_allocated_sa_list	access:public	signature:( type&& to_push )
 push_front	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 push_front( const void* to_push, u32 can_move_value=false )$/;"	kind:p	class:sa_list_backend	access:protected	signature:( const void* to_push, u32 can_move_value=false )
 push_front	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^s32 sa_list_backend::push_front( const void* to_push,$/;"	kind:f	class:sa_list_backend	signature:( const void* to_push, u32 can_move_value )
+push_front_without_alloc	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 push_front_without_alloc( s32 to_move_node_index,$/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 to_move_node_index, u32 can_move_value=false )
 quotient	gba_specific_stuff/bios_function_wrappers.hpp	/^	s32 quotient;$/;"	kind:m	class:bios_div_result	access:public
 quotient_abs	gba_specific_stuff/bios_function_wrappers.hpp	/^	u32 quotient_abs;$/;"	kind:m	class:bios_div_result	access:public
 range_funcs_hpp	general_utility_stuff/range_funcs.hpp	20;"	kind:d
@@ -1724,9 +1726,10 @@ sa_list_backend::init	general_utility_stuff/sa_list_class_stuff.hpp	/^	void init
 sa_list_backend::init	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^void sa_list_backend::init( void* n_the_node_array, $/;"	kind:f	class:sa_list_backend	signature:( void* n_the_node_array, sa_free_list_backend* n_ptr_to_the_free_list_backend, u32 n_total_num_nodes, u32 n_specific_type_size, u32 n_whole_node_size, generic_void_2arg_fp n_specific_type_copy_fp, generic_void_2arg_fp n_specific_type_move_fp, generic_void_1arg_fp n_specific_type_reset_fp, generic_u32_2arg_fp n_specific_type_less_fp, generic_void_ptr_1arg_fp n_get_node_data_fp, generic_vec2_s16_ptr_1arg_fp n_get_node_index_pair_fp, generic_void_2arg_fp n_conv_node_to_contents_fp, generic_void_2arg_fp n_loop_with_j_during_insertion_sort_fp )
 sa_list_backend::insert_after	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 insert_after( s32 node_index, const void* to_insert, $/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 node_index, const void* to_insert, u32 can_move_value=false )
 sa_list_backend::insert_after	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^s32 sa_list_backend::insert_after( s32 node_index, const void* to_insert,$/;"	kind:f	class:sa_list_backend	signature:( s32 node_index, const void* to_insert, u32 can_move_value )
+sa_list_backend::insert_after_without_alloc	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 insert_after_without_alloc( s32 node_index_to_insert_after, $/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 node_index_to_insert_after, s32 to_move_node_index, u32 can_move_value=false )
 sa_list_backend::insert_before	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 insert_before( s32 node_index, const void* to_insert,$/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 node_index, const void* to_insert, u32 can_move_value=false )
 sa_list_backend::insert_before	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^s32 sa_list_backend::insert_before( s32 node_index, const void* to_insert,$/;"	kind:f	class:sa_list_backend	signature:( s32 node_index, const void* to_insert, u32 can_move_value )
-sa_list_backend::insertion_sort	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 insertion_sort();$/;"	kind:p	class:sa_list_backend	access:protected	signature:()
+sa_list_backend::insertion_sort	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 insertion_sort() __attribute__((_iwram_code));$/;"	kind:p	class:sa_list_backend	access:protected	signature:()
 sa_list_backend::insertion_sort	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^s32 sa_list_backend::insertion_sort()$/;"	kind:f	class:sa_list_backend	signature:()
 sa_list_backend::loop_with_j_during_insertion_sort_fp	general_utility_stuff/sa_list_class_stuff.hpp	/^		loop_with_j_during_insertion_sort_fp = 0;$/;"	kind:m	class:sa_list_backend	access:protected
 sa_list_backend::merge_sort	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 merge_sort();$/;"	kind:p	class:sa_list_backend	access:protected	signature:()
@@ -1736,6 +1739,7 @@ sa_list_backend::move_node_data	general_utility_stuff/sa_list_class_stuff.hpp	/^
 sa_list_backend::ptr_to_the_free_list_backend	general_utility_stuff/sa_list_class_stuff.hpp	/^	sa_free_list_backend* ptr_to_the_free_list_backend = 0;$/;"	kind:m	class:sa_list_backend	access:protected
 sa_list_backend::push_front	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 push_front( const void* to_push, u32 can_move_value=false )$/;"	kind:p	class:sa_list_backend	access:protected	signature:( const void* to_push, u32 can_move_value=false )
 sa_list_backend::push_front	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^s32 sa_list_backend::push_front( const void* to_push,$/;"	kind:f	class:sa_list_backend	signature:( const void* to_push, u32 can_move_value )
+sa_list_backend::push_front_without_alloc	general_utility_stuff/sa_list_class_stuff.hpp	/^	s32 push_front_without_alloc( s32 to_move_node_index,$/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 to_move_node_index, u32 can_move_value=false )
 sa_list_backend::sa_list_backend	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline sa_list_backend( sa_list_backend& to_copy )$/;"	kind:f	class:sa_list_backend	access:protected	signature:( sa_list_backend& to_copy )
 sa_list_backend::sa_list_backend	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline sa_list_backend( void* s_the_node_array, $/;"	kind:f	class:sa_list_backend	access:protected	signature:( void* s_the_node_array, sa_free_list_backend* s_ptr_to_the_free_list_backend, u32 s_total_num_nodes, u32 s_specific_type_size, u32 s_whole_node_size, generic_void_2arg_fp s_specific_type_copy_fp, generic_void_2arg_fp s_specific_type_move_fp, generic_void_1arg_fp s_specific_type_reset_fp, generic_u32_2arg_fp s_specific_type_less_fp, generic_void_ptr_1arg_fp s_get_node_data_fp, generic_vec2_s16_ptr_1arg_fp s_get_node_index_pair_fp, generic_void_2arg_fp s_conv_node_to_contents_fp, generic_void_2arg_fp s_loop_with_j_during_insertion_sort_fp )
 sa_list_backend::sa_list_backend	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline sa_list_backend()$/;"	kind:f	class:sa_list_backend	access:protected	signature:()
@@ -1747,8 +1751,9 @@ sa_list_backend::specific_type_reset_fp	general_utility_stuff/sa_list_class_stuf
 sa_list_backend::specific_type_size	general_utility_stuff/sa_list_class_stuff.hpp	/^	u32 specific_type_size = 0, $/;"	kind:m	class:sa_list_backend	access:protected
 sa_list_backend::the_node_array	general_utility_stuff/sa_list_class_stuff.hpp	/^	void* the_node_array = 0;$/;"	kind:m	class:sa_list_backend	access:protected
 sa_list_backend::total_num_nodes	general_utility_stuff/sa_list_class_stuff.hpp	/^	u32 total_num_nodes = 0;$/;"	kind:m	class:sa_list_backend	access:protected
-sa_list_backend::unlink_at	general_utility_stuff/sa_list_class_stuff.hpp	/^	void* unlink_at( s32 node_index ) $/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 node_index )
-sa_list_backend::unlink_at	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^void* sa_list_backend::unlink_at( s32 node_index )$/;"	kind:f	class:sa_list_backend	signature:( s32 node_index )
+sa_list_backend::unlink_at	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline void* unlink_at( s32 node_index )$/;"	kind:f	class:sa_list_backend	access:protected	signature:( s32 node_index )
+sa_list_backend::unlink_at_without_dealloc	general_utility_stuff/sa_list_class_stuff.hpp	/^	void* unlink_at_without_dealloc( s32 node_index ) $/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 node_index )
+sa_list_backend::unlink_at_without_dealloc	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^void* sa_list_backend::unlink_at_without_dealloc( s32 node_index )$/;"	kind:f	class:sa_list_backend	signature:( s32 node_index )
 sa_list_backend::whole_node_size	general_utility_stuff/sa_list_class_stuff.hpp	/^		whole_node_size = 0;$/;"	kind:m	class:sa_list_backend	access:protected
 sa_list_class_stuff_hpp	general_utility_stuff/sa_list_class_stuff.hpp	20;"	kind:d
 sa_list_extras	general_utility_stuff/sa_list_class_stuff.hpp	/^class sa_list_extras$/;"	kind:c
@@ -2082,8 +2087,9 @@ u64	general_utility_stuff/misc_types.hpp	/^typedef uint64_t u64; typedef int64_t
 u8	general_utility_stuff/misc_types.hpp	/^typedef uint8_t u8; typedef int8_t s8;$/;"	kind:t
 underlying_type_is_signed	general_utility_stuff/fixed_classes.hpp	/^	static constexpr u32 underlying_type_is_signed$/;"	kind:m	class:fixedpt_num_packed	access:public
 unlink_at	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline type&& unlink_at( s32 node_index )$/;"	kind:f	class:externally_allocated_sa_list	access:public	signature:( s32 node_index )
-unlink_at	general_utility_stuff/sa_list_class_stuff.hpp	/^	void* unlink_at( s32 node_index ) $/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 node_index )
-unlink_at	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^void* sa_list_backend::unlink_at( s32 node_index )$/;"	kind:f	class:sa_list_backend	signature:( s32 node_index )
+unlink_at	general_utility_stuff/sa_list_class_stuff.hpp	/^	inline void* unlink_at( s32 node_index )$/;"	kind:f	class:sa_list_backend	access:protected	signature:( s32 node_index )
+unlink_at_without_dealloc	general_utility_stuff/sa_list_class_stuff.hpp	/^	void* unlink_at_without_dealloc( s32 node_index ) $/;"	kind:p	class:sa_list_backend	access:protected	signature:( s32 node_index )
+unlink_at_without_dealloc	general_utility_stuff/sa_list_class_stuff.thumb.cpp	/^void* sa_list_backend::unlink_at_without_dealloc( s32 node_index )$/;"	kind:f	class:sa_list_backend	signature:( s32 node_index )
 uordblks	borrowed_stuff/nano-mallocr.thumb.cpp	/^  size_t uordblks; \/* total allocated space *\/$/;"	kind:m	struct:mallinfo	file:	access:public
 usmblks	borrowed_stuff/nano-mallocr.thumb.cpp	/^  size_t usmblks;  \/* unused -- always zero *\/$/;"	kind:m	struct:mallinfo	file:	access:public
 vec2	general_utility_stuff/vec2_class.hpp	/^	constexpr inline vec2( const type_1& s_x, const type_2& s_y )$/;"	kind:f	class:vec2	access:public	signature:( const type_1& s_x, const type_2& s_y )

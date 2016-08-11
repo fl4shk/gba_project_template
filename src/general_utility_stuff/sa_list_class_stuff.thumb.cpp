@@ -237,7 +237,8 @@ s32 sa_list_backend::insert_after( s32 node_index, const void* to_insert,
 
 
 
-void* sa_list_backend::unlink_at( s32 node_index )
+
+void* sa_list_backend::unlink_at_without_dealloc( s32 node_index )
 {
 	////s32 old_prev_node_index = get_node_at(node_index)
 	////	.prev_node_index(),
@@ -275,7 +276,8 @@ void* sa_list_backend::unlink_at( s32 node_index )
 	old_node_index_pair = { -1, -1 };
 	
 	
-	get_the_free_list_backend().push(node_index);
+	// 
+	//get_the_free_list_backend().push(node_index);
 	
 	
 	if ( node_index == old_front_node_index )
@@ -321,6 +323,11 @@ void* sa_list_backend::unlink_at( s32 node_index )
 	return node_at_node_index.ptr_to_the_data;
 }
 
+
+
+// This is quite the same algorithm as insertion sort.  In fact, it is
+// possible to optimize it, using extra space, by exploiting the fact that
+// this algorithm SEARCHES FORWARD to find ONLY ONE node to move.
 s32 sa_list_backend::insertion_sort()
 {
 	s32& the_front_node_index = get_front_node_index();
@@ -348,21 +355,52 @@ s32 sa_list_backend::insertion_sort()
 	
 	s32 curr_node_index = temp_front_node_index;
 	
-	for ( s32 i=the_front_node_index;
+	
+	
+	
+	s32 index_low = the_front_node_index;
+	s32 outer_i = the_front_node_index;
+	
+	
+	
+	// Unroll the first outer loop
+	(*get_the_loop_with_j_during_insertion_sort_fp())
+		( get_the_node_array(), &index_low );
+	
+	//sa_list_node<type>& node_at_index_low = get_node_at(index_low);
+	//const type data_to_move = node_at_index_low.the_data;
+	sa_list_node_contents node_at_index_low = get_node_contents_at
+		(index_low);
+	
+	//if ( outer_i == index_low )
+	//{
+	//	outer_i = node_at_index_low.next_node_index();
+	//}
+	//outer_i = node_at_index_low.next_node_index();
+	outer_i = get_next_node_index_at_node_index(the_front_node_index);
+	
+	//erase_at(index_low);
+	void* outer_data_to_move = unlink_at(index_low);
+	sorted_list.push_front( outer_data_to_move, true );
+	curr_node_index = temp_front_node_index;
+	
+	
+	
+	for ( s32 i=outer_i;
 		i!=-1;  )
 		////i=get_node_at(i).next_node_index() )
 		//i=get_next_node_index_at_node_index(i) )
 	{
-		s32 index_low = i;
+		index_low = i;
 		
 		(*get_the_loop_with_j_during_insertion_sort_fp())
 			( get_the_node_array(), &index_low );
 		
 		//sa_list_node<type>& node_at_index_low = get_node_at(index_low);
 		//const type data_to_move = node_at_index_low.the_data;
-		sa_list_node_contents node_at_index_low = get_node_contents_at
-			(index_low);
+		node_at_index_low = get_node_contents_at(index_low);
 		
+		// if the current node 
 		if ( i == index_low )
 		{
 			i = node_at_index_low.next_node_index();
@@ -371,24 +409,9 @@ s32 sa_list_backend::insertion_sort()
 		//erase_at(index_low);
 		void* data_to_move = unlink_at(index_low);
 		
-		if ( temp_front_node_index < 0 )
-		{
-			//sorted_list.push_front(data_to_move);
-			sorted_list.push_front( data_to_move, true );
-			curr_node_index = temp_front_node_index;
-		}
-		else
-		{
-			//sorted_list.insert_after( curr_node_index, data_to_move );
-			//curr_node_index = sorted_list.get_node_at(curr_node_index)
-			//	.next_node_index();
-			
-			sorted_list.insert_after( curr_node_index, data_to_move, 
-				true );
-			curr_node_index = sorted_list.get_next_node_index_at_node_index
-				(curr_node_index);
-		}
-		
+		sorted_list.insert_after( curr_node_index, data_to_move, true );
+		curr_node_index = sorted_list.get_next_node_index_at_node_index
+			(curr_node_index);
 	}
 	
 	
@@ -401,21 +424,30 @@ s32 sa_list_backend::insertion_sort()
 }
 
 
+
+// This specific merge sort algorithm was borrowed from here:  
+// http://www.chiark.greenend.org.uk/~sgtatham/algorithms/listsort.html
+
 s32 sa_list_backend::merge_sort()
 {
-	//u32 num_remaining_sublists = 0;
-	//
-	//sa_list_node_contents node_at_i;
-	//
-	//for ( s32 i=get_front_node_index();
-	//	i>=0;
-	//	i=node_at_i.next_node_index() )
+	s32& the_front_node_index = get_front_node_index();
+	
+	//if ( the_front_node_index < 0 )
 	//{
-	//	node_at_i = get_node_contents_at(i);
-	//	
+	//	return the_front_node_index;
+	//}
+	//
+	//s32 index_p_start, index_q_start, index_e_start, end_of_sorted_list;
+	//s32 in_size = 1, num_merges, p_size, size_q, i;
+	//
+	//sa_list_backend sorted_list(*this);
+	//
+	//for (;;)
+	//{
 	//	
 	//}
 	
-	return get_front_node_index();
+	
+	return the_front_node_index;
 }
 

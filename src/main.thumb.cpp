@@ -148,10 +148,10 @@ inline void show_test_list()
 //}
 
 
-void init_test_list_with_deallocate_profile()
+void init_test_list_and_profile_deallocate()
 {
 	profile_start();
-	test_list.fully_deallocate();
+	test_list.fully_deallocate_via_unlink();
 	show_profile_stop();
 	
 	test_list.push_front('d');
@@ -171,7 +171,7 @@ void sa_list_test()
 {
 	// Part 1
 	asm_comment("Part 1");
-	init_test_list_with_deallocate_profile();
+	init_test_list_and_profile_deallocate();
 	show_test_list();
 	
 	
@@ -179,13 +179,14 @@ void sa_list_test()
 	asm_comment("Part 2");
 	profile_start();
 	test_list.insertion_sort();
+	//test_list.merge_sort();
 	show_profile_stop();
 	show_test_list();
 	
 	
 	// Part 3
 	asm_comment("Part 3");
-	init_test_list_with_deallocate_profile();
+	init_test_list_and_profile_deallocate();
 	show_test_list();
 	
 	

@@ -620,6 +620,7 @@ protected:		// functions
 	void fully_deallocate() __attribute__((_iwram_code));
 	void fully_deallocate_via_unlink() __attribute__((_iwram_code));
 	
+	
 	s32 push_front( const void* to_push, u32 can_move_value=false )
 		__attribute__((_iwram_code,noinline));
 	s32 insert_before( s32 node_index, const void* to_insert,
@@ -628,16 +629,33 @@ protected:		// functions
 		u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
 	
 	
+	s32 push_front_without_alloc( s32 to_move_node_index,
+		u32 can_move_value=false );
+	s32 insert_after_without_alloc( s32 node_index_to_insert_after, 
+		s32 to_move_node_index, u32 can_move_value=false );
+	
+	
+	void* unlink_at_without_dealloc( s32 node_index ) 
+		__attribute__((_iwram_code));
+	
+	// It is (slightly) faster to just unlink a node than it is to erase
+	// it.
+	inline void* unlink_at( s32 node_index )
+	{
+		get_the_free_list_backend().push(node_index);
+		
+		return unlink_at_without_dealloc(node_index);
+	}
+	
 	inline void erase_at( s32 node_index )
 	{
 		(*get_the_specific_type_reset_fp())(unlink_at(node_index));
 	}
-	void* unlink_at( s32 node_index ) 
-		__attribute__((_iwram_code,noinline));
 	
-	//s32 insertion_sort() __attribute__((_iwram_code));
+	
+	s32 insertion_sort() __attribute__((_iwram_code));
 	//s32 insertion_sort() __attribute__((_text_hot_section));
-	s32 insertion_sort();
+	//s32 insertion_sort();
 	
 	//s32 merge_sort() __attribute__((_iwram_code));
 	s32 merge_sort();
