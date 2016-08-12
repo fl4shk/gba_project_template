@@ -26,12 +26,14 @@
 
 #include <utility>
 
+static constexpr size_t vec2_index_for_x = 0, vec2_index_for_y = 1;
+
 template< typename type >
 class vec2
 {
-public:		// constants
-	static constexpr size_t the_index_for_x = 0, the_index_for_y = 1;
-	
+//public:		// constants
+//	static constexpr size_t the_index_for_x = 0, the_index_for_y = 1;
+//	
 public:		// variables
 	type x, y;
 	
@@ -146,11 +148,11 @@ public:		// functions
 	
 	inline type& operator [] ( size_t index )
 	{
-		if ( index == the_index_for_x )
+		if ( index == vec2_index_for_x )
 		{
 			return x;
 		}
-		else //if ( index != the_index_for_x )
+		else //if ( index != vec2_index_for_x )
 		{
 			return y;
 		}
@@ -158,11 +160,11 @@ public:		// functions
 	
 	inline const type& operator [] ( size_t index ) const
 	{
-		if ( index == the_index_for_x )
+		if ( index == vec2_index_for_x )
 		{
 			return x;
 		}
-		else //if ( index != the_index_for_x )
+		else //if ( index != vec2_index_for_x )
 		{
 			return y;
 		}
@@ -187,9 +189,6 @@ typedef vec2<u64> vec2_u64; typedef vec2<s64> vec2_s64;
 
 
 #define generate_specific_vec2_class_contents( specific_type ) \
-public:		/* constants */ \
-	static constexpr size_t the_index_for_x = 0, the_index_for_y = 1; \
-	\
 public:		/* variables */ \
 	specific_type x, y; \
 	\
@@ -283,11 +282,11 @@ public:		/* functions */ \
 	\
 	inline specific_type& operator [] ( size_t index ) \
 	{ \
-		if ( index == the_index_for_x ) \
+		if ( index == vec2_index_for_x ) \
 		{ \
 			return x; \
 		} \
-		else /* if ( index != the_index_for_x ) */ \
+		else /* if ( index != vec2_index_for_x ) */ \
 		{ \
 			return y; \
 		} \
@@ -295,11 +294,11 @@ public:		/* functions */ \
 	\
 	inline const specific_type& operator [] ( size_t index ) const \
 	{ \
-		if ( index == the_index_for_x ) \
+		if ( index == vec2_index_for_x ) \
 		{ \
 			return x; \
 		} \
-		else /* if ( index != the_index_for_x ) */ \
+		else /* if ( index != vec2_index_for_x ) */ \
 		{ \
 			return y; \
 		} \

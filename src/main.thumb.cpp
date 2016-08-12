@@ -93,7 +93,7 @@ int main()
 
 
 
-static constexpr u32 total_num_nodes = 200;
+static constexpr u32 total_num_nodes = 20;
 //typedef sorted_always_sa_list< u32, total_num_nodes >
 //	the_sorted_always_sa_list_type;
 //
@@ -122,10 +122,10 @@ public:		// variables and constants
 	debug_str str_arr[max_num_loops];
 	
 	
-	static constexpr size_t num_indices_per_node_index_group = 3;
+	static constexpr size_t num_indices_per_index_group = 3;
 	// Technically, this is a 3D array.
-	s32 node_index_group_arr_2d[max_num_loops][max_num_nodes_per_loop]
-		[num_indices_per_node_index_group];
+	s32 index_group_arr_2d[max_num_loops][max_num_nodes_per_loop]
+		[num_indices_per_index_group];
 	
 public:		// functions
 	inline temp_debug_vars_group()
@@ -142,8 +142,8 @@ public:		// functions
 			str_arr[i].total_clear();
 		}
 		
-		memfill32( reinterpret_cast<void*>(node_index_group_arr_2d), -1,
-			sizeof(node_index_group_arr_2d) / sizeof(u32) );
+		memfill32( reinterpret_cast<void*>(index_group_arr_2d), -1,
+			sizeof(index_group_arr_2d) / sizeof(u32) );
 		
 	}
 	
@@ -152,15 +152,15 @@ public:		// functions
 		str_arr[outer_index++] = to_write;
 	}
 	inline void write_three_indices_and_inc_inner_index
-		( s32 the_node_index, s32 the_next_node_index, 
-		s32 the_prev_node_index )
+		( s32 the_index, s32 the_next_index, 
+		s32 the_prev_index )
 	{
-		node_index_group_arr_2d[outer_index][inner_index][0] 
-			= the_node_index;
-		node_index_group_arr_2d[outer_index][inner_index][1] 
-			= the_next_node_index;
-		node_index_group_arr_2d[outer_index][inner_index][2] 
-			= the_prev_node_index;
+		index_group_arr_2d[outer_index][inner_index][0] 
+			= the_index;
+		index_group_arr_2d[outer_index][inner_index][1] 
+			= the_next_index;
+		index_group_arr_2d[outer_index][inner_index][2] 
+			= the_prev_index;
 		
 		++inner_index;
 	}
@@ -186,16 +186,16 @@ void show_small_regular_sa_list
 	
 	u32 real_size = 0;
 	
-	for ( int i=to_show.get_front_node_index();
+	for ( int i=to_show.get_front_index();
 		i!=-1;
-		i=to_show.get_the_node_array()[i].next_node_index() )
+		i=to_show.get_node_array()[i].next_index() )
 	{
-		to_write[real_size++] = (char)(to_show.get_the_node_array()[i]
-			.the_data);
+		to_write[real_size++] = (char)(to_show.get_node_array()[i]
+			.data);
 		
 		tdvg.write_three_indices_and_inc_inner_index( i, 
-			to_show.get_the_node_array()[i].next_node_index(),
-			to_show.get_the_node_array()[i].prev_node_index() );
+			to_show.get_node_array()[i].next_index(),
+			to_show.get_node_array()[i].prev_index() );
 		
 		if ( real_size >= to_write_max_size )
 		{
@@ -220,6 +220,7 @@ void init_test_list_and_profile_deallocate()
 	profile_start();
 	test_list.fully_deallocate_via_unlink();
 	show_profile_stop();
+	show_test_list();
 	
 	//int test_list_end = test_list.push_front('d');
 	//test_list.push_front('c');
@@ -238,7 +239,7 @@ void init_test_list_and_profile_deallocate()
 	//	test_list.push_front('A' + i);
 	//}
 	
-	s32& test_list_front_node_index = test_list.get_front_node_index();
+	s32& test_list_front_index = test_list.get_front_index();
 	
 	s32 test_list_end = test_list.push_front('g');
 	for ( u32 i=0; i<5; ++i )
@@ -246,9 +247,9 @@ void init_test_list_and_profile_deallocate()
 		test_list.push_front('1' + i );
 	}
 	
-	//test_list.insert_before( test_list_front_node_index, 'h' );
+	//test_list.insert_before( test_list_front_index, 'h' );
 	//test_list.insert_before( test_list_end, 'f' );
-	test_list.insert_after( test_list_front_node_index, 'h' );
+	test_list.insert_after( test_list_front_index, 'h' );
 	test_list.insert_after( test_list_end, 'f' );
 }
 

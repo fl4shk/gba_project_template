@@ -31,7 +31,7 @@ class regular_sa_list_base
 protected:		// variables
 //public:		// variables
 	externally_allocated_sa_list<type> the_externally_allocated_sa_list;
-	sa_list_node<type> the_node_array[total_num_nodes];
+	sa_list_node<type> node_array[total_num_nodes];
 	sa_free_list<total_num_nodes> the_free_list;
 	
 public:		// functions
@@ -40,27 +40,27 @@ public:		// functions
 protected:		// functions
 	// This may be the first time I've ever made a constructor protected.
 	inline regular_sa_list_base() : the_externally_allocated_sa_list
-		( the_node_array, &the_free_list.the_sa_free_list_backend, 
+		( node_array, &the_free_list.the_sa_free_list_backend, 
 		get_total_num_nodes() )
 	{
 	}
 	
-	inline s32& get_front_node_index()
+	inline s32& get_front_index()
 	{
-		return the_externally_allocated_sa_list.get_front_node_index();
+		return the_externally_allocated_sa_list.get_front_index();
 	}
-	inline const s32 get_front_node_index() const
+	inline const s32 get_front_index() const
 	{
-		return the_externally_allocated_sa_list.get_front_node_index();
+		return the_externally_allocated_sa_list.get_front_index();
 	}
 	
-	inline sa_list_node<type>* get_the_node_array()
+	inline sa_list_node<type>* get_node_array()
 	{
-		return the_node_array;
+		return node_array;
 	}
-	inline const sa_list_node<type>* get_the_node_array() const
+	inline const sa_list_node<type>* get_node_array() const
 	{
-		return the_node_array;
+		return node_array;
 	}
 	
 	inline sa_free_list<total_num_nodes>& get_the_free_list()
@@ -71,7 +71,7 @@ protected:		// functions
 	{
 		return the_free_list;
 	}
-	constexpr inline u32 get_the_node_array_size() const
+	constexpr inline u32 get_node_array_size() const
 	{
 		return get_total_num_nodes();
 	}
@@ -80,13 +80,13 @@ protected:		// functions
 		return total_num_nodes;
 	}
 	
-	inline sa_list_node<type>& get_node_at( s32 node_index )
+	inline sa_list_node<type>& get_node_at( s32 index )
 	{
-		return get_the_node_array()[node_index];
+		return get_node_array()[index];
 	}
 	inline sa_list_node<type>& front()
 	{
-		//return get_node_at(get_front_node_index());
+		//return get_node_at(get_front_index());
 		return the_externally_allocated_sa_list.front();
 	}
 	
@@ -115,33 +115,33 @@ protected:		// functions
 	}
 	
 	
-	inline s32 insert_before( s32 node_index, const type& to_insert )
+	inline s32 insert_before( s32 index, const type& to_insert )
 	{
-		return the_externally_allocated_sa_list.insert_before( node_index,
+		return the_externally_allocated_sa_list.insert_before( index,
 			to_insert );
 	}
-	inline s32 insert_before( s32 node_index, type&& to_insert )
+	inline s32 insert_before( s32 index, type&& to_insert )
 	{
-		return the_externally_allocated_sa_list.insert_before( node_index,
+		return the_externally_allocated_sa_list.insert_before( index,
 			std::move(to_insert) );
 	}
 	
 	
-	inline s32 insert_after( s32 node_index, const type& to_insert )
+	inline s32 insert_after( s32 index, const type& to_insert )
 	{
-		return the_externally_allocated_sa_list.insert_after( node_index,
+		return the_externally_allocated_sa_list.insert_after( index,
 			to_insert );
 	}
-	inline s32 insert_after( s32 node_index, type&& to_insert )
+	inline s32 insert_after( s32 index, type&& to_insert )
 	{
-		return the_externally_allocated_sa_list.insert_after( node_index,
+		return the_externally_allocated_sa_list.insert_after( index,
 			std::move(to_insert) );
 	}
 	
 	
-	inline void erase_at( s32 node_index )
+	inline void erase_at( s32 index )
 	{
-		the_externally_allocated_sa_list.erase_at(node_index);
+		the_externally_allocated_sa_list.erase_at(index);
 	}
 	inline s32 insertion_sort_old_2()
 	{
@@ -172,22 +172,22 @@ public:		// functions
 	{
 	}
 	
-	inline s32& get_front_node_index()
+	inline s32& get_front_index()
 	{
-		return specific_regular_sa_list_base::get_front_node_index();
+		return specific_regular_sa_list_base::get_front_index();
 	}
-	inline const s32 get_front_node_index() const
+	inline const s32 get_front_index() const
 	{
-		return specific_regular_sa_list_base::get_front_node_index();
+		return specific_regular_sa_list_base::get_front_index();
 	}
 	
-	inline sa_list_node<type>* get_the_node_array()
+	inline sa_list_node<type>* get_node_array()
 	{
-		return specific_regular_sa_list_base::get_the_node_array();
+		return specific_regular_sa_list_base::get_node_array();
 	}
-	inline const sa_list_node<type>* get_the_node_array() const
+	inline const sa_list_node<type>* get_node_array() const
 	{
-		return specific_regular_sa_list_base::get_the_node_array();
+		return specific_regular_sa_list_base::get_node_array();
 	}
 	
 	inline sa_free_list<total_num_nodes>& get_the_free_list()
@@ -198,7 +198,7 @@ public:		// functions
 	{
 		return specific_regular_sa_list_base::get_the_free_list();
 	}
-	constexpr inline u32 get_the_node_array_size() const
+	constexpr inline u32 get_node_array_size() const
 	{
 		return get_total_num_nodes();
 	}
@@ -207,13 +207,13 @@ public:		// functions
 		return total_num_nodes;
 	}
 	
-	inline sa_list_node<type>& get_node_at( s32 node_index )
+	inline sa_list_node<type>& get_node_at( s32 index )
 	{
-		return specific_regular_sa_list_base::get_node_at(node_index);
+		return specific_regular_sa_list_base::get_node_at(index);
 	}
 	inline sa_list_node<type>& front()
 	{
-		//return get_node_at(get_front_node_index());
+		//return get_node_at(get_front_index());
 		return specific_regular_sa_list_base::front();
 	}
 	
@@ -242,33 +242,33 @@ public:		// functions
 	}
 	
 	
-	inline s32 insert_before( s32 node_index, const type& to_insert )
+	inline s32 insert_before( s32 index, const type& to_insert )
 	{
-		return specific_regular_sa_list_base::insert_before( node_index,
+		return specific_regular_sa_list_base::insert_before( index,
 			to_insert );
 	}
-	inline s32 insert_before( s32 node_index, type&& to_insert )
+	inline s32 insert_before( s32 index, type&& to_insert )
 	{
-		return specific_regular_sa_list_base::insert_before( node_index,
+		return specific_regular_sa_list_base::insert_before( index,
 			std::move(to_insert) );
 	}
 	
 	
-	inline s32 insert_after( s32 node_index, const type& to_insert )
+	inline s32 insert_after( s32 index, const type& to_insert )
 	{
-		return specific_regular_sa_list_base::insert_after( node_index,
+		return specific_regular_sa_list_base::insert_after( index,
 			to_insert );
 	}
-	inline s32 insert_after( s32 node_index, type&& to_insert )
+	inline s32 insert_after( s32 index, type&& to_insert )
 	{
-		return specific_regular_sa_list_base::insert_after( node_index,
+		return specific_regular_sa_list_base::insert_after( index,
 			std::move(to_insert) );
 	}
 	
 	
-	inline void erase_at( s32 node_index )
+	inline void erase_at( s32 index )
 	{
-		specific_regular_sa_list_base::erase_at(node_index);
+		specific_regular_sa_list_base::erase_at(index);
 	}
 	inline s32 insertion_sort_old_2()
 	{
@@ -303,22 +303,22 @@ public:		// functions
 	{
 	}
 	
-	inline s32& get_front_node_index()
+	inline s32& get_front_index()
 	{
-		return specific_regular_sa_list_base::get_front_node_index();
+		return specific_regular_sa_list_base::get_front_index();
 	}
-	inline const s32 get_front_node_index() const
+	inline const s32 get_front_index() const
 	{
-		return specific_regular_sa_list_base::get_front_node_index();
+		return specific_regular_sa_list_base::get_front_index();
 	}
 	
-	inline sa_list_node<type>* get_the_node_array()
+	inline sa_list_node<type>* get_node_array()
 	{
-		return specific_regular_sa_list_base::get_the_node_array();
+		return specific_regular_sa_list_base::get_node_array();
 	}
-	inline const sa_list_node<type>* get_the_node_array() const
+	inline const sa_list_node<type>* get_node_array() const
 	{
-		return specific_regular_sa_list_base::get_the_node_array();
+		return specific_regular_sa_list_base::get_node_array();
 	}
 	
 	inline sa_free_list<total_num_nodes>& get_the_free_list()
@@ -329,7 +329,7 @@ public:		// functions
 	{
 		return specific_regular_sa_list_base::get_the_free_list();
 	}
-	constexpr inline u32 get_the_node_array_size() const
+	constexpr inline u32 get_node_array_size() const
 	{
 		return get_total_num_nodes();
 	}
@@ -348,13 +348,13 @@ public:		// functions
 	}
 	
 	
-	inline sa_list_node<type>& get_node_at( s32 node_index )
+	inline sa_list_node<type>& get_node_at( s32 index )
 	{
-		return specific_regular_sa_list_base::get_node_at(node_index);
+		return specific_regular_sa_list_base::get_node_at(index);
 	}
 	inline sa_list_node<type>& front()
 	{
-		//return get_node_at(get_front_node_index());
+		//return get_node_at(get_front_index());
 		return specific_regular_sa_list_base::front();
 	}
 	
@@ -387,9 +387,9 @@ public:		// functions
 	
 	// There is no need to sort the list after erasing a single node.  This
 	// is because the list was already sorted to begin with.
-	inline void erase_at( s32 node_index )
+	inline void erase_at( s32 index )
 	{
-		specific_regular_sa_list_base::erase_at(node_index);
+		specific_regular_sa_list_base::erase_at(index);
 	}
 	inline s32 insertion_sort_old_2()
 	{
