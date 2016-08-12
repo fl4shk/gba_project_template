@@ -135,14 +135,14 @@ public:		// and constants
 public:		// functions
 	inline debug_str() : real_size(0)
 	{
-		clear();
+		clear_arr();
 	}
 	inline debug_str( u32 n_real_size )
 	{
 		set_real_size(n_real_size);
 		//memfill32( arr, 0, max_size / sizeof(u32) );
 		//arr_memfill32( arr, 0, max_size );
-		clear();
+		clear_arr();
 	}
 	inline debug_str( const debug_str& to_copy )
 	{
@@ -173,11 +173,16 @@ public:		// functions
 		}
 	}
 	
-	inline void clear()
+	inline void clear_arr()
 	{
 		//arr_memfill32( arr, 0, max_size );
 		//arr_memset( arr, 0, max_size );
 		arr_memset( arr, 0 );
+	}
+	inline void total_clear()
+	{
+		real_size = 0;
+		clear_arr();
 	}
 	
 	inline void clear_unused_portion()
@@ -259,29 +264,28 @@ public:		// functions
 	static void clear_debug_vars();
 	
 	#define raw_write_debug_u32_and_inc( to_write ) \
-	debug_arr_group::the_raw_array_group.debug_u32_arr \
-		[debug_arr_group::the_raw_array_group.curr_index_arr \
-		[cdit_u32]++] = static_cast<u32>(to_write);
+	debug_arr_group::debug_u32_arr() \
+		[debug_arr_group::curr_index_arr()[cdit_u32]++] \
+		= static_cast<u32>(to_write);
 	
 	#define raw_write_debug_s32_and_inc( to_write ) \
-	debug_arr_group::the_raw_array_group.debug_s32_arr \
-		[debug_arr_group::the_raw_array_group.curr_index_arr \
-		[cdit_s32]++] = static_cast<s32>(to_write);
+	debug_arr_group::debug_s32_arr() \
+		[debug_arr_group::curr_index_arr()[cdit_s32]++] \
+		= static_cast<s32>(to_write);
 	
 	#define raw_write_debug_f24p8_and_inc( to_write ) \
-	debug_arr_group::the_raw_array_group.debug_f24p8_arr \
-		[debug_arr_group::the_raw_array_group.curr_index_arr \
-		[cdit_f24p8]++] = static_cast<fixed24p8>(to_write);
+	debug_arr_group::debug_f24p8_arr() \
+		[debug_arr_group::curr_index_arr()[cdit_f24p8]++] \
+		= static_cast<fixed24p8>(to_write);
 	
 	#define raw_write_debug_f8p8_and_inc( to_write ) \
-	debug_arr_group::the_raw_array_group.debug_f8p8_arr \
-		[debug_arr_group::the_raw_array_group.curr_index_arr \
-		[cdit_f8p8]++] = static_cast<fixed8p8>(to_write);
+	debug_arr_group::debug_f8p8_arr() \
+		[debug_arr_group::curr_index_arr()[cdit_f8p8]++] \
+		= static_cast<fixed8p8>(to_write);
 	
 	#define raw_write_debug_str_and_inc( to_write ) \
-	debug_arr_group::the_raw_array_group.debug_str_arr \
-		[debug_arr_group::the_raw_array_group.curr_index_arr \
-		[cdit_str]++] = to_write;
+	debug_arr_group::debug_str_arr() \
+		[debug_arr_group::curr_index_arr()[cdit_str]++] = to_write;
 	
 	static inline void write_u32_and_inc( u32 to_write )
 	{

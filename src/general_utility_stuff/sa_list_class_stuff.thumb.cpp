@@ -236,42 +236,23 @@ s32 sa_list_backend::move_node_before( s32 to_move_before_node_index,
 		s32 to_move_node_index, sa_list_node_contents& node_to_move )
 {
 	// If node_index == front_node_index
-	//if ( old_prev_node_index == -1 )
-	//if ( node_index == get_front_node_index() )
 	if ( to_move_before_node_index == get_front_node_index() )
 	{
-		//return push_front(to_insert);
 		return move_node_to_front( to_move_node_index, node_to_move );
 	}
 	else
 	{
-		//sa_list_node_contents node_at_node_index
-		//	= get_node_contents_at(node_index);
 		sa_list_node_contents node_to_move_before
 			= get_node_contents_at(to_move_before_node_index);
 		
-		//const s32 old_prev_node_index = node_at_node_index
-		//	.prev_node_index();
 		const s32 old_prev_node_index = node_to_move_before
 			.prev_node_index();
 		
 		
-		//// Allocating a node index in this function is no longer necessary
-		//// since this function is now only a node-moving function.
-		//const s32 new_node_index = get_the_free_list_backend()
-		//	.peek_top();
-		//get_the_free_list_backend().pop();
+		// Allocating a node index in this function is no longer necessary
+		// since this function is now only a node-moving function.
 		
 		
-		
-		////sa_list_node<type>& node_at_new_node_index
-		////	= get_node_at(new_node_index);
-		//sa_list_node_contents node_at_new_node_index
-		//	= get_node_contents_at(new_node_index);
-		
-		
-		//get_next_node_index_at_node_index(old_prev_node_index)
-		//	= new_node_index;
 		get_next_node_index_at_node_index(old_prev_node_index)
 			= to_move_node_index;
 		
@@ -294,9 +275,9 @@ s32 sa_list_backend::move_node_before( s32 to_move_before_node_index,
 		return to_move_node_index;
 	}
 	
-	//return node_index;
-	//return new_node_index;
-	
+	////return node_index;
+	////return new_node_index;
+	//return to_move_node_index;
 }
 
 
@@ -361,37 +342,15 @@ s32 sa_list_backend::move_node_before( s32 to_move_before_node_index,
 s32 sa_list_backend::move_node_after( s32 to_move_after_node_index, 
 	s32 to_move_node_index, sa_list_node_contents& node_to_move )
 {
-	//////s32 old_prev_node_index = get_node_at(node_index)
-	//////	.prev_node_index();
-	////s32 old_next_node_index = get_node_at(node_index)
-	////	.next_node_index();
-	//sa_list_node<type>& node_at_node_index = get_node_at(node_index);
-	
-	//sa_list_node_contents node_at_node_index = get_node_contents_at
-	//	(node_index);
-	//const s32 old_next_node_index = node_at_node_index.next_node_index();
-	
 	sa_list_node_contents node_to_move_after = get_node_contents_at
 		(to_move_after_node_index);
 	const s32 old_next_node_index = node_to_move_after.next_node_index();
 	
 	
-	//// Allocating a node index in this function is no longer necessary
-	//// since this function is now only a node-moving function.
-	////s32 new_node_index = get_the_free_list_backend().pop();
-	////const s32 new_node_index = get_the_free_list_backend().peek_top();
-	////get_the_free_list_backend().pop();
-	//const s32 new_node_index = get_the_free_list_backend()
-	//	.peek_top_and_pop();
+	// Allocating a node index in this function is no longer necessary
+	// since this function is now only a node-moving function.
 	
-	
-	//node_at_node_index.next_node_index() = new_node_index;
 	node_to_move_after.next_node_index() = to_move_node_index;
-	
-	////sa_list_node<type>& node_at_new_node_index 
-	////	= get_node_at(new_node_index);
-	//sa_list_node_contents node_at_new_node_index
-	//	= get_node_contents_at(new_node_index);
 	
 	s32 new_next_node_index = -1;
 	
@@ -404,11 +363,6 @@ s32 sa_list_backend::move_node_after( s32 to_move_after_node_index,
 	//else
 	if ( old_next_node_index >= 0 )
 	{
-		////get_node_at(old_next_node_index).prev_node_index() 
-		////	= new_node_index;
-		//get_prev_node_index_at_node_index(old_next_node_index)
-		//	= new_node_index;
-		//new_next_node_index = old_next_node_index;
 		get_prev_node_index_at_node_index(old_next_node_index)
 			= to_move_node_index;
 		new_next_node_index = old_next_node_index;
@@ -423,8 +377,6 @@ s32 sa_list_backend::move_node_after( s32 to_move_after_node_index,
 	copy_vec2_s16_via_ptr( *node_to_move.ptr_to_node_index_pair, 
 		vec2_s16( new_next_node_index, to_move_after_node_index ) );
 	
-	//return node_index;
-	//return new_node_index;
 	return to_move_node_index;
 }
 

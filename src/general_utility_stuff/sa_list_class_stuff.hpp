@@ -134,6 +134,7 @@ protected:		// functions
 
 
 
+
 // A group of functions to use as function pointers in the sa_list_backend
 // class.
 template< typename type >

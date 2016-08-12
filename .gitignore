@@ -15,3 +15,5 @@ disassembly*.armasm
 *.sav*
 *.ss*
 *.gdb_history*
+tags
+types_*.taghl

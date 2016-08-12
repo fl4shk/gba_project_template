@@ -140,7 +140,7 @@ inline void arr_memcpy32( std::array< type, size >& dst, const void* src )
 template< typename type, size_t size >
 inline void arr_memfill32( std::array< type, size >& dst, u32 src )
 {
-	arr_memfill32<type>( dst.data(), src, size );
+	arr_memfill32<type>( static_cast<type*>(dst.data()), src, size );
 }
 
 

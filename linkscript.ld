@@ -44,7 +44,7 @@ SECTIONS
 		*(.gnu_warning)
 		*(.glue_7t) *(.glue_7)
 		
-		
+		. = ALIGN(4);
 		
 		KEEP(*crtbegin.o(.ctors))
 		KEEP(*(EXCLUDE_FILE(*crtend.o) .ctors))
@@ -80,7 +80,7 @@ SECTIONS
 	
 	/* 
 		*(.text.*) is put AFTER *(.text.hot*) so that the .text_hot section
-		is 
+		goes into IWRAM
 	*/
 	.text_extra :
 	{

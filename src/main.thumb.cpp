@@ -105,11 +105,79 @@ regular_sa_list< u32, total_num_nodes > test_list __attribute__((_iwram));
 
 
 
+
+// This is intended for debugging sa_list stuff.
+class temp_debug_vars_group
+{
+public:		// variables and constants
+	static constexpr size_t max_num_nodes_per_loop = debug_str::max_size,
+		max_num_loops = 8;
+	
+	static constexpr size_t total_num_indices_per_arr_2d 
+		= max_num_nodes_per_loop * max_num_loops;
+	
+	
+	u32 outer_index = 0, inner_index = 0;
+	
+	debug_str str_arr[max_num_loops];
+	
+	
+	static constexpr size_t num_indices_per_node_index_group = 3;
+	// Technically, this is a 3D array.
+	s32 node_index_group_arr_2d[max_num_loops][max_num_nodes_per_loop]
+		[num_indices_per_node_index_group];
+	
+public:		// functions
+	inline temp_debug_vars_group()
+	{
+		reset();
+	}
+	
+	inline void reset()
+	{
+		outer_index = inner_index = 0;
+		
+		for ( u32 i=0; i<max_num_loops; ++i )
+		{
+			str_arr[i].total_clear();
+		}
+		
+		memfill32( reinterpret_cast<void*>(node_index_group_arr_2d), -1,
+			sizeof(node_index_group_arr_2d) / sizeof(u32) );
+		
+	}
+	
+	inline void write_str_and_inc_outer_index( const char* to_write )
+	{
+		str_arr[outer_index++] = to_write;
+	}
+	inline void write_three_indices_and_inc_inner_index
+		( s32 the_node_index, s32 the_next_node_index, 
+		s32 the_prev_node_index )
+	{
+		node_index_group_arr_2d[outer_index][inner_index][0] 
+			= the_node_index;
+		node_index_group_arr_2d[outer_index][inner_index][1] 
+			= the_next_node_index;
+		node_index_group_arr_2d[outer_index][inner_index][2] 
+			= the_prev_node_index;
+		
+		++inner_index;
+	}
+	
+} __attribute__((_align4));
+
+temp_debug_vars_group tdvg;
+
+
 template< typename type, u32 the_total_num_nodes >
 void show_small_regular_sa_list
 	( regular_sa_list< type, the_total_num_nodes >& to_show )
 {
 	asm_comment("show_small_regular_sa_list_as_str()");
+	
+	tdvg.inner_index = 0;
+	
 	
 	static constexpr u32 to_write_max_size = debug_str::max_size;
 	char to_write[to_write_max_size];
@@ -122,25 +190,22 @@ void show_small_regular_sa_list
 		i!=-1;
 		i=to_show.get_the_node_array()[i].next_node_index() )
 	{
-		//cout << test_list.get_the_node_array()[i].the_data << ", ";
 		to_write[real_size++] = (char)(to_show.get_the_node_array()[i]
 			.the_data);
-		//debug_arr_group::write_s32_and_inc(i);
-		//debug_arr_group::write_s32_and_inc(to_show.get_the_node_array()[i]
-		//	.next_node_index());
-		//debug_arr_group::write_s32_and_inc(to_show.get_the_node_array()[i]
-		//	.prev_node_index());
-		//debug_arr_group::write_s32_and_inc(9001);
+		
+		tdvg.write_three_indices_and_inc_inner_index( i, 
+			to_show.get_the_node_array()[i].next_node_index(),
+			to_show.get_the_node_array()[i].prev_node_index() );
 		
 		if ( real_size >= to_write_max_size )
 		{
 			break;
 		}
 	}
-	//cout << endl;
 	
-	debug_arr_group::write_str_and_inc(static_cast<const char*>(to_write));
+	//debug_arr_group::write_str_and_inc(static_cast<const char*>(to_write));
 	
+	tdvg.write_str_and_inc_outer_index(static_cast<const char*>(to_write));
 	
 }
 inline void show_test_list()
@@ -176,7 +241,7 @@ void init_test_list_and_profile_deallocate()
 	s32& test_list_front_node_index = test_list.get_front_node_index();
 	
 	s32 test_list_end = test_list.push_front('g');
-	for ( u32 i=0; i<3; ++i )
+	for ( u32 i=0; i<5; ++i )
 	{
 		test_list.push_front('1' + i );
 	}
@@ -195,27 +260,27 @@ void sa_list_test()
 	show_test_list();
 	
 	
-	//// Part 2
-	//asm_comment("Part 2");
-	//profile_start();
-	//test_list.insertion_sort();
-	////test_list.merge_sort();
-	//show_profile_stop();
-	//show_test_list();
-	//
-	//
-	//// Part 3
-	//asm_comment("Part 3");
-	//init_test_list_and_profile_deallocate();
-	//show_test_list();
-	//
-	//
-	//// Part 4
-	//asm_comment("Part 4");
-	//profile_start();
-	//test_list.insertion_sort_old_2();
-	//show_profile_stop();
-	//show_test_list();
+	// Part 2
+	asm_comment("Part 2");
+	profile_start();
+	test_list.insertion_sort();
+	//test_list.merge_sort();
+	show_profile_stop();
+	show_test_list();
+	
+	
+	// Part 3
+	asm_comment("Part 3");
+	init_test_list_and_profile_deallocate();
+	show_test_list();
+	
+	
+	// Part 4
+	asm_comment("Part 4");
+	profile_start();
+	test_list.insertion_sort_old_2();
+	show_profile_stop();
+	show_test_list();
 	
 	
 	
