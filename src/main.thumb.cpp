@@ -124,7 +124,7 @@ public:		// variables and constants
 	
 	static constexpr size_t num_indices_per_index_group = 3;
 	// Technically, this is a 3D array.
-	s32 index_group_arr_2d[max_num_loops][max_num_nodes_per_loop]
+	s16 index_group_arr_2d[max_num_loops][max_num_nodes_per_loop]
 		[num_indices_per_index_group];
 	
 public:		// functions

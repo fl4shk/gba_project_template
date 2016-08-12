@@ -100,32 +100,32 @@ public:		// functions
 	inline sa_list_node( const type& data_to_copy, 
 		vec2<type_in_vec2> s_index_pair ) : data(data_to_copy)
 	{
-		next_index() 
-			= get_next_index_v2(s_index_pair);
-		prev_index() 
-			= get_prev_index_v2(s_index_pair);
+		next_index() = get_next_index_from_vec2(s_index_pair);
+		prev_index() = get_prev_index_from_vec2(s_index_pair);
 	}
 	
 	inline s16& next_index()
 	{
-		return index_pair[sa_list_node_contents::vec2_index_for_next_index];
+		return index_pair
+			[sa_list_node_contents::vec2_index_for_next_index];
 	}
 	inline s16& prev_index()
 	{
-		return index_pair[sa_list_node_contents::vec2_index_for_prev_index];
+		return index_pair
+			[sa_list_node_contents::vec2_index_for_prev_index];
 	}
 	
 	
 protected:		// functions
 	template< typename type_in_vec2 >
-	static inline s16 get_next_index_from_v2
+	static inline s16 get_next_index_from_vec2
 		( const vec2<type_in_vec2>& n_index_pair )
 	{
 		return static_cast<s16>(n_index_pair
 			[sa_list_node_contents::vec2_index_for_next_index]);
 	}
 	template< typename type_in_vec2 >
-	static inline s16 get_prev_index_from_v2
+	static inline s16 get_prev_index_from_vec2
 		( const vec2<type_in_vec2>& n_index_pair )
 	{
 		return static_cast<s16>(n_index_pair
@@ -187,7 +187,7 @@ protected:		// functions
 	// Instead of having the ENTIRE insertion_sort function be duplicated
 	// for EVERY externally_allocated_sa_list instantiation, only duplicate
 	// the inner loop.  This seems pretty good to me.
-	static void loop_with_j_during_insertion_sort
+	static void insertion_sort_inner_loop
 		( sa_list_node<type>* node_array, s32* ptr_to_index_low )
 		__attribute__((_text_hot_section))
 	{
@@ -252,10 +252,10 @@ public:		// functions
 		return get_generic_void_2arg_fp(&conv_node_to_contents);
 	}
 	
-	static inline auto get_loop_with_j_during_insertion_sort_fp()
+	static inline auto get_insertion_sort_inner_loop_fp()
 	{
 		return get_generic_void_2arg_fp
-			(&loop_with_j_during_insertion_sort);
+			(&insertion_sort_inner_loop);
 	}
 	
 } __attribute__((_align4));
@@ -301,7 +301,7 @@ protected:		// variables
 	generic_vec2_s16_ptr_1arg_fp get_index_pair_fp = NULL;
 	
 	generic_void_2arg_fp conv_node_to_contents_fp = NULL,
-		loop_with_j_during_insertion_sort_fp = NULL;
+		insertion_sort_inner_loop_fp = NULL;
 	
 	template< typename type > friend class externally_allocated_sa_list;
 	
@@ -324,7 +324,7 @@ protected:		// functions
 		generic_void_ptr_1arg_fp s_get_node_data_fp, 
 		generic_vec2_s16_ptr_1arg_fp s_get_index_pair_fp,
 		generic_void_2arg_fp s_conv_node_to_contents_fp,
-		generic_void_2arg_fp s_loop_with_j_during_insertion_sort_fp )
+		generic_void_2arg_fp s_insertion_sort_inner_loop_fp )
 	{
 		init( s_node_array, s_the_free_list_backend_ptr,
 			s_total_num_nodes, s_specific_type_size, s_whole_node_size,
@@ -336,7 +336,7 @@ protected:		// functions
 			s_get_node_data_fp, 
 			s_get_index_pair_fp,
 			s_conv_node_to_contents_fp,
-			s_loop_with_j_during_insertion_sort_fp );
+			s_insertion_sort_inner_loop_fp );
 	}
 	inline sa_list_backend( sa_list_backend& to_copy )
 	{
@@ -356,7 +356,7 @@ protected:		// functions
 		generic_void_ptr_1arg_fp n_get_node_data_fp, 
 		generic_vec2_s16_ptr_1arg_fp n_get_index_pair_fp,
 		generic_void_2arg_fp n_conv_node_to_contents_fp,
-		generic_void_2arg_fp n_loop_with_j_during_insertion_sort_fp );
+		generic_void_2arg_fp n_insertion_sort_inner_loop_fp );
 	
 	inline void init( sa_list_backend& to_copy )
 	{
@@ -374,7 +374,7 @@ protected:		// functions
 			to_copy.get_get_node_data_fp(), 
 			to_copy.get_get_index_pair_fp(),
 			to_copy.get_conv_node_to_contents_fp(),
-			to_copy.get_loop_with_j_during_insertion_sort_fp() );
+			to_copy.get_insertion_sort_inner_loop_fp() );
 	}
 	
 	
@@ -455,10 +455,9 @@ protected:		// functions
 	{
 		return conv_node_to_contents_fp;
 	}
-	inline generic_void_2arg_fp
-		get_loop_with_j_during_insertion_sort_fp()
+	inline generic_void_2arg_fp get_insertion_sort_inner_loop_fp()
 	{
-		return loop_with_j_during_insertion_sort_fp;
+		return insertion_sort_inner_loop_fp;
 	}
 	
 	
@@ -631,63 +630,63 @@ protected:		// functions
 	// This is used by frontends to the move_node* functions
 	void internal_func_allocate_and_assign_to_node
 		( s32& index, sa_list_node_contents& node,
-		const void* n_data, u32 can_move_value )
-		__attribute__((_iwram_code));
+		const void* n_data, u32 can_move_value );
+		//__attribute__((_iwram_code));
 	
-	//inline s32 push_front( const void* to_push, u32 can_move_value=false )
-	//{
-	//	s32 to_push_index;
-	//	sa_list_node_contents node_to_push;
-	//	
-	//	internal_func_allocate_and_assign_to_node( to_push_index, 
-	//		node_to_push, to_push, can_move_value );
-	//	
-	//	return move_node_to_front( to_push_index, node_to_push );
-	//}
-	//
-	//inline s32 insert_before( s32 index, const void* to_insert,
-	//	u32 can_move_value=false )
-	//{
-	//	s32 to_insert_index;
-	//	sa_list_node_contents node_to_insert;
-	//	
-	//	internal_func_allocate_and_assign_to_node( to_insert_index,
-	//		node_to_insert, to_insert, can_move_value );
-	//	
-	//	return move_node_before( index, to_insert_index, 
-	//		node_to_insert );
-	//}
-	//inline s32 insert_after( s32 index, const void* to_insert,
-	//	u32 can_move_value=false )
-	//{
-	//	s32 to_insert_index;
-	//	sa_list_node_contents node_to_insert;
-	//	
-	//	internal_func_allocate_and_assign_to_node( to_insert_index,
-	//		node_to_insert, to_insert, can_move_value );
-	//	
-	//	return move_node_after( index, to_insert_index,
-	//		node_to_insert );
-	//}
+	inline s32 push_front( const void* to_push, u32 can_move_value=false )
+	{
+		s32 to_push_index;
+		sa_list_node_contents node_to_push;
+		
+		internal_func_allocate_and_assign_to_node( to_push_index, 
+			node_to_push, to_push, can_move_value );
+		
+		return move_node_to_front( to_push_index, node_to_push );
+	}
 	
-	s32 push_front( const void* to_push, u32 can_move_value=false )
-		__attribute__((_iwram_code,noinline));
-	s32 insert_before( s32 index, const void* to_insert,
-		u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
-	s32 insert_after( s32 index, const void* to_insert,
-		u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
+	inline s32 insert_before( s32 index, const void* to_insert,
+		u32 can_move_value=false )
+	{
+		s32 to_insert_index;
+		sa_list_node_contents node_to_insert;
+		
+		internal_func_allocate_and_assign_to_node( to_insert_index,
+			node_to_insert, to_insert, can_move_value );
+		
+		return move_node_before( index, to_insert_index, 
+			node_to_insert );
+	}
+	inline s32 insert_after( s32 index, const void* to_insert,
+		u32 can_move_value=false )
+	{
+		s32 to_insert_index;
+		sa_list_node_contents node_to_insert;
+		
+		internal_func_allocate_and_assign_to_node( to_insert_index,
+			node_to_insert, to_insert, can_move_value );
+		
+		return move_node_after( index, to_insert_index,
+			node_to_insert );
+	}
+	
+	//s32 push_front( const void* to_push, u32 can_move_value=false )
+	//	__attribute__((_iwram_code,noinline));
+	//s32 insert_before( s32 index, const void* to_insert,
+	//	u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
+	//s32 insert_after( s32 index, const void* to_insert,
+	//	u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
 	
 	
 	// Functions for internal use 
 	s32 move_node_to_front( s32 to_move_index, 
-		sa_list_node_contents& node_to_move ) 
-		__attribute__((_iwram_code,noinline));
+		sa_list_node_contents& node_to_move );
+		//__attribute__((noinline));
 	s32 move_node_before( s32 to_move_before_index, 
-		s32 to_move_index, sa_list_node_contents& node_to_move ) 
-		__attribute__((_iwram_code,noinline));
+		s32 to_move_index, sa_list_node_contents& node_to_move );
+		//__attribute__((noinline));
 	s32 move_node_after( s32 to_move_after_index, 
-		s32 to_move_index, sa_list_node_contents& node_to_move )
-		__attribute__((_iwram_code,noinline));
+		s32 to_move_index, sa_list_node_contents& node_to_move );
+		//__attribute__((noinline));
 	
 	
 	// Give slightly more flexibility, at the expense of a small amount of
@@ -695,7 +694,7 @@ protected:		// functions
 	// node_at_index be passed to it.
 	void* unlink_at_without_dealloc( s32 index, 
 		sa_list_node_contents* node_at_index_ptr=NULL ) 
-		__attribute__((_iwram_code,noinline));
+		__attribute__((noinline));
 	
 	
 	// It is (slightly) faster to just unlink a node than it is to erase
@@ -714,9 +713,9 @@ protected:		// functions
 	}
 	
 	
-	s32 insertion_sort() __attribute__((_iwram_code));
+	//s32 insertion_sort() __attribute__((_iwram_code));
 	//s32 insertion_sort() __attribute__((_text_hot_section));
-	//s32 insertion_sort();
+	s32 insertion_sort();
 	
 	//s32 merge_sort() __attribute__((_iwram_code));
 	s32 merge_sort();
@@ -782,7 +781,7 @@ public:		// functions
 			extras_type::get_get_node_data_fp(),
 			extras_type::get_get_index_pair_fp(),
 			extras_type::get_conv_node_to_contents_fp(),
-			extras_type::get_loop_with_j_during_insertion_sort_fp() );
+			extras_type::get_insertion_sort_inner_loop_fp() );
 		
 		//static auto specific_type_copy = []( type* a, type* b ) -> void 
 		//	{ *a = *b; };
