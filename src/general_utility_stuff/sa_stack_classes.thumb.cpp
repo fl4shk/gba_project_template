@@ -30,10 +30,10 @@ sa_pod_stack_backend::sa_pod_stack_backend( u8* s_ptr_to_the_array_u8,
 {
 }
 
-void sa_pod_stack_backend::pop()
-{
-	--get_next_index();
-}
+//void sa_pod_stack_backend::pop()
+//{
+//	--get_next_index();
+//}
 
 void sa_pod_stack_backend::write_to_the_array_u8( const u8* to_write_u8,
 	u32 non_u8_index )
@@ -79,4 +79,12 @@ void sa_free_list_backend::init()
 		push(i);
 	}
 }
+
+
+//s16& sa_free_list_backend::peek_top_and_pop()
+//{
+//	pop();
+//	
+//	return get_the_array()[get_next_index()];
+//}
 

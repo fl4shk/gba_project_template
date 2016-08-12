@@ -97,7 +97,11 @@ public:		// functions
 		write_to_the_array_u8( to_push_u8, get_next_index()++ );
 	}
 	
-	virtual void pop();
+	//virtual void pop();
+	inline void pop()
+	{
+		--get_next_index();
+	}
 	
 protected:		// functions
 	void write_to_the_array_u8( const u8* to_write_u8, u32 non_u8_index );
@@ -153,12 +157,12 @@ public:		// functions
 	{
 		get_the_array()[get_next_index()++] = (s16)to_push;
 	}
-	inline void pop() override
-	{
-		get_the_array()[get_next_index()-1] = -1;
-		
-		sa_pod_stack_backend::pop();
-	}
+	//inline void pop() override
+	//{
+	//	get_the_array()[get_next_index()-1] = -1;
+	//	
+	//	sa_pod_stack_backend::pop();
+	//}
 	
 	inline s16& peek_top()
 	{
@@ -167,6 +171,17 @@ public:		// functions
 	inline const s32 peek_top() const
 	{
 		return get_the_array()[get_next_index()-1];
+	}
+	
+	
+	// A wrapper function just in case it's ever forgotten what to do.
+	inline s16& peek_top_and_pop()
+	{
+		s16& ret = peek_top();
+		
+		pop();
+		
+		return ret;
 	}
 	
 } __attribute__((_align4));

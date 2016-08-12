@@ -106,7 +106,7 @@ regular_sa_list< u32, total_num_nodes > test_list __attribute__((_iwram));
 
 
 template< typename type, u32 the_total_num_nodes >
-void show_small_regular_sa_list_as_str
+void show_small_regular_sa_list
 	( regular_sa_list< type, the_total_num_nodes >& to_show )
 {
 	asm_comment("show_small_regular_sa_list_as_str()");
@@ -125,6 +125,12 @@ void show_small_regular_sa_list_as_str
 		//cout << test_list.get_the_node_array()[i].the_data << ", ";
 		to_write[real_size++] = (char)(to_show.get_the_node_array()[i]
 			.the_data);
+		//debug_arr_group::write_s32_and_inc(i);
+		//debug_arr_group::write_s32_and_inc(to_show.get_the_node_array()[i]
+		//	.next_node_index());
+		//debug_arr_group::write_s32_and_inc(to_show.get_the_node_array()[i]
+		//	.prev_node_index());
+		//debug_arr_group::write_s32_and_inc(9001);
 		
 		if ( real_size >= to_write_max_size )
 		{
@@ -135,17 +141,13 @@ void show_small_regular_sa_list_as_str
 	
 	debug_arr_group::write_str_and_inc(static_cast<const char*>(to_write));
 	
+	
 }
 inline void show_test_list()
 {
-	show_small_regular_sa_list_as_str(test_list);
+	show_small_regular_sa_list(test_list);
 }
 
-//void sort_test_list() __attribute__((_iwram_code,noinline));
-//void sort_test_list()
-//{
-//	test_list.insertion_sort();
-//}
 
 
 void init_test_list_and_profile_deallocate()
@@ -154,17 +156,35 @@ void init_test_list_and_profile_deallocate()
 	test_list.fully_deallocate_via_unlink();
 	show_profile_stop();
 	
-	test_list.push_front('d');
-	test_list.push_front('c');
-	test_list.push_front('e');
-	test_list.push_front('d');
-	test_list.push_front('f');
-	test_list.push_front('0');
-	test_list.push_front('_');
-	test_list.push_front('a');
-	test_list.push_front('d');
-	test_list.push_front('f');
-	test_list.push_front('a');
+	//int test_list_end = test_list.push_front('d');
+	//test_list.push_front('c');
+	//test_list.push_front('e');
+	//test_list.push_front('d');
+	//test_list.push_front('f');
+	//test_list.push_front('0');
+	//test_list.push_front('_');
+	//test_list.push_front('a');
+	//test_list.push_front('d');
+	//test_list.push_front('f');
+	//test_list.push_front('a');
+	
+	//for ( u32 i=0; i<test_list.get_total_num_nodes(); ++i )
+	//{
+	//	test_list.push_front('A' + i);
+	//}
+	
+	s32& test_list_front_node_index = test_list.get_front_node_index();
+	
+	s32 test_list_end = test_list.push_front('g');
+	for ( u32 i=0; i<3; ++i )
+	{
+		test_list.push_front('1' + i );
+	}
+	
+	//test_list.insert_before( test_list_front_node_index, 'h' );
+	//test_list.insert_before( test_list_end, 'f' );
+	test_list.insert_after( test_list_front_node_index, 'h' );
+	test_list.insert_after( test_list_end, 'f' );
 }
 
 void sa_list_test()
@@ -175,27 +195,27 @@ void sa_list_test()
 	show_test_list();
 	
 	
-	// Part 2
-	asm_comment("Part 2");
-	profile_start();
-	test_list.insertion_sort();
-	//test_list.merge_sort();
-	show_profile_stop();
-	show_test_list();
-	
-	
-	// Part 3
-	asm_comment("Part 3");
-	init_test_list_and_profile_deallocate();
-	show_test_list();
-	
-	
-	// Part 4
-	asm_comment("Part 4");
-	profile_start();
-	test_list.insertion_sort_old_2();
-	show_profile_stop();
-	show_test_list();
+	//// Part 2
+	//asm_comment("Part 2");
+	//profile_start();
+	//test_list.insertion_sort();
+	////test_list.merge_sort();
+	//show_profile_stop();
+	//show_test_list();
+	//
+	//
+	//// Part 3
+	//asm_comment("Part 3");
+	//init_test_list_and_profile_deallocate();
+	//show_test_list();
+	//
+	//
+	//// Part 4
+	//asm_comment("Part 4");
+	//profile_start();
+	//test_list.insertion_sort_old_2();
+	//show_profile_stop();
+	//show_test_list();
 	
 	
 	

@@ -567,9 +567,9 @@ protected:		// functions
 	//	copy_vec2_s16_via_ptr( *dst_node_contents.ptr_to_node_index_pair,
 	//		n_node_index_pair );
 	//}
-	inline void assign_to_whole_node
+	inline void assign_to_node_data
 		( sa_list_node_contents& dst_node_contents, const void* n_the_data,
-		const vec2_s16& n_node_index_pair, u32 can_move_value )
+		u32 can_move_value )
 	{
 		if (!can_move_value)
 		{
@@ -581,7 +581,13 @@ protected:		// functions
 			move_node_data( dst_node_contents.ptr_to_the_data, 
 				n_the_data );
 		}
-		
+	}
+	inline void assign_to_whole_node
+		( sa_list_node_contents& dst_node_contents, const void* n_the_data,
+		const vec2_s16& n_node_index_pair, u32 can_move_value )
+	{
+		assign_to_node_data( dst_node_contents, n_the_data, 
+			can_move_value );
 		copy_vec2_s16_via_ptr( *dst_node_contents.ptr_to_node_index_pair,
 			n_node_index_pair );
 	}
@@ -621,19 +627,59 @@ protected:		// functions
 	void fully_deallocate_via_unlink() __attribute__((_iwram_code));
 	
 	
-	s32 push_front( const void* to_push, u32 can_move_value=false )
+	// This is used by frontends to the move_node* functions
+	void internal_func_allocate_and_assign_to_node
+		( s32& node_index, sa_list_node_contents& node,
+		const void* n_the_data, u32 can_move_value )
+		__attribute__((_iwram_code));
+	
+	inline s32 push_front( const void* to_push, u32 can_move_value=false )
+	{
+		s32 to_push_node_index;
+		sa_list_node_contents node_to_push;
+		
+		internal_func_allocate_and_assign_to_node( to_push_node_index, 
+			node_to_push, to_push, can_move_value );
+		
+		return move_node_to_front( to_push_node_index, node_to_push );
+	}
+	
+	inline s32 insert_before( s32 node_index, const void* to_insert,
+		u32 can_move_value=false )
+	{
+		s32 to_insert_node_index;
+		sa_list_node_contents node_to_insert;
+		
+		internal_func_allocate_and_assign_to_node( to_insert_node_index,
+			node_to_insert, to_insert, can_move_value );
+		
+		return move_node_before( node_index, to_insert_node_index, 
+			node_to_insert );
+	}
+	inline s32 insert_after( s32 node_index, const void* to_insert,
+		u32 can_move_value=false )
+	{
+		s32 to_insert_node_index;
+		sa_list_node_contents node_to_insert;
+		
+		internal_func_allocate_and_assign_to_node( to_insert_node_index,
+			node_to_insert, to_insert, can_move_value );
+		
+		return move_node_after( node_index, to_insert_node_index,
+			node_to_insert );
+	}
+	
+	
+	// Functions for internal use 
+	s32 move_node_to_front( s32 to_move_node_index, 
+		sa_list_node_contents& node_to_move ) 
 		__attribute__((_iwram_code,noinline));
-	s32 insert_before( s32 node_index, const void* to_insert,
-		u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
-	s32 insert_after( s32 node_index, const void* to_insert, 
-		u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
-	
-	
-	s32 push_front_without_alloc( s32 to_move_node_index,
-		u32 can_move_value=false );
-	s32 insert_after_without_alloc( s32 node_index_to_insert_after, 
-		s32 to_move_node_index, u32 can_move_value=false );
-	
+	s32 move_node_before( s32 to_move_before_node_index, 
+		s32 to_move_node_index, sa_list_node_contents& node_to_move ) 
+		__attribute__((_iwram_code,noinline));
+	s32 move_node_after( s32 to_move_after_node_index, 
+		s32 to_move_node_index, sa_list_node_contents& node_to_move )
+		__attribute__((_iwram_code,noinline));
 	
 	void* unlink_at_without_dealloc( s32 node_index ) 
 		__attribute__((_iwram_code));
@@ -1297,6 +1343,7 @@ public:		// functions
 	
 	s32 insertion_sort_old_2() 
 		__attribute__((_text_hot_section,noinline))
+		//__attribute__((noinline))
 	{
 		s32& the_front_node_index = get_front_node_index();
 		
