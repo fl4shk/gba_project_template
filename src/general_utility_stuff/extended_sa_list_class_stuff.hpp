@@ -21,17 +21,20 @@
 
 #include "sa_list_class_stuff.hpp"
 
+namespace sa_list_stuff
+{
+
 // This is a template class intended for use as a BASE CLASS for classes
 // that act as statically-allocated linked lists.  Since some (or possibly 
 // all) of the derived classes use only some of the non-constructor member
 // functions, 
 template< typename type, u32 total_num_nodes >
-class regular_sa_list_base
+class regular_list_base
 {
 protected:		// variables
 //public:		// variables
-	externally_allocated_sa_list<type> the_externally_allocated_sa_list;
-	sa_list_node<type> node_array[total_num_nodes];
+	externally_allocated_list<type> the_externally_allocated_list;
+	node<type> node_array[total_num_nodes];
 	sa_free_list<total_num_nodes> the_free_list;
 	
 public:		// functions
@@ -39,7 +42,7 @@ public:		// functions
 	
 protected:		// functions
 	// This may be the first time I've ever made a constructor protected.
-	inline regular_sa_list_base() : the_externally_allocated_sa_list
+	inline regular_list_base() : the_externally_allocated_list
 		( node_array, &the_free_list.the_sa_free_list_backend, 
 		get_total_num_nodes() )
 	{
@@ -47,18 +50,18 @@ protected:		// functions
 	
 	inline s32& get_front_index()
 	{
-		return the_externally_allocated_sa_list.get_front_index();
+		return the_externally_allocated_list.get_front_index();
 	}
 	inline const s32 get_front_index() const
 	{
-		return the_externally_allocated_sa_list.get_front_index();
+		return the_externally_allocated_list.get_front_index();
 	}
 	
-	inline sa_list_node<type>* get_node_array()
+	inline node<type>* get_node_array()
 	{
 		return node_array;
 	}
-	inline const sa_list_node<type>* get_node_array() const
+	inline const node<type>* get_node_array() const
 	{
 		return node_array;
 	}
@@ -80,123 +83,122 @@ protected:		// functions
 		return total_num_nodes;
 	}
 	
-	inline sa_list_node<type>& get_node_at( s32 index )
+	inline node<type>& get_node_at( s32 index )
 	{
 		return get_node_array()[index];
 	}
-	inline sa_list_node<type>& front()
+	inline node<type>& front()
 	{
 		//return get_node_at(get_front_index());
-		return the_externally_allocated_sa_list.front();
+		return the_externally_allocated_list.front();
 	}
 	
 	inline void fully_deallocate()
 	{
-		the_externally_allocated_sa_list.fully_deallocate();
+		the_externally_allocated_list.fully_deallocate();
 	}
 	inline void fully_deallocate_via_unlink()
 	{
-		the_externally_allocated_sa_list.fully_deallocate_via_unlink();
+		the_externally_allocated_list.fully_deallocate_via_unlink();
 	}
 	
 	
 	inline s32 push_front( const type& to_push )
 	{
-		return the_externally_allocated_sa_list.push_front(to_push);
+		return the_externally_allocated_list.push_front(to_push);
 	}
 	inline s32 push_front( type&& to_push )
 	{
-		return the_externally_allocated_sa_list.push_front
+		return the_externally_allocated_list.push_front
 			(std::move(to_push));
 	}
 	inline s32 pop_front_basic()
 	{
-		return the_externally_allocated_sa_list.pop_front_basic();
+		return the_externally_allocated_list.pop_front_basic();
 	}
 	
 	
 	inline s32 insert_before( s32 index, const type& to_insert )
 	{
-		return the_externally_allocated_sa_list.insert_before( index,
+		return the_externally_allocated_list.insert_before( index,
 			to_insert );
 	}
 	inline s32 insert_before( s32 index, type&& to_insert )
 	{
-		return the_externally_allocated_sa_list.insert_before( index,
+		return the_externally_allocated_list.insert_before( index,
 			std::move(to_insert) );
 	}
 	
 	
 	inline s32 insert_after( s32 index, const type& to_insert )
 	{
-		return the_externally_allocated_sa_list.insert_after( index,
+		return the_externally_allocated_list.insert_after( index,
 			to_insert );
 	}
 	inline s32 insert_after( s32 index, type&& to_insert )
 	{
-		return the_externally_allocated_sa_list.insert_after( index,
+		return the_externally_allocated_list.insert_after( index,
 			std::move(to_insert) );
 	}
 	
 	
 	inline void erase_at( s32 index )
 	{
-		the_externally_allocated_sa_list.erase_at(index);
+		the_externally_allocated_list.erase_at(index);
 	}
 	inline s32 insertion_sort_old_2()
 	{
-		return the_externally_allocated_sa_list.insertion_sort_old_2();
+		return the_externally_allocated_list.insertion_sort_old_2();
 	}
 	inline s32 insertion_sort()
 	{
-		return the_externally_allocated_sa_list.insertion_sort();
+		return the_externally_allocated_list.insertion_sort();
 	}
 	inline s32 merge_sort()
 	{
-		return the_externally_allocated_sa_list.merge_sort();
+		return the_externally_allocated_list.merge_sort();
 	}
 	
 } __attribute__((_align4));
 
 
 template< typename type, u32 total_num_nodes >
-class regular_sa_list 
-	: public regular_sa_list_base< type, total_num_nodes >
+class regular_list : public regular_list_base< type, total_num_nodes >
 {
 public:		// typedefs
-	typedef regular_sa_list_base< type, total_num_nodes >
-		specific_regular_sa_list_base;
+	typedef regular_list_base< type, total_num_nodes >
+		specific_regular_list_base;
 	
 public:		// functions
-	inline regular_sa_list() : specific_regular_sa_list_base()
+	inline regular_list() : specific_regular_list_base()
 	{
 	}
 	
 	inline s32& get_front_index()
 	{
-		return specific_regular_sa_list_base::get_front_index();
+		return this->get_front_index();
 	}
 	inline const s32 get_front_index() const
 	{
-		return specific_regular_sa_list_base::get_front_index();
+		return this->get_front_index();
 	}
 	
-	inline sa_list_node<type>* get_node_array()
+	inline node<type>* get_node_array()
 	{
-		return specific_regular_sa_list_base::get_node_array();
+		return this->get_node_array();
 	}
-	inline const sa_list_node<type>* get_node_array() const
+	inline const node<type>* get_node_array() const
 	{
-		return specific_regular_sa_list_base::get_node_array();
+		return this->get_node_array();
 	}
 	
 	inline sa_free_list<total_num_nodes>& get_the_free_list()
 	{
-		return specific_regular_sa_list_base::get_the_free_list();
+		return this->get_the_free_list();
 	}
 	inline const sa_free_list<total_num_nodes>& get_the_free_list() const
 	{
-		return specific_regular_sa_list_base::get_the_free_list();
+		return this->get_the_free_list();
 	}
 	constexpr inline u32 get_node_array_size() const
 	{
@@ -207,127 +209,125 @@ public:		// functions
 		return total_num_nodes;
 	}
 	
-	inline sa_list_node<type>& get_node_at( s32 index )
+	inline node<type>& get_node_at( s32 index )
 	{
-		return specific_regular_sa_list_base::get_node_at(index);
+		return this->get_node_at(index);
 	}
-	inline sa_list_node<type>& front()
+	inline node<type>& front()
 	{
 		//return get_node_at(get_front_index());
-		return specific_regular_sa_list_base::front();
+		return this->front();
 	}
 	
 	inline void fully_deallocate()
 	{
-		specific_regular_sa_list_base::fully_deallocate();
+		this->fully_deallocate();
 	}
 	inline void fully_deallocate_via_unlink()
 	{
-		specific_regular_sa_list_base::fully_deallocate_via_unlink();
+		this->fully_deallocate_via_unlink();
 	}
 	
 	
 	inline s32 push_front( const type& to_push )
 	{
-		return specific_regular_sa_list_base::push_front(to_push);
+		return this->push_front(to_push);
 	}
 	inline s32 push_front( type&& to_push )
 	{
-		return specific_regular_sa_list_base::push_front
+		return this->push_front
 			(std::move(to_push));
 	}
 	inline s32 pop_front_basic()
 	{
-		return specific_regular_sa_list_base::pop_front_basic();
+		return this->pop_front_basic();
 	}
 	
 	
 	inline s32 insert_before( s32 index, const type& to_insert )
 	{
-		return specific_regular_sa_list_base::insert_before( index,
+		return this->insert_before( index,
 			to_insert );
 	}
 	inline s32 insert_before( s32 index, type&& to_insert )
 	{
-		return specific_regular_sa_list_base::insert_before( index,
+		return this->insert_before( index,
 			std::move(to_insert) );
 	}
 	
 	
 	inline s32 insert_after( s32 index, const type& to_insert )
 	{
-		return specific_regular_sa_list_base::insert_after( index,
+		return this->insert_after( index,
 			to_insert );
 	}
 	inline s32 insert_after( s32 index, type&& to_insert )
 	{
-		return specific_regular_sa_list_base::insert_after( index,
+		return this->insert_after( index,
 			std::move(to_insert) );
 	}
 	
 	
 	inline void erase_at( s32 index )
 	{
-		specific_regular_sa_list_base::erase_at(index);
+		this->erase_at(index);
 	}
 	inline s32 insertion_sort_old_2()
 	{
-		return specific_regular_sa_list_base::insertion_sort_old_2();
+		return this->insertion_sort_old_2();
 	}
 	inline s32 insertion_sort()
 	{
-		return specific_regular_sa_list_base::insertion_sort();
+		return this->insertion_sort();
 	}
 	inline s32 merge_sort()
 	{
-		return specific_regular_sa_list_base::merge_sort();
+		return this->merge_sort();
 	}
 	
 } __attribute__((_align4));
 
 
-// For extra fun, this class's name can be abbreviated "sa sa list".  It is
-// intended to always be sorted, though it does not have to be in some
-// cases.
+// This class is intended to always be sorted, though it does not have to
+// be in some cases.
 template< typename type, u32 total_num_nodes >
-class sorted_always_sa_list 
-	: public regular_sa_list_base< type, total_num_nodes >
+class sorted_always_list 
+	: public regular_list_base< type, total_num_nodes >
 {
 public:		// typedefs
-	typedef regular_sa_list_base< type, total_num_nodes >
-		specific_regular_sa_list_base;
+	typedef regular_list_base< type, total_num_nodes >
+		specific_regular_list_base;
 	
 public:		// functions
-	inline sorted_always_sa_list() 
-		: specific_regular_sa_list_base()
+	inline sorted_always_list() : specific_regular_list_base()
 	{
 	}
 	
 	inline s32& get_front_index()
 	{
-		return specific_regular_sa_list_base::get_front_index();
+		return this->get_front_index();
 	}
 	inline const s32 get_front_index() const
 	{
-		return specific_regular_sa_list_base::get_front_index();
+		return this->get_front_index();
 	}
 	
-	inline sa_list_node<type>* get_node_array()
+	inline node<type>* get_node_array()
 	{
-		return specific_regular_sa_list_base::get_node_array();
+		return this->get_node_array();
 	}
-	inline const sa_list_node<type>* get_node_array() const
+	inline const node<type>* get_node_array() const
 	{
-		return specific_regular_sa_list_base::get_node_array();
+		return this->get_node_array();
 	}
 	
 	inline sa_free_list<total_num_nodes>& get_the_free_list()
 	{
-		return specific_regular_sa_list_base::get_the_free_list();
+		return this->get_the_free_list();
 	}
 	inline const sa_free_list<total_num_nodes>& get_the_free_list() const
 	{
-		return specific_regular_sa_list_base::get_the_free_list();
+		return this->get_the_free_list();
 	}
 	constexpr inline u32 get_node_array_size() const
 	{
@@ -340,48 +340,48 @@ public:		// functions
 	
 	inline void fully_deallocate()
 	{
-		specific_regular_sa_list_base::fully_deallocate();
+		this->fully_deallocate();
 	}
 	inline void fully_deallocate_via_unlink()
 	{
-		specific_regular_sa_list_base::fully_deallocate_via_unlink();
+		this->fully_deallocate_via_unlink();
 	}
 	
 	
-	inline sa_list_node<type>& get_node_at( s32 index )
+	inline node<type>& get_node_at( s32 index )
 	{
-		return specific_regular_sa_list_base::get_node_at(index);
+		return this->get_node_at(index);
 	}
-	inline sa_list_node<type>& front()
+	inline node<type>& front()
 	{
 		//return get_node_at(get_front_index());
-		return specific_regular_sa_list_base::front();
+		return this->front();
 	}
 	
 	inline s32 push_front( const type& to_push )
 	{
-		return specific_regular_sa_list_base::push_front(to_push);
+		return this->push_front(to_push);
 	}
 	inline s32 push_front( type&& to_push )
 	{
-		return specific_regular_sa_list_base::push_front
+		return this->push_front
 			(std::move(to_push));
 	}
 	inline s32 pop_front_basic()
 	{
-		return specific_regular_sa_list_base::pop_front_basic();
+		return this->pop_front_basic();
 	}
 	inline s32 insert_and_sort( const type& to_insert )
 	{
-		specific_regular_sa_list_base::push_front(to_insert);
+		this->push_front(to_insert);
 		
-		return specific_regular_sa_list_base::insertion_sort();
+		return this->insertion_sort();
 	}
 	inline s32 insert_and_sort( type&& to_insert )
 	{
-		specific_regular_sa_list_base::push_front(std::move(to_insert));
+		this->push_front(std::move(to_insert));
 		
-		return specific_regular_sa_list_base::insertion_sort();
+		return this->insertion_sort();
 	}
 	
 	
@@ -389,22 +389,23 @@ public:		// functions
 	// is because the list was already sorted to begin with.
 	inline void erase_at( s32 index )
 	{
-		specific_regular_sa_list_base::erase_at(index);
+		this->erase_at(index);
 	}
 	inline s32 insertion_sort_old_2()
 	{
-		return specific_regular_sa_list_base::insertion_sort_old_2();
+		return this->insertion_sort_old_2();
 	}
 	inline s32 insertion_sort()
 	{
-		return specific_regular_sa_list_base::insertion_sort();
+		return this->insertion_sort();
 	}
 	inline s32 merge_sort()
 	{
-		return specific_regular_sa_list_base::merge_sort();
+		return this->merge_sort();
 	}
 	
 } __attribute__((_align4));
 
+} // end of namespace sa_list_stuff
 
-#endif		// extended_sa_list_class_stuff_hpp
+#endif		// extended_list_class_stuff_hpp

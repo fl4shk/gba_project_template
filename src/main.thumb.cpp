@@ -94,13 +94,14 @@ int main()
 
 
 static constexpr u32 total_num_nodes = 20;
-//typedef sorted_always_sa_list< u32, total_num_nodes >
-//	the_sorted_always_sa_list_type;
+//typedef sa_list_stuff::sorted_always_list< u32, total_num_nodes >
+//	the_sorted_always_list_type;
 //
-//the_sorted_always_sa_list_type test_list __attribute__((_ewram));
+//the_sorted_always_list_type test_list __attribute__((_ewram));
 
-regular_sa_list< u32, total_num_nodes > test_list __attribute__((_iwram));
-//regular_sa_list< temp_data_type, total_num_nodes > test_list 
+sa_list_stuff::regular_list< u32, total_num_nodes > test_list 
+	__attribute__((_iwram));
+//sa_list_stuff::regular_list< temp_data_type, total_num_nodes > test_list 
 //	__attribute__((_iwram));
 
 
@@ -155,12 +156,9 @@ public:		// functions
 		( s32 the_index, s32 the_next_index, 
 		s32 the_prev_index )
 	{
-		index_group_arr_2d[outer_index][inner_index][0] 
-			= the_index;
-		index_group_arr_2d[outer_index][inner_index][1] 
-			= the_next_index;
-		index_group_arr_2d[outer_index][inner_index][2] 
-			= the_prev_index;
+		index_group_arr_2d[outer_index][inner_index][0] = the_index;
+		index_group_arr_2d[outer_index][inner_index][1] = the_next_index;
+		index_group_arr_2d[outer_index][inner_index][2] = the_prev_index;
 		
 		++inner_index;
 	}
@@ -172,7 +170,7 @@ temp_debug_vars_group tdvg;
 
 template< typename type, u32 the_total_num_nodes >
 void show_small_regular_sa_list
-	( regular_sa_list< type, the_total_num_nodes >& to_show )
+	( sa_list_stuff::regular_list< type, the_total_num_nodes >& to_show )
 {
 	asm_comment("show_small_regular_sa_list_as_str()");
 	
@@ -253,8 +251,37 @@ void init_test_list_and_profile_deallocate()
 	test_list.insert_after( test_list_end, 'f' );
 }
 
+static constexpr size_t test_cbuf_size = 3;
+s32 test_cbuf[test_cbuf_size];
+sa_list_stuff::circ_buf_helper test_cbuf_helper( test_cbuf, 
+	test_cbuf_size );
+
+
+//void temp_debug_thing( u32 to_write ) __attribute__((noinline));
+//void temp_debug_thing( u32 to_write )
+//{
+//	debug_arr_group::write_u32_and_inc(to_write);
+//}
+//void show_
+
+
 void sa_list_test()
 {
+	//test_cbuf_helper.push(3);
+	//test_cbuf_helper.push(20);
+	//test_cbuf_helper.push(9);
+	//
+	//
+	//test_cbuf_helper.push(8);
+	//test_cbuf_helper.push(24);
+	//test_cbuf_helper.push(6);
+	//
+	//
+	//test_cbuf_helper.push(29);
+	//test_cbuf_helper.push(17);
+	//test_cbuf_helper.push(34);
+	
+	
 	// Part 1
 	asm_comment("Part 1");
 	init_test_list_and_profile_deallocate();

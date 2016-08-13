@@ -27,6 +27,18 @@
 #include <array>
 using std::array;
 
+//#include "sa_list_class_stuff.hpp"
+//#include "extended_sa_list_class_stuff.hpp"
+
+namespace sa_list_stuff
+{
+
+template< typename type, u32 total_num_nodes > 
+	class regular_list_base;
+template< typename type, u32 total_num_nodes, u32 num_lists >
+	class sa_array_of_lists;
+
+} // end of namespace sa_list_stuff
 
 
 
@@ -367,9 +379,9 @@ protected:		// variables
 	//template< typename type, u32 total_num_nodes > friend class
 	//	externally_allocated_sa_list;
 	template< typename type, u32 total_num_nodes > 
-		friend class regular_sa_list_base;
+		friend class sa_list_stuff::regular_list_base;
 	template< typename type, u32 total_num_nodes, u32 num_lists >
-		friend class sa_array_of_lists;
+		friend class sa_list_stuff::sa_array_of_lists;
 	
 protected:		// variables
 	//array< int, size > the_array;

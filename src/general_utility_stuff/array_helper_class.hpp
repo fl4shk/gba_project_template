@@ -30,14 +30,13 @@ template< typename type >
 class array_helper
 {
 public:			// variables
-	type* the_array;
+	type* the_array = NULL;
 	
 protected:		// variables
-	u32 size;
+	u32 size = 0;
 	
 public:			// functions
 	array_helper()
-		: the_array(NULL), size(0)
 	{
 	}
 	
@@ -58,10 +57,12 @@ public:			// functions
 	}
 	
 	
-	void operator = ( const array_helper<type>& to_copy )
+	array_helper<type>& operator = ( const array_helper<type>& to_copy )
 	{
 		the_array = to_copy.the_array;
 		size = to_copy.size;
+		
+		return *this;
 	}
 	
 	
