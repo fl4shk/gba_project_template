@@ -251,11 +251,6 @@ void init_test_list_and_profile_deallocate()
 	test_list.insert_after( test_list_end, 'f' );
 }
 
-static constexpr size_t test_cbuf_size = 3;
-s32 test_cbuf[test_cbuf_size];
-sa_list_stuff::circ_buf_helper test_cbuf_helper( test_cbuf, 
-	test_cbuf_size );
-
 
 //void temp_debug_thing( u32 to_write ) __attribute__((noinline));
 //void temp_debug_thing( u32 to_write )
@@ -267,20 +262,6 @@ sa_list_stuff::circ_buf_helper test_cbuf_helper( test_cbuf,
 
 void sa_list_test()
 {
-	//test_cbuf_helper.push(3);
-	//test_cbuf_helper.push(20);
-	//test_cbuf_helper.push(9);
-	//
-	//
-	//test_cbuf_helper.push(8);
-	//test_cbuf_helper.push(24);
-	//test_cbuf_helper.push(6);
-	//
-	//
-	//test_cbuf_helper.push(29);
-	//test_cbuf_helper.push(17);
-	//test_cbuf_helper.push(34);
-	
 	
 	// Part 1
 	asm_comment("Part 1");

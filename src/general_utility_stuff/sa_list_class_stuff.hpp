@@ -1589,6 +1589,144 @@ public:		// functions
 	}
 	
 	
+	s32 insertion_sort_old_3() __attribute__((noinline))
+	{
+		s32& the_front_index = get_front_index();
+		
+		// Don't do anything if this list has zero or one nodes.
+		if ( the_front_index < 0 )
+		{
+			return the_front_index;
+		}
+		if ( get_node_at(the_front_index).next_index() < 0 )
+		{
+			return the_front_index;
+		}
+		
+		
+		//s32 temp_front_index = -1;
+		//sa_list_backend<type> sorted_list( &temp_front_index, 
+		//	node_array, ptr_to_the_free_list_backend, 
+		//	total_num_nodes );
+		externally_allocated_list<type> sorted_list( node_array, 
+			the_free_list_backend_ptr, get_total_num_nodes() );
+		
+		s32& temp_front_index = sorted_list.get_front_index();
+		
+		
+		static constexpr u32 prev_index_low_arr_size = 20;
+		s32 prev_index_low_arr[prev_index_low_arr_size];
+		
+		for ( s32 i=prev_index_low_arr_size-1; i>=0; --i )
+		{
+			prev_index_low_arr[i] = 0;
+		}
+		
+		
+		s32 curr_index = temp_front_index;
+		
+		for ( s32 i=the_front_index;
+			i!=-1; )
+			//i=get_node_at(i).next_index() )
+		{
+			u32 num_extra_low_indices = 0;
+			
+			
+			s32 index_low = i;
+			
+			node<type>* node_at_j;
+			
+			type* the_data_at_index_low = &get_node_at(index_low).the_data;
+			
+			// Find the lowest value at or after i.
+			for ( s32 j=index_low;
+				j!=-1; 
+				j=node_at_j->next_index() )
+			{
+				node_at_j = &get_node_at(j);
+				
+				if ( node_at_j->the_data 
+					< *the_data_at_index_low )
+				{
+					if ( num_extra_low_indices + 1 
+						< prev_index_low_arr_size )
+					{
+						prev_index_low_arr[num_extra_low_indices++]
+							= index_low;
+					}
+					
+					index_low = j;
+					
+					//the_data_at_index_low = &get_node_at(index_low).the
+					the_data_at_index_low = &node_at_j->the_data;
+				}
+			}
+			
+			node<type>& node_at_index_low = get_node_at(index_low);
+			//const type data_to_move = node_at_index_low.the_data;
+			//type&& data_to_move = node_at_index_low.the_data
+			
+			if ( i == index_low )
+			{
+				i = node_at_index_low.next_index();
+			}
+			
+			//erase_at(index_low);
+			type&& data_to_move = unlink_at(index_low);
+			
+			if ( temp_front_index < 0 )
+			{
+				sorted_list.push_front(std::move(data_to_move));
+				curr_index = temp_front_index;
+			}
+			else
+			{
+				sorted_list.insert_after( curr_index, 
+					std::move(data_to_move) );
+				curr_index = sorted_list.get_node_at(curr_index)
+					.next_index();
+			}
+			
+			
+			for ( u32 j=0; j<num_extra_low_indices; ++j )
+			{
+				s32& curr_prev_index_low = prev_index_low_arr[j];
+				
+				node<type>& node_at_curr_prev_index_low 
+					= get_node_at(curr_prev_index_low);
+				
+				if ( i == curr_prev_index_low )
+				{
+					i = node_at_curr_prev_index_low.next_index();
+				}
+				
+				type&& curr_data_to_move = unlink_at(curr_prev_index_low);
+				
+				//if ( temp_front_index < 0 )
+				//{
+				//	sorted_list.push_front(std::move(data_to_move));
+				//	curr_index = temp_front_index;
+				//}
+				//else
+				{
+					sorted_list.insert_after( curr_index, 
+						std::move(curr_data_to_move) );
+					curr_index = sorted_list.get_node_at
+						(curr_index).next_index();
+				}
+			}
+		}
+		
+		
+		the_front_index = temp_front_index;
+		
+		temp_front_index = -1;
+		
+		
+		return the_front_index;
+	}
+	
+	
 	inline s32 insertion_sort()
 	{
 		return the_list_backend.insertion_sort();
