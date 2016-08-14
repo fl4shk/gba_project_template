@@ -146,11 +146,11 @@ class circ_buf_helper
 protected:		// variables
 	s32* the_array = NULL;
 	
-	// The maximum size of the_array, and the TRUE start and end indices of
-	// the_array
-	size_t max_size = 0, head = 0, tail = 0;
+	// The maximum size of the_array, the number of used elements in the
+	// array, and the TRUE start and end indices of the_array.
+	size_t max_size = 0, real_size = 0, head = 0, tail = 0;
 	
-	friend class iterator;
+	//friend class iterator;
 	
 public:		// classes
 	class iterator
@@ -158,29 +158,75 @@ public:		// classes
 	protected:  // variables
 		const circ_buf_helper* cbuf_helper_ptr;
 		size_t pos;
+		u32 is_head;
 		
 	public:		// functions
 		inline iterator( const circ_buf_helper* s_cbuf_helper_ptr, 
-			size_t s_pos ) : cbuf_helper_ptr(s_cbuf_helper_ptr), pos(s_pos)
+			size_t s_pos, u32 s_is_head=false ) 
+			: cbuf_helper_ptr(s_cbuf_helper_ptr), pos(s_pos),
+			is_head(s_is_head)
 		{
+		}
+		
+		inline const circ_buf_helper* get_cbuf_helper_ptr() const
+		{
+			return cbuf_helper_ptr;
+		}
+		inline size_t get_pos() const
+		{
+			return pos;
+		}
+		inline u32 get_is_head() const
+		{
+			return is_head;
 		}
 		
 		// Required for a range-based for loop
 		inline bool operator != ( const iterator& other ) const
 		{
-			return pos != other.pos;
+			//return ( pos != other.pos ) || ( ( pos == other.pos )
+			//	&& ( get_is_head() != other.get_is_head() ) );
+			
+			if ( get_pos() != other.get_pos() )
+			{
+				return true;
+			}
+			
+			// At this point, it is known that pos == other.pos.
+			if ( get_is_head() != other.get_is_head() )
+			{
+				return true;
+			}
+			
+			// At this point, it is known that both iterators are at the
+			// head of their respective cbuf_helper_ptr's, but it is not
+			// yet known if they contain the same cbuf_helper_ptr.
+			if ( get_cbuf_helper_ptr() != other.get_cbuf_helper_ptr() )
+			{
+				return true;
+			}
+			
+			// At this point, it is known that both iterators are at the
+			// head of the same circ_buf_helper, so they are equal.
+			return false;
 		}
 		
 		const s32 operator * () const
 		{
-			return cbuf_helper_ptr->the_array[pos];
+			//return cbuf_helper_ptr->the_array[pos];
+			return cbuf_helper_ptr->at(pos);
 		}
 		
 		const iterator& operator ++ ()
 		{
+			if ( get_is_head() )
+			{
+				is_head = false;
+			}
+			
 			++pos;
 			
-			if ( pos >= cbuf_helper_ptr->get_max_size() )
+			if ( get_pos() >= get_cbuf_helper_ptr()->get_max_size() )
 			{
 				pos = 0;
 			}
@@ -189,8 +235,10 @@ public:		// classes
 		}
 		
 		
+		
 	} __attribute__((_align4));
 	
+	friend const s32 iterator::operator * () const;
 	
 public:		// functions
 	circ_buf_helper( s32* s_the_array, u32 s_max_size )
@@ -225,6 +273,10 @@ public:		// functions
 	{
 		return tail;
 	}
+	inline size_t get_real_size() const
+	{
+		return real_size;
+	}
 	inline s32 at( u32 offset ) const
 	{
 		return the_array[offset];
@@ -232,30 +284,35 @@ public:		// functions
 	
 	inline iterator begin() const
 	{
-		return iterator( this, get_head() );
+		return iterator( this, get_head(), true );
 	}
 	inline iterator end() const
 	{
-		return iterator( this, get_tail() );
+		return iterator( this, get_tail(), false );
 	}
 	
 	inline void push( s32 to_push )
 	{
-		the_array[tail++] = to_push;
+		the_array[tail] = to_push;
+		
+		if ( get_real_size() < get_max_size() )
+		{
+			++real_size;
+		}
+		
+		if ( get_real_size() >= 1 )
+		{
+			++tail;
+		}
 		
 		if ( get_tail() >= get_max_size() )
 		{
 			tail = 0;
 		}
 		
-		if ( get_head() == get_tail() )
+		if ( get_real_size() == get_max_size() )
 		{
-			++head;
-		}
-		
-		if ( get_head() >= get_max_size() )
-		{
-			head = 0;
+			head = tail;
 		}
 	}
 	

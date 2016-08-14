@@ -251,46 +251,72 @@ void init_test_list_and_profile_deallocate()
 	test_list.insert_after( test_list_end, 'f' );
 }
 
-
-//void temp_debug_thing( u32 to_write ) __attribute__((noinline));
-//void temp_debug_thing( u32 to_write )
-//{
-//	debug_arr_group::write_u32_and_inc(to_write);
-//}
-//void show_
+static constexpr size_t test_cbuf_size = 3;
+s32 test_cbuf[test_cbuf_size];
+sa_list_stuff::circ_buf_helper test_cbuf_helper( test_cbuf, 
+	test_cbuf_size );
 
 
 void sa_list_test()
 {
+	test_cbuf_helper.push(3);
+	test_cbuf_helper.push(20);
+	test_cbuf_helper.push(9);
 	
-	// Part 1
-	asm_comment("Part 1");
-	init_test_list_and_profile_deallocate();
-	show_test_list();
+	test_cbuf_helper.push(6);
+	test_cbuf_helper.push(7);
 	
-	
-	// Part 2
-	asm_comment("Part 2");
-	profile_start();
-	test_list.insertion_sort();
-	//test_list.merge_sort();
-	show_profile_stop();
-	show_test_list();
+	//for ( auto iter : test_cbuf_helper )
+	for ( s32 iter : test_cbuf_helper )
+	{
+		debug_arr_group::write_s32_and_inc(iter);
+	}
 	
 	
-	// Part 3
-	asm_comment("Part 3");
-	init_test_list_and_profile_deallocate();
-	show_test_list();
+	//test_cbuf_helper.push(8);
+	//test_cbuf_helper.push(24);
+	//test_cbuf_helper.push(6);
+	//
+	//
+	//test_cbuf_helper.push(29);
+	//test_cbuf_helper.push(17);
+	//test_cbuf_helper.push(34);
+	return;
+	
+	//
+	//
+	//
+	//
 	
 	
-	// Part 4
-	asm_comment("Part 4");
-	profile_start();
-	test_list.insertion_sort_old_2();
-	show_profile_stop();
-	show_test_list();
-	
+	//// Part 1
+	//asm_comment("Part 1");
+	//init_test_list_and_profile_deallocate();
+	//show_test_list();
+	//
+	//
+	//// Part 2
+	//asm_comment("Part 2");
+	//profile_start();
+	//test_list.insertion_sort();
+	////test_list.merge_sort();
+	//show_profile_stop();
+	//show_test_list();
+	//
+	//
+	//// Part 3
+	//asm_comment("Part 3");
+	//init_test_list_and_profile_deallocate();
+	//show_test_list();
+	//
+	//
+	//// Part 4
+	//asm_comment("Part 4");
+	//profile_start();
+	//test_list.insertion_sort_old_2();
+	//show_profile_stop();
+	//show_test_list();
+	//
 	
 	
 	//profile_start();

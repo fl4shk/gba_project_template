@@ -166,39 +166,38 @@ template< typename type, u32 total_num_nodes >
 class regular_list : public regular_list_base< type, total_num_nodes >
 {
 public:		// typedefs
-	typedef regular_list_base< type, total_num_nodes >
-		specific_regular_list_base;
+	typedef regular_list_base< type, total_num_nodes > base;
 	
 public:		// functions
-	inline regular_list() : specific_regular_list_base()
+	inline regular_list() : base()
 	{
 	}
 	
 	inline s32& get_front_index()
 	{
-		return this->get_front_index();
+		return base::get_front_index();
 	}
 	inline const s32 get_front_index() const
 	{
-		return this->get_front_index();
+		return base::get_front_index();
 	}
 	
 	inline node<type>* get_node_array()
 	{
-		return this->get_node_array();
+		return base::get_node_array();
 	}
 	inline const node<type>* get_node_array() const
 	{
-		return this->get_node_array();
+		return base::get_node_array();
 	}
 	
 	inline sa_free_list<total_num_nodes>& get_the_free_list()
 	{
-		return this->get_the_free_list();
+		return base::get_the_free_list();
 	}
 	inline const sa_free_list<total_num_nodes>& get_the_free_list() const
 	{
-		return this->get_the_free_list();
+		return base::get_the_free_list();
 	}
 	constexpr inline u32 get_node_array_size() const
 	{
@@ -211,78 +210,78 @@ public:		// functions
 	
 	inline node<type>& get_node_at( s32 index )
 	{
-		return this->get_node_at(index);
+		return base::get_node_at(index);
 	}
 	inline node<type>& front()
 	{
 		//return get_node_at(get_front_index());
-		return this->front();
+		return base::front();
 	}
 	
 	inline void fully_deallocate()
 	{
-		this->fully_deallocate();
+		base::fully_deallocate();
 	}
 	inline void fully_deallocate_via_unlink()
 	{
-		this->fully_deallocate_via_unlink();
+		base::fully_deallocate_via_unlink();
 	}
 	
 	
 	inline s32 push_front( const type& to_push )
 	{
-		return this->push_front(to_push);
+		return base::push_front(to_push);
 	}
 	inline s32 push_front( type&& to_push )
 	{
-		return this->push_front
+		return base::push_front
 			(std::move(to_push));
 	}
 	inline s32 pop_front_basic()
 	{
-		return this->pop_front_basic();
+		return base::pop_front_basic();
 	}
 	
 	
 	inline s32 insert_before( s32 index, const type& to_insert )
 	{
-		return this->insert_before( index,
+		return base::insert_before( index,
 			to_insert );
 	}
 	inline s32 insert_before( s32 index, type&& to_insert )
 	{
-		return this->insert_before( index,
+		return base::insert_before( index,
 			std::move(to_insert) );
 	}
 	
 	
 	inline s32 insert_after( s32 index, const type& to_insert )
 	{
-		return this->insert_after( index,
+		return base::insert_after( index,
 			to_insert );
 	}
 	inline s32 insert_after( s32 index, type&& to_insert )
 	{
-		return this->insert_after( index,
+		return base::insert_after( index,
 			std::move(to_insert) );
 	}
 	
 	
 	inline void erase_at( s32 index )
 	{
-		this->erase_at(index);
+		base::erase_at(index);
 	}
 	inline s32 insertion_sort_old_2()
 	{
-		return this->insertion_sort_old_2();
+		return base::insertion_sort_old_2();
 	}
 	inline s32 insertion_sort()
 	{
-		return this->insertion_sort();
+		return base::insertion_sort();
 	}
 	inline s32 merge_sort()
 	{
-		return this->merge_sort();
+		return base::merge_sort();
 	}
 	
 } __attribute__((_align4));
@@ -295,39 +294,38 @@ class sorted_always_list
 	: public regular_list_base< type, total_num_nodes >
 {
 public:		// typedefs
-	typedef regular_list_base< type, total_num_nodes >
-		specific_regular_list_base;
+	typedef regular_list_base< type, total_num_nodes > base;
 	
 public:		// functions
-	inline sorted_always_list() : specific_regular_list_base()
+	inline sorted_always_list() : base()
 	{
 	}
 	
 	inline s32& get_front_index()
 	{
-		return this->get_front_index();
+		return base::get_front_index();
 	}
 	inline const s32 get_front_index() const
 	{
-		return this->get_front_index();
+		return base::get_front_index();
 	}
 	
 	inline node<type>* get_node_array()
 	{
-		return this->get_node_array();
+		return base::get_node_array();
 	}
 	inline const node<type>* get_node_array() const
 	{
-		return this->get_node_array();
+		return base::get_node_array();
 	}
 	
 	inline sa_free_list<total_num_nodes>& get_the_free_list()
 	{
-		return this->get_the_free_list();
+		return base::get_the_free_list();
 	}
 	inline const sa_free_list<total_num_nodes>& get_the_free_list() const
 	{
-		return this->get_the_free_list();
+		return base::get_the_free_list();
 	}
 	constexpr inline u32 get_node_array_size() const
 	{
@@ -340,48 +338,48 @@ public:		// functions
 	
 	inline void fully_deallocate()
 	{
-		this->fully_deallocate();
+		base::fully_deallocate();
 	}
 	inline void fully_deallocate_via_unlink()
 	{
-		this->fully_deallocate_via_unlink();
+		base::fully_deallocate_via_unlink();
 	}
 	
 	
 	inline node<type>& get_node_at( s32 index )
 	{
-		return this->get_node_at(index);
+		return base::get_node_at(index);
 	}
 	inline node<type>& front()
 	{
 		//return get_node_at(get_front_index());
-		return this->front();
+		return base::front();
 	}
 	
 	inline s32 push_front( const type& to_push )
 	{
-		return this->push_front(to_push);
+		return base::push_front(to_push);
 	}
 	inline s32 push_front( type&& to_push )
 	{
-		return this->push_front
+		return base::push_front
 			(std::move(to_push));
 	}
 	inline s32 pop_front_basic()
 	{
-		return this->pop_front_basic();
+		return base::pop_front_basic();
 	}
 	inline s32 insert_and_sort( const type& to_insert )
 	{
-		this->push_front(to_insert);
+		base::push_front(to_insert);
 		
-		return this->insertion_sort();
+		return base::insertion_sort();
 	}
 	inline s32 insert_and_sort( type&& to_insert )
 	{
-		this->push_front(std::move(to_insert));
+		base::push_front(std::move(to_insert));
 		
-		return this->insertion_sort();
+		return base::insertion_sort();
 	}
 	
 	
@@ -389,19 +387,19 @@ public:		// functions
 	// is because the list was already sorted to begin with.
 	inline void erase_at( s32 index )
 	{
-		this->erase_at(index);
+		base::erase_at(index);
 	}
 	inline s32 insertion_sort_old_2()
 	{
-		return this->insertion_sort_old_2();
+		return base::insertion_sort_old_2();
 	}
 	inline s32 insertion_sort()
 	{
-		return this->insertion_sort();
+		return base::insertion_sort();
 	}
 	inline s32 merge_sort()
 	{
-		return this->merge_sort();
+		return base::merge_sort();
 	}
 	
 } __attribute__((_align4));
