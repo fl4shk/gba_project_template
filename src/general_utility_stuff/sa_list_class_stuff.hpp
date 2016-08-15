@@ -141,6 +141,8 @@ protected:		// functions
 
 
 
+// This is basically a queue stored in an external circular buffer that
+// doesn't permit erasing elements.
 class circ_buf_helper
 {
 protected:		// variables
@@ -155,16 +157,26 @@ protected:		// variables
 public:		// classes
 	class iterator
 	{
+	public:		// enums
+		enum class index_type : u32
+		{
+			it_other,
+			it_head,
+			it_tail,
+			
+		} alignas_regular;
+		
 	protected:  // variables
 		const circ_buf_helper* cbuf_helper_ptr;
 		size_t pos;
-		u32 is_head;
+		index_type the_index_type;
 		
 	public:		// functions
 		inline iterator( const circ_buf_helper* s_cbuf_helper_ptr, 
-			size_t s_pos, u32 s_is_head=false ) 
+			size_t s_pos, 
+			index_type s_the_index_type=index_type::it_other ) 
 			: cbuf_helper_ptr(s_cbuf_helper_ptr), pos(s_pos),
-			is_head(s_is_head)
+			the_index_type(s_the_index_type)
 		{
 		}
 		
@@ -176,9 +188,14 @@ public:		// classes
 		{
 			return pos;
 		}
-		inline u32 get_is_head() const
+		inline index_type get_the_index_type() const
 		{
-			return is_head;
+			return the_index_type;
+		}
+		
+		inline bool operator == ( const iterator& other ) const
+		{
+			return !( *this != other );
 		}
 		
 		// Required for a range-based for loop
@@ -192,26 +209,40 @@ public:		// classes
 				return true;
 			}
 			
-			// At this point, it is known that pos == other.pos.
-			if ( get_is_head() != other.get_is_head() )
-			{
-				return true;
-			}
-			
-			// At this point, it is known that both iterators are at the
-			// head of their respective cbuf_helper_ptr's, but it is not
-			// yet known if they contain the same cbuf_helper_ptr.
+			return same_pos_not_equals(other);
+		}
+		
+	protected:		// functions
+		
+		inline bool same_pos_not_equals ( const iterator& other ) const
+		{
+			// At this point, is is known that pos == other.pos
 			if ( get_cbuf_helper_ptr() != other.get_cbuf_helper_ptr() )
 			{
 				return true;
 			}
+			
+			// At this point, it is known that pos == other.pos, and both
+			// iterators are from the same circ_buf_helper.
+			if ( get_cbuf_helper_ptr()->get_real_size() == 0 )
+			{
+				return false;
+			}
+			
+			if ( get_the_index_type() != other.get_the_index_type() )
+			{
+				return true;
+			}
+			
 			
 			// At this point, it is known that both iterators are at the
 			// head of the same circ_buf_helper, so they are equal.
 			return false;
 		}
 		
-		const s32 operator * () const
+	public:		// functions
+		
+		inline const s32 operator * () const
 		{
 			//return cbuf_helper_ptr->the_array[pos];
 			return cbuf_helper_ptr->at(pos);
@@ -219,17 +250,46 @@ public:		// classes
 		
 		const iterator& operator ++ ()
 		{
-			if ( get_is_head() )
+			auto get_corrected_other_pos = [&]( const size_t other_pos ) 
+				-> size_t
 			{
-				is_head = false;
+				//get_pos() >= get_cbuf_helper_ptr()->get_max_size() 
+				if ( other_pos >= get_cbuf_helper_ptr()->get_max_size() )
+				{
+					return 0;
+				}
+				return other_pos;
+			};
+			
+			
+			if ( get_cbuf_helper_ptr()->get_real_size() > 1 )
+			{
+				const size_t updated_pos = get_corrected_other_pos
+					( get_pos() + 1 );
+				
+				if ( get_the_index_type() == index_type::it_head )
+				{
+					the_index_type = index_type::it_other;
+					pos = updated_pos; 
+				}
+				else if ( get_pos() == get_cbuf_helper_ptr()->get_tail() )
+				{
+					the_index_type = index_type::it_tail;
+				}
+				else
+				{
+					pos = updated_pos;
+				}
+			}
+			else
+			{
+				// PROPERLY handle iterators.
+				if ( get_cbuf_helper_ptr()->get_real_size() == 1 )
+				{
+					the_index_type = index_type::it_tail;
+				}
 			}
 			
-			++pos;
-			
-			if ( get_pos() >= get_cbuf_helper_ptr()->get_max_size() )
-			{
-				pos = 0;
-			}
 			
 			return *this;
 		}
@@ -244,6 +304,9 @@ public:		// functions
 	circ_buf_helper( s32* s_the_array, u32 s_max_size )
 		: the_array(s_the_array), max_size(s_max_size)
 	{
+		//// Don't call reset() here since it's called by
+		//// insertion_sort_inner_loop.
+		//reset();
 	}
 	
 	circ_buf_helper& operator = ( const circ_buf_helper& to_copy )
@@ -257,7 +320,7 @@ public:		// functions
 	}
 	inline void reset()
 	{
-		arr_memfill32( the_array, -1, max_size );
+		arr_memfill32( the_array, -1, get_max_size() );
 		head = tail = 0;
 	}
 	
@@ -284,36 +347,64 @@ public:		// functions
 	
 	inline iterator begin() const
 	{
-		return iterator( this, get_head(), true );
+		return iterator( this, get_head(), iterator::index_type::it_head );
 	}
 	inline iterator end() const
 	{
-		return iterator( this, get_tail(), false );
+		return iterator( this, get_tail(), iterator::index_type::it_tail );
 	}
 	
-	inline void push( s32 to_push )
+	void push( s32 to_push )
 	{
-		the_array[tail] = to_push;
-		
-		if ( get_real_size() < get_max_size() )
+		auto update_real_size = [&]() -> void
 		{
-			++real_size;
+			if ( get_real_size() < get_max_size() )
+			{
+				++real_size;
+			}
+		};
+		auto correct_head_and_tail = [&]() -> void
+		{
+			if ( get_tail() >= get_max_size() )
+			{
+				tail = 0;
+			}
+			
+			if ( get_real_size() == get_max_size() )
+			{
+				head = tail;
+			}
+		};
+		
+		//the_array[get_tail()] = to_push;
+		//
+		//update_real_size();
+		//
+		//if ( get_real_size() >= 1 )
+		//{
+		//	++tail;
+		//}
+		//
+		//correct_head_and_tail();
+		
+		
+		update_real_size();
+		
+		if ( get_real_size() == 1 )
+		{
+			the_array[get_tail()] = to_push;
+		}
+		else
+		{
+			the_array[get_tail() + 1] = to_push;
 		}
 		
-		if ( get_real_size() >= 1 )
+		if ( get_real_size() > 1 )
 		{
 			++tail;
 		}
 		
-		if ( get_tail() >= get_max_size() )
-		{
-			tail = 0;
-		}
-		
-		if ( get_real_size() == get_max_size() )
-		{
-			head = tail;
-		}
+		correct_head_and_tail();
 	}
 	
 } __attribute__((_align4));
@@ -362,6 +453,7 @@ protected:		// functions
 		ret->index_pair_ptr = &to_convert->index_pair;
 	}
 	
+	
 	// Instead of having the ENTIRE insertion_sort function be duplicated
 	// for EVERY externally_allocated_sa_list instantiation, only duplicate
 	// the inner loop.  This seems pretty good to me.
@@ -370,8 +462,7 @@ protected:		// functions
 	// keeping track of a FIXED NUMBER of indices to nodes for sorting
 	// purposes.
 	static void insertion_sort_inner_loop( node<type>* node_array, 
-		s32* index_low_ptr, 
-		circ_buf_helper* old_il_cbuf_helper_ptr )
+		s32* index_low_ptr, circ_buf_helper* old_il_cbuf_helper_ptr )
 		__attribute__((_text_hot_section))
 	{
 		old_il_cbuf_helper_ptr->reset();
@@ -819,7 +910,8 @@ protected:		// functions
 		internal_func_allocate_and_assign_to_node( to_push_index, 
 			node_to_push, to_push, can_move_value );
 		
-		return move_unlinked_node_to_front( to_push_index, node_to_push );
+		return internal_func_move_unlinked_node_to_front( to_push_index, 
+			node_to_push );
 	}
 	
 	inline s32 insert_before( s32 index, const void* to_insert,
@@ -831,8 +923,8 @@ protected:		// functions
 		internal_func_allocate_and_assign_to_node( to_insert_index,
 			node_to_insert, to_insert, can_move_value );
 		
-		return move_unlinked_node_before( index, to_insert_index, 
-			node_to_insert );
+		return internal_func_move_unlinked_node_before( index, 
+			to_insert_index, node_to_insert );
 	}
 	inline s32 insert_after( s32 index, const void* to_insert,
 		u32 can_move_value=false )
@@ -843,8 +935,8 @@ protected:		// functions
 		internal_func_allocate_and_assign_to_node( to_insert_index,
 			node_to_insert, to_insert, can_move_value );
 		
-		return move_unlinked_node_after( index, to_insert_index,
-			node_to_insert );
+		return internal_func_move_unlinked_node_after( index, 
+			to_insert_index, node_to_insert );
 	}
 	
 	//s32 push_front( const void* to_push, u32 can_move_value=false )
@@ -856,13 +948,13 @@ protected:		// functions
 	
 	
 	// Functions for internal use 
-	s32 move_unlinked_node_to_front( s32 to_move_index, 
+	s32 internal_func_move_unlinked_node_to_front( s32 to_move_index, 
 		node_contents& node_to_move );
 		//__attribute__((noinline));
-	s32 move_unlinked_node_before( s32 to_move_before_index, 
+	s32 internal_func_move_unlinked_node_before( s32 to_move_before_index, 
 		s32 to_move_index, node_contents& node_to_move );
 		//__attribute__((noinline));
-	s32 move_unlinked_node_after( s32 to_move_after_index, 
+	s32 internal_func_move_unlinked_node_after( s32 to_move_after_index, 
 		s32 to_move_index, node_contents& node_to_move );
 		//__attribute__((noinline));
 	
@@ -870,31 +962,38 @@ protected:		// functions
 	// Give slightly more flexibility, at the expense of a small amount of
 	// speed, to this function by allowing a pointer to the
 	// node_at_index be passed to it.
-	void* unlink_at_without_dealloc( s32 index, 
+	void* internal_func_unlink_at_without_dealloc( s32 index, 
 		node_contents* node_at_index_ptr=NULL );
 		//__attribute__((noinline));
 	
 	
 	inline void move_linked_node_to_front( s32 to_move_index, 
-		node_contents& node_to_move )
+		node_contents& node_to_move, list_backend& dst )
 	{
-		unlink_at_without_dealloc( to_move_index, &node_to_move );
-		move_unlinked_node_to_front( to_move_index, node_to_move );
+		internal_func_unlink_at_without_dealloc( to_move_index, 
+			&node_to_move );
+		dst.internal_func_move_unlinked_node_to_front( to_move_index, 
+			node_to_move );
 	}
 	inline void move_linked_node_before( s32 to_move_before_index,
-		s32 to_move_index, node_contents& node_to_move )
+		s32 to_move_index, node_contents& node_to_move, 
+		list_backend& dst )
 	{
-		unlink_at_without_dealloc( to_move_index, &node_to_move );
-		move_unlinked_node_before( to_move_before_index, to_move_index,
-			node_to_move );
+		internal_func_unlink_at_without_dealloc( to_move_index, 
+			&node_to_move );
+		dst.internal_func_move_unlinked_node_before( to_move_before_index, 
+			to_move_index, node_to_move );
 	}
 	inline void move_linked_node_after( s32 to_move_after_index,
-		s32 to_move_index, node_contents& node_to_move )
+		s32 to_move_index, node_contents& node_to_move, 
+		list_backend& dst )
 	{
-		unlink_at_without_dealloc( to_move_index, &node_to_move );
-		move_unlinked_node_after( to_move_after_index, to_move_index,
-			node_to_move );
+		internal_func_unlink_at_without_dealloc( to_move_index, 
+			&node_to_move );
+		dst.internal_func_move_unlinked_node_after( to_move_after_index, 
+			to_move_index, node_to_move );
 	}
+	
 	
 	
 	// End of functions for internal use.
@@ -906,7 +1005,7 @@ protected:		// functions
 	{
 		get_the_free_list_backend().push(index);
 		
-		return unlink_at_without_dealloc(index);
+		return internal_func_unlink_at_without_dealloc(index);
 	}
 	
 	inline void erase_at( s32 index )
@@ -1646,6 +1745,10 @@ public:		// functions
 	}
 	
 	
+	
+	// This is a semi-optimized (though accidentally implemented
+	// differently from what was intended) version of
+	// insertion_sort_old_2()
 	s32 insertion_sort_old_3() __attribute__((noinline))
 	{
 		s32& the_front_index = get_front_index();
@@ -1693,7 +1796,7 @@ public:		// functions
 			
 			node<type>* node_at_j;
 			
-			type* the_data_at_index_low = &get_node_at(index_low).the_data;
+			type* data_at_index_low = &get_node_at(index_low).data;
 			
 			// Find the lowest value at or after i.
 			for ( s32 j=index_low;
@@ -1702,8 +1805,8 @@ public:		// functions
 			{
 				node_at_j = &get_node_at(j);
 				
-				if ( node_at_j->the_data 
-					< *the_data_at_index_low )
+				if ( node_at_j->data 
+					< *data_at_index_low )
 				{
 					if ( num_extra_low_indices + 1 
 						< prev_index_low_arr_size )
@@ -1714,14 +1817,14 @@ public:		// functions
 					
 					index_low = j;
 					
-					//the_data_at_index_low = &get_node_at(index_low).the
-					the_data_at_index_low = &node_at_j->the_data;
+					//data_at_index_low = &get_node_at(index_low).the
+					data_at_index_low = &node_at_j->data;
 				}
 			}
 			
 			node<type>& node_at_index_low = get_node_at(index_low);
-			//const type data_to_move = node_at_index_low.the_data;
-			//type&& data_to_move = node_at_index_low.the_data
+			//const type data_to_move = node_at_index_low.data;
+			//type&& data_to_move = node_at_index_low.data
 			
 			if ( i == index_low )
 			{

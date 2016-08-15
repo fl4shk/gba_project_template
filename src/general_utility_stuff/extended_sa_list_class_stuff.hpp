@@ -150,6 +150,10 @@ protected:		// functions
 	{
 		return the_externally_allocated_list.insertion_sort_old_2();
 	}
+	inline s32 insertion_sort_old_3()
+	{
+		return the_externally_allocated_list.insertion_sort_old_3();
+	}
 	inline s32 insertion_sort()
 	{
 		return the_externally_allocated_list.insertion_sort();
@@ -275,6 +279,10 @@ public:		// functions
 	{
 		return base::insertion_sort_old_2();
 	}
+	inline s32 insertion_sort_old_3()
+	{
+		return base::insertion_sort_old_3();
+	}
 	inline s32 insertion_sort()
 	{
 		return base::insertion_sort();
@@ -392,6 +400,10 @@ public:		// functions
 	inline s32 insertion_sort_old_2()
 	{
 		return base::insertion_sort_old_2();
+	}
+	inline s32 insertion_sort_old_3()
+	{
+		return base::insertion_sort_old_3();
 	}
 	inline s32 insertion_sort()
 	{

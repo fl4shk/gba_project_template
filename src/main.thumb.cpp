@@ -112,7 +112,7 @@ class temp_debug_vars_group
 {
 public:		// variables and constants
 	static constexpr size_t max_num_nodes_per_loop = debug_str::max_size,
-		max_num_loops = 8;
+		max_num_loops = 20;
 	
 	static constexpr size_t total_num_indices_per_arr_2d 
 		= max_num_nodes_per_loop * max_num_loops;
@@ -213,42 +213,32 @@ inline void show_test_list()
 
 
 
-void init_test_list_and_profile_deallocate()
+void reinit_test_list_and_profile_deallocate()
 {
 	profile_start();
 	test_list.fully_deallocate_via_unlink();
 	show_profile_stop();
-	show_test_list();
 	
-	//int test_list_end = test_list.push_front('d');
-	//test_list.push_front('c');
-	//test_list.push_front('e');
-	//test_list.push_front('d');
-	//test_list.push_front('f');
-	//test_list.push_front('0');
-	//test_list.push_front('_');
-	//test_list.push_front('a');
-	//test_list.push_front('d');
-	//test_list.push_front('f');
-	//test_list.push_front('a');
 	
-	//for ( u32 i=0; i<test_list.get_total_num_nodes(); ++i )
+	//s32& test_list_front_index = test_list.get_front_index();
+	//
+	//s32 test_list_end = test_list.push_front('g');
+	//for ( u32 i=0; i<5; ++i )
 	//{
-	//	test_list.push_front('A' + i);
+	//	test_list.push_front('1' + i );
 	//}
+	//
+	////test_list.insert_before( test_list_front_index, 'h' );
+	////test_list.insert_before( test_list_end, 'f' );
+	//test_list.insert_after( test_list_front_index, 'h' );
+	//test_list.insert_after( test_list_end, 'f' );
 	
-	s32& test_list_front_index = test_list.get_front_index();
-	
-	s32 test_list_end = test_list.push_front('g');
-	for ( u32 i=0; i<5; ++i )
-	{
-		test_list.push_front('1' + i );
-	}
-	
-	//test_list.insert_before( test_list_front_index, 'h' );
-	//test_list.insert_before( test_list_end, 'f' );
-	test_list.insert_after( test_list_front_index, 'h' );
-	test_list.insert_after( test_list_end, 'f' );
+	test_list.push_front('5');
+	test_list.push_front('9');
+	test_list.push_front('2');
+	test_list.push_front('3');
+	test_list.push_front('4');
+	test_list.push_front('5');
 }
 
 static constexpr size_t test_cbuf_size = 3;
@@ -259,28 +249,39 @@ sa_list_stuff::circ_buf_helper test_cbuf_helper( test_cbuf,
 
 void sa_list_test()
 {
+	test_cbuf_helper.reset();
+	
 	test_cbuf_helper.push(3);
-	test_cbuf_helper.push(20);
-	test_cbuf_helper.push(9);
+	//test_cbuf_helper.push(20);
+	//test_cbuf_helper.push(9);
+	//
+	//test_cbuf_helper.push(6);
+	//test_cbuf_helper.push(7);
 	
-	test_cbuf_helper.push(6);
-	test_cbuf_helper.push(7);
 	
-	//for ( auto iter : test_cbuf_helper )
-	for ( s32 iter : test_cbuf_helper )
+	for ( auto iter : test_cbuf_helper )
 	{
 		debug_arr_group::write_s32_and_inc(iter);
 	}
 	
+	//auto iter = test_cbuf_helper.begin();
+	//const auto end_iter = test_cbuf_helper.end();
+	//for (;;) 
+	//{
+	//	//if ( iter == test_cbuf_helper.end() )
+	//	if ( iter == end_iter )
+	//	{
+	//		break;
+	//	}
+	//	
+	//	debug_arr_group::write_s32_and_inc(*iter);
+	//	
+	//	++iter;
+	//	
+	//	debug_f8p8_arr[0] = make_f8p8(0);
+	//}
 	
-	//test_cbuf_helper.push(8);
-	//test_cbuf_helper.push(24);
-	//test_cbuf_helper.push(6);
-	//
-	//
-	//test_cbuf_helper.push(29);
-	//test_cbuf_helper.push(17);
-	//test_cbuf_helper.push(34);
+	
 	return;
 	
 	//
@@ -289,34 +290,47 @@ void sa_list_test()
 	//
 	
 	
-	//// Part 1
-	//asm_comment("Part 1");
-	//init_test_list_and_profile_deallocate();
-	//show_test_list();
-	//
-	//
-	//// Part 2
-	//asm_comment("Part 2");
-	//profile_start();
-	//test_list.insertion_sort();
-	////test_list.merge_sort();
-	//show_profile_stop();
-	//show_test_list();
-	//
-	//
-	//// Part 3
-	//asm_comment("Part 3");
-	//init_test_list_and_profile_deallocate();
-	//show_test_list();
-	//
-	//
-	//// Part 4
-	//asm_comment("Part 4");
-	//profile_start();
-	//test_list.insertion_sort_old_2();
-	//show_profile_stop();
-	//show_test_list();
-	//
+	// Part 1
+	asm_comment("Part 1");
+	reinit_test_list_and_profile_deallocate();
+	show_test_list();
+	
+	
+	// Part 2
+	asm_comment("Part 2");
+	profile_start();
+	test_list.insertion_sort();
+	//test_list.merge_sort();
+	show_profile_stop();
+	show_test_list();
+	
+	
+	// Part 3
+	asm_comment("Part 3");
+	reinit_test_list_and_profile_deallocate();
+	show_test_list();
+	
+	
+	// Part 4
+	asm_comment("Part 4");
+	profile_start();
+	test_list.insertion_sort_old_2();
+	show_profile_stop();
+	show_test_list();
+	
+	
+	// Part 5
+	asm_comment("Part 5");
+	reinit_test_list_and_profile_deallocate();
+	show_test_list();
+	
+	
+	// Part 6
+	asm_comment("Part 6");
+	profile_start();
+	test_list.insertion_sort_old_3();
+	show_profile_stop();
+	show_test_list();
 	
 	
 	//profile_start();

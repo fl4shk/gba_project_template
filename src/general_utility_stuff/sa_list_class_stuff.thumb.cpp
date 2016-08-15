@@ -18,7 +18,7 @@
 
 #include "sa_list_class_stuff.hpp"
 
-
+#include "debug_vars.hpp"
 
 namespace sa_list_stuff
 {
@@ -145,8 +145,8 @@ void list_backend::internal_func_allocate_and_assign_to_node
 //	return the_front_index;
 //}
 
-s32 list_backend::move_unlinked_node_to_front( s32 to_move_index,
-	node_contents& node_to_move )
+s32 list_backend::internal_func_move_unlinked_node_to_front
+	( s32 to_move_index, node_contents& node_to_move )
 {
 	s32& the_front_index = get_front_index();
 	const s32 old_front_index = the_front_index;
@@ -233,13 +233,15 @@ s32 list_backend::move_unlinked_node_to_front( s32 to_move_index,
 //	
 //}
 
-s32 list_backend::move_unlinked_node_before( s32 to_move_before_index, 
-		s32 to_move_index, node_contents& node_to_move )
+s32 list_backend::internal_func_move_unlinked_node_before
+	( s32 to_move_before_index, s32 to_move_index, 
+	node_contents& node_to_move )
 {
 	// If index == front_index
 	if ( to_move_before_index == get_front_index() )
 	{
-		return move_unlinked_node_to_front( to_move_index, node_to_move );
+		return internal_func_move_unlinked_node_to_front( to_move_index, 
+			node_to_move );
 	}
 	else
 	{
@@ -338,8 +340,9 @@ s32 list_backend::move_unlinked_node_before( s32 to_move_before_index,
 //}
 
 
-s32 list_backend::move_unlinked_node_after( s32 to_move_after_index, 
-	s32 to_move_index, node_contents& node_to_move )
+s32 list_backend::internal_func_move_unlinked_node_after
+	( s32 to_move_after_index, s32 to_move_index, 
+	node_contents& node_to_move )
 {
 	node_contents node_to_move_after = get_node_contents_at
 		(to_move_after_index);
@@ -388,7 +391,7 @@ s32 list_backend::move_unlinked_node_after( s32 to_move_after_index,
 // 
 // Functions that call this one directly are still able to pass in a
 // pointer to the node_at_index.
-void* list_backend::unlink_at_without_dealloc( s32 index,
+void* list_backend::internal_func_unlink_at_without_dealloc( s32 index,
 	node_contents* node_at_index_ptr )
 {
 	//s32 old_prev_index = get_node_at(index)
@@ -501,114 +504,128 @@ s32 list_backend::insertion_sort()
 	{
 		return the_front_index;
 	}
+	
+	
 	//if ( get_node_at(the_front_index).next_index() < 0 )
-	if ( get_next_index_at_index(the_front_index) < 0 )
+	node_contents front_node = get_node_contents_at(the_front_index);
+	
+	s32 front_node_next_index = front_node.next_index();
+	
+	//if ( get_next_index_at_index(the_front_index) < 0 )
+	if ( front_node_next_index < 0 )
 	{
 		return the_front_index;
 	}
 	
-	////s32 temp_front_index = -1;
-	////list_backend<type> sorted_list( &temp_front_index, 
-	////	node_array, the_free_list_backend_ptr, 
-	////	total_num_nodes );
-	//externally_allocated_sa_list<type> sorted_list( node_array, 
-	//	the_free_list_backend_ptr, get_total_num_nodes() );
+	
 	list_backend sorted_list(*this);
 	
 	s32& temp_front_index = sorted_list.get_front_index();
+	
+	
+	
+	static constexpr u32 local_cbuf_size = 2;
+	s32 local_cbuf[local_cbuf_size];
+	circ_buf_helper local_cbuf_helper( local_cbuf, local_cbuf_size );
 	
 	s32 curr_index = temp_front_index;
 	
 	
 	
-	s32 index_low = the_front_index;
-	s32 outer_i = the_front_index;
-	
-	
-	
-	// Unroll the first outer loop iteration since it is different from the
-	// remaining loop iteration.
-	
-	static constexpr size_t old_il_cbuf_max_size = 20;
-	s32 old_il_cbuf[old_il_cbuf_max_size];
-	arr_memfill32( old_il_cbuf, -1, old_il_cbuf_max_size );
-	
-	circ_buf_helper old_il_cbuf_helper( old_il_cbuf,
-		old_il_cbuf_max_size );
-	//get_insertion_sort_inner_loop_fp()( get_node_array(), &index_low,
-	//	NULL );
-	call_insertion_sort_inner_loop_fp( index_low, old_il_cbuf_helper );
-	
-	
-	//node<type>& node_at_index_low = get_node_at(index_low);
-	//const type data_to_move = node_at_index_low.data;
-	node_contents node_at_index_low = get_node_contents_at(index_low);
-	
-	if ( outer_i == index_low )
-	{
-		outer_i = node_at_index_low.next_index();
-	}
-	////outer_i = node_at_index_low.next_index();
-	////outer_i = get_next_index_at_index(the_front_index);
-	
-	////erase_at(index_low);
-	//void* outer_data_to_move = unlink_at(index_low);
-	//sorted_list.push_front( outer_data_to_move, true );
-	//curr_index = temp_front_index;
-	
-	sorted_list.move_linked_node_to_front( index_low, node_at_index_low );
-	curr_index = temp_front_index;
-	
-	for ( auto iter : old_il_cbuf_helper )
-	//for ( auto iter=old_il_cbuf_helper.begin(); iter
-	{
-		if ( outer_i == iter )
-		{
-			outer_i = get_next_index_at_index(outer_i);
-		}
-		
-		node_contents node_at_iter = get_node_contents_at(iter);
-		sorted_list.move_linked_node_after( curr_index, iter,
-			node_at_iter );
-		
-		curr_index = sorted_list.get_next_index_at_index(curr_index);
-	}
-	
-	
-	
-	for ( s32 i=outer_i;
-		i!=-1;  )
+	//for ( s32 i=outer_i;
+	for ( s32 i=the_front_index;
+		i!=-1; )
 		////i=get_node_at(i).next_index() )
 		//i=get_next_index_at_index(i) )
 	{
-		index_low = i;
+		s32 index_low = i;
 		
-		//get_insertion_sort_inner_loop_fp()( get_node_array(), &index_low,
-		//	NULL );
+		call_insertion_sort_inner_loop_fp( index_low, local_cbuf_helper );
 		
-		call_insertion_sort_inner_loop_fp( index_low, old_il_cbuf_helper );
+		node_contents node_at_index_low = get_node_contents_at(index_low);
 		
-		//node<type>& node_at_index_low = get_node_at(index_low);
-		//const type data_to_move = node_at_index_low.data;
-		node_at_index_low = get_node_contents_at(index_low);
-		
-		// if the current node 
 		if ( i == index_low )
 		{
 			i = node_at_index_low.next_index();
 		}
 		
-		////erase_at(index_low);
-		//void* data_to_move = unlink_at(index_low);
-		//
-		//sorted_list.insert_after( curr_index, data_to_move, true );
-		//curr_index = sorted_list.get_next_index_at_index(curr_index);
+		if ( temp_front_index < 0 )
+		{
+			//sorted_list.push_front(std::move(data_to_move));
+			//curr_index = temp_front_index;
+			
+			move_linked_node_to_front( index_low, node_at_index_low, 
+				sorted_list );
+			curr_index = temp_front_index;
+		}
+		else
+		{
+			//sorted_list.insert_after( curr_index, 
+			//	std::move(data_to_move) );
+			//curr_index = sorted_list.get_node_at(curr_index)
+			//	.next_index();
+			
+			move_linked_node_after( curr_index, index_low,
+				node_at_index_low, sorted_list );
+			
+			curr_index = sorted_list.get_next_index_at_index(curr_index);
+		}
 		
-		//unlink_at_without_dealloc( index_low, &node_at_index_low );
-		//sorted_list.move_unlinked_node_after( curr_index, index_low, 
-		//	node_at_index_low );
-		move_linked_node_after( curr_index, index_low, node_at_index_low );
-		curr_index = sorted_list.get_next_index_at_index(curr_index);
+		
+		
+		//for ( u32 j=0; j<num_extra_low_indices; ++j )
+		//{
+		//	s32& curr_prev_index_low = prev_index_low_arr[j];
+		//	
+		//	node<type>& node_at_curr_prev_index_low 
+		//		= get_node_at(curr_prev_index_low);
+		//	
+		//	if ( i == curr_prev_index_low )
+		//	{
+		//		i = node_at_curr_prev_index_low.next_index();
+		//	}
+		//	
+		//	type&& curr_data_to_move = unlink_at(curr_prev_index_low);
+		//	
+		//	//if ( temp_front_index < 0 )
+		//	//{
+		//	//	sorted_list.push_front(std::move(data_to_move));
+		//	//	curr_index = temp_front_index;
+		//	//}
+		//	//else
+		//	{
+		//		sorted_list.insert_after( curr_index, 
+		//			std::move(curr_data_to_move) );
+		//		curr_index = sorted_list.get_node_at
+		//			(curr_index).next_index();
+		//	}
+		//}
+		
+		for ( auto iter : local_cbuf_helper )
+		{
+			debug_f8p8_arr[0] = make_f8p8(0);
+			
+			node_contents node_at_iter = get_node_contents_at(iter);
+			
+			if ( i == iter )
+			{
+				i = node_at_iter.next_index();
+			}
+			
+			void* data_to_move = unlink_at(iter);
+			
+			//move_linked_node_after( curr_index, iter, node_at_iter, 
+			//	sorted_list );
+			//
+			//curr_index = sorted_list.get_next_index_at_index(curr_index);
+			
+			sorted_list.insert_after( curr_index, data_to_move, true );
+			curr_index = sorted_list.get_next_index_at_index(curr_index);
+			
+			
+			debug_f8p8_arr[0] = make_f8p8(0);
+		}
+		
 	}
 	
 	
