@@ -612,15 +612,25 @@ s32 list_backend::insertion_sort()
 				i = node_at_iter.next_index();
 			}
 			
-			void* data_to_move = unlink_at(iter);
 			
-			//move_linked_node_after( curr_index, iter, node_at_iter, 
-			//	sorted_list );
+			move_linked_node_after( curr_index, iter, node_at_iter, 
+				sorted_list );
+			
+			curr_index = sorted_list.get_next_index_at_index(curr_index);
+			
+			
+			//void* data_to_move = unlink_at(iter);
+			//
+			//sorted_list.insert_after( curr_index, data_to_move, true );
+			
+			//u8 data_to_move[get_specific_type_size()];
+			//copy_node_data( data_to_move, node_at_iter.data_ptr );
+			//
+			//erase_at(iter);
+			//sorted_list.insert_after( curr_index, 
+			//
 			//
 			//curr_index = sorted_list.get_next_index_at_index(curr_index);
-			
-			sorted_list.insert_after( curr_index, data_to_move, true );
-			curr_index = sorted_list.get_next_index_at_index(curr_index);
 			
 			
 			debug_f8p8_arr[0] = make_f8p8(0);

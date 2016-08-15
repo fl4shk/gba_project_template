@@ -356,55 +356,40 @@ public:		// functions
 	
 	void push( s32 to_push )
 	{
-		auto update_real_size = [&]() -> void
+		auto get_corrected_other_pos = [&]( const size_t other_pos ) 
+			-> size_t
 		{
-			if ( get_real_size() < get_max_size() )
+			if ( other_pos >= get_max_size() )
 			{
-				++real_size;
+				return 0;
 			}
-		};
-		auto correct_head_and_tail = [&]() -> void
-		{
-			if ( get_tail() >= get_max_size() )
-			{
-				tail = 0;
-			}
-			
-			if ( get_real_size() == get_max_size() )
-			{
-				head = tail;
-			}
+			return other_pos;
 		};
 		
-		//the_array[get_tail()] = to_push;
-		//
-		//update_real_size();
-		//
-		//if ( get_real_size() >= 1 )
-		//{
-		//	++tail;
-		//}
-		//
-		//correct_head_and_tail();
 		
-		
-		update_real_size();
+		// Update real_size
+		if ( get_real_size() < get_max_size() )
+		{
+			++real_size;
+		}
 		
 		if ( get_real_size() == 1 )
 		{
 			the_array[get_tail()] = to_push;
-		}
-		else
-		{
-			the_array[get_tail() + 1] = to_push;
+			
+			return;
 		}
 		
-		if ( get_real_size() > 1 )
+		
+		tail = get_corrected_other_pos(get_tail() + 1);
+		the_array[get_tail()] = to_push;
+		
+		if ( get_real_size() == get_max_size() )
 		{
-			++tail;
+			head = get_corrected_other_pos(get_tail() + 1);
 		}
 		
-		correct_head_and_tail();
+		
 	}
 	
 } __attribute__((_align4));
@@ -998,8 +983,8 @@ protected:		// functions
 	
 	// End of functions for internal use.
 	
-	// It is (slightly) faster to just unlink a node than it is to erase
-	// it because erase_at ALSO resets the data of the node.  Use caution
+	// It is (slightly) faster to just unlink a node than it is to erase it
+	// because erase_at() ALSO resets the data of the node.  Use caution
 	// when using this function!
 	inline void* unlink_at( s32 index )
 	{
