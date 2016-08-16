@@ -87,11 +87,11 @@ debug_str& debug_str::operator = ( const char* to_copy )
 	return *this;
 }
 
-vu32 (& curr_index_arr)[curr_index_arr_size]
+u32 (& curr_index_arr)[curr_index_arr_size]
 	= debug_arr_group::the_raw_array_group.curr_index_arr;
-vu32 (& debug_u32_arr)[debug_u32_arr_size]
+u32 (& debug_u32_arr)[debug_u32_arr_size]
 	= debug_arr_group::the_raw_array_group.debug_u32_arr;
-vs32 (& debug_s32_arr)[debug_s32_arr_size]
+s32 (& debug_s32_arr)[debug_s32_arr_size]
 	= debug_arr_group::the_raw_array_group.debug_s32_arr;
 fixed24p8 (& debug_f24p8_arr)[debug_f24p8_arr_size]
 	= debug_arr_group::the_raw_array_group.debug_f24p8_arr;
@@ -103,14 +103,15 @@ debug_str (& debug_str_arr)[debug_str_arr_size]
 
 // static variables (raw debug arrays)
 debug_arr_group::raw_array_group debug_arr_group::the_raw_array_group;
+u32 debug_arr_group::gdb_breakpoint_helper;
 
 // static variables (array_helpers)
-array_helper<vu32> debug_arr_group::curr_index_arr_helper
+array_helper<u32> debug_arr_group::curr_index_arr_helper
 	( the_raw_array_group.curr_index_arr, curr_index_arr_size );
 
-array_helper<vu32> debug_arr_group::debug_u32_arr_helper
+array_helper<u32> debug_arr_group::debug_u32_arr_helper
 	( the_raw_array_group.debug_u32_arr, debug_u32_arr_size );
-array_helper<vs32> debug_arr_group::debug_s32_arr_helper
+array_helper<s32> debug_arr_group::debug_s32_arr_helper
 	( the_raw_array_group.debug_s32_arr, debug_s32_arr_size );
 array_helper<fixed24p8> debug_arr_group::debug_f24p8_arr_helper
 	( the_raw_array_group.debug_f24p8_arr, debug_f24p8_arr_size );
@@ -119,6 +120,7 @@ array_helper<fixed8p8> debug_arr_group::debug_f8p8_arr_helper
 
 array_helper<debug_str> debug_arr_group::debug_str_arr_helper
 	( the_raw_array_group.debug_str_arr, debug_str_arr_size );
+
 
 
 void debug_arr_group::clear_debug_vars()
@@ -151,6 +153,8 @@ void debug_arr_group::clear_debug_vars()
 	//	/ sizeof(u32) );
 	
 	memset( &the_raw_array_group, 0, sizeof(raw_array_group) );
+	gdb_breakpoint_helper = 0;
+	
 }
 
 

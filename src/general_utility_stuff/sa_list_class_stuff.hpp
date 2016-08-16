@@ -394,6 +394,7 @@ public:		// functions
 	
 } __attribute__((_align4));
 
+
 // A group of functions to use as function pointers in the list_backend
 // class.
 template< typename type >
@@ -447,11 +448,8 @@ protected:		// functions
 	// keeping track of a FIXED NUMBER of indices to nodes for sorting
 	// purposes.
 	static void insertion_sort_inner_loop( node<type>* node_array, 
-		s32* index_low_ptr, circ_buf_helper* old_il_cbuf_helper_ptr )
-		__attribute__((_text_hot_section))
+		s32* index_low_ptr ) //__attribute__((_text_hot_section))
 	{
-		old_il_cbuf_helper_ptr->reset();
-		
 		node<type>* node_at_j;
 		
 		s32& index_low = *index_low_ptr;
@@ -470,8 +468,6 @@ protected:		// functions
 			//	< get_node_at(index_low).data )
 			if ( (node_at_j->data) < (*data_at_index_low) )
 			{
-				old_il_cbuf_helper_ptr->push(index_low);
-				
 				index_low = j;
 				
 				data_at_index_low = &(node_at_j->data);
@@ -517,22 +513,108 @@ public:		// functions
 	
 	static inline auto get_insertion_sort_inner_loop_fp()
 	{
-		return get_generic_void_3arg_fp(&insertion_sort_inner_loop);
+		return get_generic_void_2arg_fp(&insertion_sort_inner_loop);
 	}
 	
 } __attribute__((_align4));
+
 
 
 // This class exists because C++ templates CAN generate too much code.  Oh,
 // and I can put code in IWRAM this way!
 class list_backend
 {
-protected:		// types
+//protected:		// types
+public:		// types
+	class merge_args
+	{
+	public:		// variables
+		s32 left_index, right_index, out_index;
+		
+	protected:		// variables
+		// These indices are used for left, right, and out
+		s32 left_head, right_head, out_head;
+		size_t left_size, right_size, out_size;
+		
+	public:		// functions
+		inline merge_args( s32 s_left_head, s32 s_right_head,
+			s32 s_out_head, s32 s_left_size, s32 s_right_size )
+			: left_index(s_left_head), right_index(s_right_head),
+			out_index(s_out_head), 
+			
+			left_head(s_left_head), right_head(s_right_head),
+			out_head(s_out_head),
+			
+			left_size(s_left_size), right_size(s_right_size),
+			out_size( s_left_size + s_right_size )
+		{
+		}
+		
+		inline s32 get_left_index( ) const
+		{
+			return left_index;
+		}
+		inline s32 get_right_index() const
+		{
+			return right_index;
+		}
+		inline s32 get_out_index() const
+		{
+			return out_index;
+		}
+		
+		inline node_contents get_left_node( list_backend* the_list ) const
+		{
+			return the_list->get_node_contents_at(get_left_index());
+		}
+		inline node_contents get_right_node( list_backend* the_list ) const
+		{
+			return the_list->get_node_contents_at(get_right_index());
+		}
+		inline node_contents get_out_node( list_backend* the_list ) const
+		{
+			return the_list->get_node_contents_at(get_out_index());
+		}
+		
+		inline s32 get_left_head() const
+		{
+			return left_head;
+		}
+		inline s32 get_right_head() const
+		{
+			return right_head;
+		}
+		inline s32 get_out_head() const
+		{
+			return out_head;
+		}
+		
+		inline size_t get_left_size() const
+		{
+			return left_size;
+		}
+		inline size_t get_right_size() const
+		{
+			return right_size;
+		}
+		inline size_t get_out_size() const
+		{
+			return out_size;
+		}
+		
+	} __attribute__((_align4));
+	
+	friend node_contents merge_args::get_left_node
+		( list_backend* the_list ) const;
+	friend node_contents merge_args::get_right_node
+		( list_backend* the_list ) const;
+	friend node_contents merge_args::get_out_node
+		( list_backend* the_list ) const;
 	
 protected:		// variables
 	u32 size = 0;
 	
-	s32 front_index = -1;
+	s32 front_index = -1, back_index = -1;
 	
 	// node_array as a void pointer.
 	void* node_array = NULL;
@@ -562,9 +644,8 @@ protected:		// variables
 	generic_void_ptr_1arg_fp get_node_data_fp = NULL;
 	generic_vec2_s16_ptr_1arg_fp get_index_pair_fp = NULL;
 	
-	generic_void_2arg_fp conv_node_to_contents_fp = NULL;
-	
-	generic_void_3arg_fp insertion_sort_inner_loop_fp = NULL;
+	generic_void_2arg_fp conv_node_to_contents_fp = NULL,
+		insertion_sort_inner_loop_fp = NULL;
 	
 	template< typename type > friend class externally_allocated_list;
 	
@@ -587,7 +668,7 @@ protected:		// functions
 		generic_void_ptr_1arg_fp s_get_node_data_fp, 
 		generic_vec2_s16_ptr_1arg_fp s_get_index_pair_fp,
 		generic_void_2arg_fp s_conv_node_to_contents_fp,
-		generic_void_3arg_fp s_insertion_sort_inner_loop_fp )
+		generic_void_2arg_fp s_insertion_sort_inner_loop_fp )
 	{
 		init( s_node_array, s_the_free_list_backend_ptr,
 			s_total_num_nodes, s_specific_type_size, s_whole_node_size,
@@ -619,7 +700,7 @@ protected:		// functions
 		generic_void_ptr_1arg_fp n_get_node_data_fp, 
 		generic_vec2_s16_ptr_1arg_fp n_get_index_pair_fp,
 		generic_void_2arg_fp n_conv_node_to_contents_fp,
-		generic_void_3arg_fp n_insertion_sort_inner_loop_fp );
+		generic_void_2arg_fp n_insertion_sort_inner_loop_fp );
 	
 	inline void init( list_backend& to_copy )
 	{
@@ -648,6 +729,14 @@ protected:		// functions
 	inline const s32 get_front_index() const
 	{
 		return front_index;
+	}
+	inline s32& get_back_index()
+	{
+		return back_index;
+	}
+	inline const s32 get_back_index() const
+	{
+		return back_index;
 	}
 	
 	inline void* get_node_array()
@@ -718,7 +807,7 @@ protected:		// functions
 	{
 		return conv_node_to_contents_fp;
 	}
-	inline generic_void_3arg_fp get_insertion_sort_inner_loop_fp()
+	inline generic_void_2arg_fp get_insertion_sort_inner_loop_fp()
 	{
 		return insertion_sort_inner_loop_fp;
 	}
@@ -867,11 +956,9 @@ protected:		// functions
 			const_cast<void*>(node_b_data) );
 	}
 	
-	inline void call_insertion_sort_inner_loop_fp( s32& index_low,
-		circ_buf_helper& old_il_cbuf_helper )
+	inline void call_insertion_sort_inner_loop_fp( s32& index_low )
 	{
-		get_insertion_sort_inner_loop_fp()( get_node_array(), &index_low,
-			&old_il_cbuf_helper );
+		get_insertion_sort_inner_loop_fp()( get_node_array(), &index_low );
 	}
 	
 	
@@ -887,49 +974,81 @@ protected:		// functions
 		const void* n_data, u32 can_move_value );
 		//__attribute__((_iwram_code));
 	
-	inline s32 push_front( const void* to_push, u32 can_move_value=false )
+	//inline s32 push_front( const void* to_push, u32 can_move_value=false )
+	//{
+	//	s32 to_push_index;
+	//	node_contents node_to_push;
+	//	
+	//	internal_func_allocate_and_assign_to_node( to_push_index, 
+	//		node_to_push, to_push, can_move_value );
+	//	
+	//	return internal_func_move_unlinked_node_to_front( to_push_index, 
+	//		node_to_push );
+	//}
+	//
+	//inline s32 insert_before( s32 index, const void* to_insert,
+	//	u32 can_move_value=false )
+	//{
+	//	s32 to_insert_index;
+	//	node_contents node_to_insert;
+	//	
+	//	internal_func_allocate_and_assign_to_node( to_insert_index,
+	//		node_to_insert, to_insert, can_move_value );
+	//	
+	//	return internal_func_move_unlinked_node_before( index, 
+	//		to_insert_index, node_to_insert );
+	//}
+	//inline s32 insert_after( s32 index, const void* to_insert,
+	//	u32 can_move_value=false )
+	//{
+	//	s32 to_insert_index;
+	//	node_contents node_to_insert;
+	//	
+	//	internal_func_allocate_and_assign_to_node( to_insert_index,
+	//		node_to_insert, to_insert, can_move_value );
+	//	
+	//	return internal_func_move_unlinked_node_after( index, 
+	//		to_insert_index, node_to_insert );
+	//}
+	
+	
+	s32 push_front( const void* to_push, u32 can_move_value=false );
+	inline s32 push_back( const void* to_push, u32 can_move_value=false )
 	{
-		s32 to_push_index;
-		node_contents node_to_push;
-		
-		internal_func_allocate_and_assign_to_node( to_push_index, 
-			node_to_push, to_push, can_move_value );
-		
-		return internal_func_move_unlinked_node_to_front( to_push_index, 
-			node_to_push );
+		// If there's nothing in the list
+		if ( get_back_index() < 0 )
+		{
+			return push_front( to_push, can_move_value );
+		}
+		// If there's at least one element in the list
+		else // if ( get_back_index() >= 0 )
+		{
+			return insert_after( get_back_index(), to_push,
+				can_move_value );
+		}
 	}
 	
-	inline s32 insert_before( s32 index, const void* to_insert,
-		u32 can_move_value=false )
+	inline s32 pop_front_basic()
 	{
-		s32 to_insert_index;
-		node_contents node_to_insert;
+		s32& the_front_index = get_front_index();
 		
-		internal_func_allocate_and_assign_to_node( to_insert_index,
-			node_to_insert, to_insert, can_move_value );
+		erase_at(the_front_index);
 		
-		return internal_func_move_unlinked_node_before( index, 
-			to_insert_index, node_to_insert );
+		return the_front_index;
 	}
-	inline s32 insert_after( s32 index, const void* to_insert,
-		u32 can_move_value=false )
+	inline s32 pop_back_basic()
 	{
-		s32 to_insert_index;
-		node_contents node_to_insert;
+		s32& the_back_index = get_back_index();
 		
-		internal_func_allocate_and_assign_to_node( to_insert_index,
-			node_to_insert, to_insert, can_move_value );
+		erase_at(the_back_index);
 		
-		return internal_func_move_unlinked_node_after( index, 
-			to_insert_index, node_to_insert );
+		return the_back_index;
 	}
 	
-	//s32 push_front( const void* to_push, u32 can_move_value=false )
-	//	__attribute__((_iwram_code,noinline));
-	//s32 insert_before( s32 index, const void* to_insert,
-	//	u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
-	//s32 insert_after( s32 index, const void* to_insert,
-	//	u32 can_move_value=false ) __attribute__((_iwram_code,noinline));
+	s32 insert_before( s32 index, const void* to_insert,
+		u32 can_move_value=false );
+	s32 insert_after( s32 index, const void* to_insert,
+		u32 can_move_value=false );
 	
 	
 	// Functions for internal use 
@@ -944,54 +1063,70 @@ protected:		// functions
 		//__attribute__((noinline));
 	
 	
-	// Give slightly more flexibility, at the expense of a small amount of
-	// speed, to this function by allowing a pointer to the
-	// node_at_index be passed to it.
-	void* internal_func_unlink_at_without_dealloc( s32 index, 
-		node_contents* node_at_index_ptr=NULL );
-		//__attribute__((noinline));
+	//// Give slightly more flexibility, at the expense of a small amount of
+	//// speed, to this function by allowing a pointer to the
+	//// node_at_index be passed to it.
+	//void* internal_func_unlink_at_without_dealloc( s32 index, 
+	//	node_contents* node_at_index_ptr=NULL );
+	//	//__attribute__((noinline));
+	
+	void* unlink_at( s32 index );
 	
 	
-	inline void move_linked_node_to_front( s32 to_move_index, 
-		node_contents& node_to_move, list_backend& dst )
+	void internal_func_unlink_from_connected_index_at( s32 index, 
+		u32 index_to_vec2 );
+	
+	inline void unlink_from_next_at( s32 index )
 	{
-		internal_func_unlink_at_without_dealloc( to_move_index, 
-			&node_to_move );
-		dst.internal_func_move_unlinked_node_to_front( to_move_index, 
-			node_to_move );
+		internal_func_unlink_from_connected_index_at( index, 
+			node_contents::vec2_index_for_next_index );
 	}
-	inline void move_linked_node_before( s32 to_move_before_index,
-		s32 to_move_index, node_contents& node_to_move, 
-		list_backend& dst )
+	inline void unlink_from_prev_at( s32 index )
 	{
-		internal_func_unlink_at_without_dealloc( to_move_index, 
-			&node_to_move );
-		dst.internal_func_move_unlinked_node_before( to_move_before_index, 
-			to_move_index, node_to_move );
+		internal_func_unlink_from_connected_index_at( index, 
+			node_contents::vec2_index_for_prev_index );
 	}
-	inline void move_linked_node_after( s32 to_move_after_index,
-		s32 to_move_index, node_contents& node_to_move, 
-		list_backend& dst )
-	{
-		internal_func_unlink_at_without_dealloc( to_move_index, 
-			&node_to_move );
-		dst.internal_func_move_unlinked_node_after( to_move_after_index, 
-			to_move_index, node_to_move );
-	}
+	
+	//inline void move_linked_node_to_front( s32 to_move_index, 
+	//	node_contents& node_to_move, list_backend& dst )
+	//{
+	//	internal_func_unlink_at_without_dealloc( to_move_index, 
+	//		&node_to_move );
+	//	dst.internal_func_move_unlinked_node_to_front( to_move_index, 
+	//		node_to_move );
+	//}
+	//inline void move_linked_node_before( s32 to_move_before_index,
+	//	s32 to_move_index, node_contents& node_to_move, 
+	//	list_backend& dst )
+	//{
+	//	internal_func_unlink_at_without_dealloc( to_move_index, 
+	//		&node_to_move );
+	//	dst.internal_func_move_unlinked_node_before( to_move_before_index, 
+	//		to_move_index, node_to_move );
+	//}
+	//inline void move_linked_node_after( s32 to_move_after_index,
+	//	s32 to_move_index, node_contents& node_to_move, 
+	//	list_backend& dst )
+	//{
+	//	internal_func_unlink_at_without_dealloc( to_move_index, 
+	//		&node_to_move );
+	//	dst.internal_func_move_unlinked_node_after( to_move_after_index, 
+	//		to_move_index, node_to_move );
+	//}
 	
 	
 	
 	// End of functions for internal use.
 	
-	// It is (slightly) faster to just unlink a node than it is to erase it
-	// because erase_at() ALSO resets the data of the node.  Use caution
-	// when using this function!
-	inline void* unlink_at( s32 index )
-	{
-		get_the_free_list_backend().push(index);
-		
-		return internal_func_unlink_at_without_dealloc(index);
-	}
+	//// It is (slightly) faster to just unlink a node than it is to erase it
+	//// because erase_at() ALSO resets the data of the node.  Use caution
+	//// when using this function!
+	//inline void* unlink_at( s32 index )
+	//{
+	//	get_the_free_list_backend().push(index);
+	//	
+	//	return internal_func_unlink_at_without_dealloc(index);
+	//}
 	
 	inline void erase_at( s32 index )
 	{
@@ -999,9 +1134,18 @@ protected:		// functions
 	}
 	
 	
+	
+	
 	//s32 insertion_sort() __attribute__((_iwram_code));
 	//s32 insertion_sort() __attribute__((_text_hot_section));
 	s32 insertion_sort();
+	
+	
+	
+public:		// functions
+	void internal_func_merge( merge_args& args );
+	
+protected:		// functions
 	
 	//s32 merge_sort() __attribute__((_iwram_code));
 	s32 merge_sort();
@@ -1027,6 +1171,8 @@ protected:		// variables
 	sa_free_list_backend* the_free_list_backend_ptr = 0;
 	u32 total_num_nodes = 0;
 	
+	
+public:		// variables, temporarily public
 	list_backend the_list_backend;
 	
 public:		// functions
@@ -1101,6 +1247,14 @@ public:		// functions
 	inline const s32 get_front_index() const
 	{
 		return the_list_backend.get_front_index();
+	}
+	inline s32& get_back_index()
+	{
+		return the_list_backend.get_back_index();
+	}
+	inline const s32 get_back_index() const
+	{
+		return the_list_backend.get_back_index();
 	}
 	
 	inline node<type>* get_node_array()
@@ -1254,14 +1408,23 @@ public:		// functions
 	{
 		return the_list_backend.push_front( &to_push, true );
 	}
+	inline s32 push_back( const type& to_push )
+	{
+		return the_list_backend.push_back(&to_push);
+	}
+	inline s32 push_back( type&& to_push )
+	{
+		return the_list_backend.push_back( &to_push, true );
+	}
+	
 	
 	inline s32 pop_front_basic()
 	{
-		s32& the_front_index = get_front_index();
-		
-		erase_at(the_front_index);
-		
-		return the_front_index;
+		return the_list_backend.pop_front_basic();
+	}
+	inline s32 pop_back_basic()
+	{
+		return the_list_backend.pop_back_basic();
 	}
 	
 	//s32 insert_before_old( s32 index, const type& to_insert )
@@ -1337,8 +1500,8 @@ public:		// functions
 	//			= new_index;
 	//		
 	//		node_at_new_index.data = to_insert;
-	//		node_at_new_index.prev_index() = old_prev_index;
 	//		node_at_new_index.next_index() = index;
+	//		node_at_new_index.prev_index() = old_prev_index;
 	//		
 	//		node_at_index.prev_index() = new_index;
 	//		
@@ -1448,8 +1611,7 @@ public:		// functions
 	}
 	inline s32 insert_after( s32 index, type&& to_insert )
 	{
-		return the_list_backend.insert_after( index, &to_insert,
-			true );
+		return the_list_backend.insert_after( index, &to_insert, true );
 	}
 	
 	//void erase_at_old( s32 index )

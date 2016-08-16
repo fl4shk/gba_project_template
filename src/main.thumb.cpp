@@ -220,119 +220,110 @@ void reinit_test_list_and_profile_deallocate()
 	show_profile_stop();
 	
 	
-	//s32& test_list_front_index = test_list.get_front_index();
-	//
-	//s32 test_list_end = test_list.push_front('g');
-	//for ( u32 i=0; i<5; ++i )
-	//{
-	//	test_list.push_front('1' + i );
-	//}
-	//
-	////test_list.insert_before( test_list_front_index, 'h' );
-	////test_list.insert_before( test_list_end, 'f' );
-	//test_list.insert_after( test_list_front_index, 'h' );
-	//test_list.insert_after( test_list_end, 'f' );
+	s32& test_list_front_index = test_list.get_front_index();
 	
-	test_list.push_front('5');
-	test_list.push_front('9');
-	test_list.push_front('2');
-	test_list.push_front('3');
-	test_list.push_front('4');
-	test_list.push_front('5');
+	s32 test_list_end = test_list.push_front('g');
+	for ( u32 i=0; i<5; ++i )
+	{
+		test_list.push_front('1' + i );
+	}
+	
+	//s32 second_jtest_list.insert_before( test_list_front_index, 'h' );
+	//test_list.insert_before( test_list_end, 'f' );
+	
+	s32 second_index = test_list.insert_after( test_list_front_index, 
+		'h' );
+	s32 third_index = test_list.get_node_at(second_index).next_index();
+	
+	test_list_end = test_list.insert_after( test_list_end, 'f' );
+	
+	while ( test_list.get_back_index() >= 0 )
+	{
+		debug_arr_group::gdb_breakpoint_helper = 0;
+		
+		//test_list.erase_at(test_list.get_back_index());
+		test_list.the_externally_allocated_list.unlink_at
+			(test_list.get_back_index());
+		
+		debug_arr_group::gdb_breakpoint_helper = 0;
+	}
+	
+	//test_list.unlink_from_prev_at(third_index);
+	
+	
+	
+	
+	//test_list.push_front('5');
+	//test_list.push_front('9');
+	//test_list.push_front('2');
+	//test_list.push_front('3');
+	//test_list.push_front('4');
+	//test_list.push_front('5');
+	
+	
+	
+	
+	// These are for testing the internal_func_merge function.
+	//// RAW index 0
+	//test_list.push_front('3');
+	//
+	//// RAW index 1
+	//test_list.push_front('1');
+	//
+	//// RAW index 2
+	//test_list.push_front('4');
+	//
+	//// RAW index 3
+	//test_list.push_front('2');
 }
 
-static constexpr size_t test_cbuf_size = 4;
-s32 test_cbuf[test_cbuf_size];
-sa_list_stuff::circ_buf_helper test_cbuf_helper( test_cbuf, 
-	test_cbuf_size );
+//static constexpr size_t test_cbuf_size = 4;
+//s32 test_cbuf[test_cbuf_size];
+//sa_list_stuff::circ_buf_helper test_cbuf_helper( test_cbuf, 
+//	test_cbuf_size );
 
 
 void sa_list_test()
 {
-	test_cbuf_helper.reset();
-	
-	test_cbuf_helper.push(3);
-	test_cbuf_helper.push(20);
-	test_cbuf_helper.push(9);
-	
-	//test_cbuf_helper.push(6);
-	//test_cbuf_helper.push(7);
-	//
-	//test_cbuf_helper.push(8);
-	
-	
-	//for ( auto iter : test_cbuf_helper )
-	//{
-	//	debug_arr_group::write_s32_and_inc(iter);
-	//}
-	
-	auto iter = test_cbuf_helper.begin();
-	const auto end_iter = test_cbuf_helper.end();
-	for (;;) 
-	{
-		//if ( iter == test_cbuf_helper.end() )
-		if ( iter == end_iter )
-		{
-			break;
-		}
-		
-		debug_arr_group::write_s32_and_inc(*iter);
-		
-		++iter;
-		
-		debug_f8p8_arr[0] = make_f8p8(0);
-	}
-	
-	
-	return;
-	
-	//
-	//
-	//
-	//
-	
-	
 	// Part 1
 	asm_comment("Part 1");
 	reinit_test_list_and_profile_deallocate();
 	show_test_list();
 	
 	
-	// Part 2
-	asm_comment("Part 2");
-	profile_start();
-	test_list.insertion_sort();
-	//test_list.merge_sort();
-	show_profile_stop();
-	show_test_list();
+	//// Part 2
+	//asm_comment("Part 2");
+	//sa_list_stuff::list_backend::merge_args test_merge_args( 1, 3, 
+	//	test_list.get_front_index(), 2, 2 );
+	//test_list.the_externally_allocated_list.the_list_backend
+	//	.internal_func_merge(test_merge_args);
+	//show_test_list();
 	
 	
+	//// Part 2
+	//asm_comment("Part 2");
+	//profile_start();
+	//test_list.insertion_sort();
+	////test_list.merge_sort();
+	//show_profile_stop();
+	//show_test_list();
+	//
+	//
 	//// Part 3
 	//asm_comment("Part 3");
 	//reinit_test_list_and_profile_deallocate();
 	//show_test_list();
 	//
-	//
 	//// Part 4
 	//asm_comment("Part 4");
 	//profile_start();
-	//test_list.insertion_sort_old_2();
+	////test_list.insertion_sort();
+	//test_list.merge_sort();
 	//show_profile_stop();
 	//show_test_list();
-	//
-	//
-	//// Part 5
-	//asm_comment("Part 5");
-	//reinit_test_list_and_profile_deallocate();
-	//show_test_list();
-	//
-	//
-	//// Part 6
-	//asm_comment("Part 6");
-	//profile_start();
-	//test_list.insertion_sort_old_3();
-	//show_profile_stop();
-	//show_test_list();
+	
+	
+	
 	
 	
 	//profile_start();

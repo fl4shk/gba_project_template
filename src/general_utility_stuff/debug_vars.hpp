@@ -196,9 +196,9 @@ public:		// functions
 } __attribute__((_align4));
 
 
-extern vu32 (& curr_index_arr)[curr_index_arr_size];
-extern vu32 (& debug_u32_arr)[debug_u32_arr_size];
-extern vs32 (& debug_s32_arr)[debug_s32_arr_size];
+extern u32 (& curr_index_arr)[curr_index_arr_size];
+extern u32 (& debug_u32_arr)[debug_u32_arr_size];
+extern s32 (& debug_s32_arr)[debug_s32_arr_size];
 extern fixed24p8 (& debug_f24p8_arr)[debug_f24p8_arr_size];
 extern fixed8p8 (& debug_f8p8_arr)[debug_f8p8_arr_size];
 extern debug_str (& debug_str_arr)[debug_str_arr_size];
@@ -209,10 +209,10 @@ class debug_arr_group
 public:		// static variables (raw debug arrays)
 	struct raw_array_group
 	{
-		vu32 curr_index_arr[curr_index_arr_size];
+		u32 curr_index_arr[curr_index_arr_size];
 		
-		vu32 debug_u32_arr[debug_u32_arr_size];
-		vs32 debug_s32_arr[debug_s32_arr_size];
+		u32 debug_u32_arr[debug_u32_arr_size];
+		s32 debug_s32_arr[debug_s32_arr_size];
 		fixed24p8 debug_f24p8_arr[debug_f24p8_arr_size];
 		fixed8p8 debug_f8p8_arr[debug_f8p8_arr_size];
 		
@@ -220,11 +220,18 @@ public:		// static variables (raw debug arrays)
 	} __attribute__((_align4));
 	static raw_array_group the_raw_array_group;
 	
-public:		// static variables (array_helpers)
-	static array_helper<vu32> curr_index_arr_helper;
 	
-	static array_helper<vu32> debug_u32_arr_helper;
-	static array_helper<vs32> debug_s32_arr_helper;
+	// The main reason this exists is to give something to write to so that
+	// a breakpoint can be sure to be hit in GDB.  It's a  bit unfortunate
+	// that I had to resort to something like this due to it being
+	// inflexible, but oh well.
+	static u32 gdb_breakpoint_helper;
+	
+public:		// static variables (array_helpers)
+	static array_helper<u32> curr_index_arr_helper;
+	
+	static array_helper<u32> debug_u32_arr_helper;
+	static array_helper<s32> debug_s32_arr_helper;
 	static array_helper<fixed24p8> debug_f24p8_arr_helper;
 	static array_helper<fixed8p8> debug_f8p8_arr_helper;
 	
@@ -233,16 +240,16 @@ public:		// static variables (array_helpers)
 //protected:		// functions
 public:		// functions
 	
-	static inline vu32* curr_index_arr()
+	static inline u32* curr_index_arr()
 	{
 		return the_raw_array_group.curr_index_arr;
 	}
 	
-	static inline vu32* debug_u32_arr() 
+	static inline u32* debug_u32_arr() 
 	{
 		return the_raw_array_group.debug_u32_arr;
 	}
-	static inline vs32* debug_s32_arr()
+	static inline s32* debug_s32_arr()
 	{
 		return the_raw_array_group.debug_s32_arr;
 	}
@@ -324,11 +331,11 @@ public:		// functions
 
 //template< typename debug_arr_type, typename type >
 //void show_debug_values_group_backend( debug_arr_type* debug_values_arr, 
-//	vu32& curr_index, const u32 total_num_args, type* all_values_arr ) 
+//	u32& curr_index, const u32 total_num_args, type* all_values_arr ) 
 //	__attribute__((noinline));
 template< typename debug_arr_type, typename type >
 void show_debug_values_group_backend( debug_arr_type* debug_values_arr, 
-	vu32& curr_index, const u32 total_num_args, const type* all_values_arr )
+	u32& curr_index, const u32 total_num_args, const type* all_values_arr )
 {
 	//asm_comment("show_debug_values_group_backend()");
 	

@@ -31,8 +31,8 @@ namespace sa_list_stuff
 template< typename type, u32 total_num_nodes >
 class regular_list_base
 {
-protected:		// variables
-//public:		// variables
+//protected:		// variables
+public:		// variables
 	externally_allocated_list<type> the_externally_allocated_list;
 	node<type> node_array[total_num_nodes];
 	sa_free_list<total_num_nodes> the_free_list;
@@ -55,6 +55,14 @@ protected:		// functions
 	inline const s32 get_front_index() const
 	{
 		return the_externally_allocated_list.get_front_index();
+	}
+	inline s32& get_back_index()
+	{
+		return the_externally_allocated_list.get_back_index();
+	}
+	inline const s32 get_back_index() const
+	{
+		return the_externally_allocated_list.get_back_index();
 	}
 	
 	inline node<type>* get_node_array()
@@ -112,9 +120,23 @@ protected:		// functions
 		return the_externally_allocated_list.push_front
 			(std::move(to_push));
 	}
+	inline s32 push_back( const type& to_push )
+	{
+		return the_externally_allocated_list.push_back(to_push);
+	}
+	inline s32 push_back( type&& to_push )
+	{
+		return the_externally_allocated_list.push_back
+			(std::move(to_push));
+	}
+	
 	inline s32 pop_front_basic()
 	{
 		return the_externally_allocated_list.pop_front_basic();
+	}
+	inline s32 pop_back_basic()
+	{
+		return the_externally_allocated_list.pop_back_basic();
 	}
 	
 	
@@ -185,6 +207,14 @@ public:		// functions
 	{
 		return base::get_front_index();
 	}
+	inline s32& get_back_index()
+	{
+		return base::get_back_index();
+	}
+	inline const s32 get_back_index() const
+	{
+		return base::get_back_index();
+	}
 	
 	inline node<type>* get_node_array()
 	{
@@ -238,12 +268,24 @@ public:		// functions
 	}
 	inline s32 push_front( type&& to_push )
 	{
-		return base::push_front
-			(std::move(to_push));
+		return base::push_front(std::move(to_push));
 	}
+	inline s32 push_back( const type& to_push )
+	{
+		return base::push_back(to_push);
+	}
+	inline s32 push_back( type&& to_push )
+	{
+		return base::push_back(std::move(to_push));
+	}
+	
 	inline s32 pop_front_basic()
 	{
 		return base::pop_front_basic();
+	}
+	inline s32 pop_back_basic()
+	{
+		return base::pop_back_basic();
 	}
 	
 	
@@ -317,6 +359,14 @@ public:		// functions
 	{
 		return base::get_front_index();
 	}
+	inline s32& get_back_index()
+	{
+		return base::get_back_index();
+	}
+	inline const s32 get_back_index() const
+	{
+		return base::get_back_index();
+	}
 	
 	inline node<type>* get_node_array()
 	{
@@ -370,13 +420,26 @@ public:		// functions
 	}
 	inline s32 push_front( type&& to_push )
 	{
-		return base::push_front
-			(std::move(to_push));
+		return base::push_front(std::move(to_push));
 	}
+	inline s32 push_back( const type& to_push )
+	{
+		return base::push_back(to_push);
+	}
+	inline s32 push_back( type&& to_push )
+	{
+		return base::push_back(std::move(to_push));
+	}
+	
 	inline s32 pop_front_basic()
 	{
 		return base::pop_front_basic();
 	}
+	inline s32 pop_back_basic()
+	{
+		return base::pop_back_basic();
+	}
+	
 	inline s32 insert_and_sort( const type& to_insert )
 	{
 		base::push_front(to_insert);
