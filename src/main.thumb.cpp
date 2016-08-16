@@ -237,18 +237,6 @@ void reinit_test_list_and_profile_deallocate()
 	
 	test_list_end = test_list.insert_after( test_list_end, 'f' );
 	
-	while ( test_list.get_back_index() >= 0 )
-	{
-		debug_arr_group::gdb_breakpoint_helper = 0;
-		
-		//test_list.erase_at(test_list.get_back_index());
-		test_list.the_externally_allocated_list.unlink_at
-			(test_list.get_back_index());
-		
-		debug_arr_group::gdb_breakpoint_helper = 0;
-	}
-	
-	//test_list.unlink_from_prev_at(third_index);
 	
 	
 	
