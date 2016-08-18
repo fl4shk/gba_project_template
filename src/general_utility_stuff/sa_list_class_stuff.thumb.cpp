@@ -504,60 +504,178 @@ s32 list_backend::insertion_sort()
 
 
 
-//void list_backend::internal_func_merge( merge_args& args )
-//{
-//	s32& the_front_index = get_front_index();
-//	
-//	//node_contents left_node = get_node_contents_at(args.get_left_index()),
-//	//	right_node = get_node_contents_at(args.get_right_index()),
-//	//	out_node = get_node_contents_at(args.get_out_index());
-//	node_contents left_node = args.get_left_node(this),
-//		right_node = args.get_right_node(this);
-//	
-//	size_t i = 0, j = 0;
-//	
-//	
-//	
-//	auto merge_left_node = [&]() -> void
-//	{
-//		
-//		
-//		++i;
-//	};
-//	
-//	auto merge_right_node = [&]() -> void
-//	{
-//		
-//		
-//		++j;
-//	};
-//	
-//	for ( size_t k = 0; k<args.get_out_size(); ++k )
-//	{
-//		if ( i >= args.get_left_size() )
-//		{
-//			merge_right_node();
-//		}
-//		else if ( j >= args.get_right_size() )
-//		{
-//			merge_left_node();
-//		}
-//		else // if ( i < args.get_left_size() 
-//			// && j < args.get_right_size() )
-//		{
-//			if ( call_specific_type_less_func( left_node.data_ptr,
-//				right_node.data_ptr ) )
-//			{
-//				merge_left_node();
-//			}
-//			else
-//			{
-//				merge_right_node();
-//			}
-//		}
-//	}
-//	
-//}
+void list_backend::internal_func_merge( merge_args& args )
+{
+	list_backend out_list(*this);
+	
+	s32& the_front_index = get_front_index();
+	s32& the_back_index = get_back_index();
+	
+	//node_contents left_node = get_node_contents_at(args.get_left_index()),
+	//	right_node = get_node_contents_at(args.get_right_index()),
+	//	out_node = get_node_contents_at(args.get_out_index());
+	node_contents left_node = args.get_left_node(this),
+		right_node = args.get_right_node(this);
+	
+	
+	
+	// This is for re-linking nodes after a merge.  There is no need to
+	// keep track of this outside of internal_func_merge(), unlike
+	// args.index_after_end, args.node_after_end, and
+	// args.node_after_end_ptr.
+	node_contents node_before_start;
+	node_contents* node_before_start_ptr = NULL;
+	
+	
+	args.init_nae_stuff();
+	
+	
+	
+	// start and end refer to args' parameters, and front and back refer to
+	// this's front_index and back_index.
+	const bool old_start_index_is_front_index = ( args.get_left_head() 
+		== the_front_index );
+	bool old_end_index_is_back_index = false;
+	
+	const s32 temp_index_before_start = left_node.prev_index();
+	
+	// If temp_index_before_start refers to nothing, don't point
+	// node_before_start_ptr to node_before_start.
+	if ( temp_index_before_start >= 0 )
+	{
+		node_before_start = get_node_contents_at(temp_index_before_start);
+		node_before_start_ptr = &node_before_start;
+	}
+	
+	
+	// Find the index of the final node of the right sublist.
+	s32 temp_index_after_end = args.get_right_head();
+	
+	if ( temp_index_after_end == the_back_index )
+	{
+		old_end_index_is_back_index = true;
+	}
+	else
+	{
+		for ( s32 i=args.get_right_size()-1; i>=0; --i )
+		{
+			// Just in case
+			if ( temp_index_after_end < 0 )
+			{
+				break;
+			}
+			
+			
+			temp_index_after_end = get_next_index_at_index
+				(temp_index_after_end);
+			
+			if ( temp_index_after_end == the_back_index )
+			{
+				old_end_index_is_back_index = true;
+			}
+		}
+	}
+	
+	if ( temp_index_after_end >= 0 )
+	{
+		args.update_nae_stuff( this, temp_index_after_end );
+	}
+	
+	
+	size_t i = 0, j = 0;
+	
+	
+	auto merge_left_node = [&]() -> void
+	{
+		const s32 old_left_index = args.get_left_index();
+		
+		args.left_index = left_node.next_index();
+		
+		if ( args.get_left_index() >= 0 )
+		{
+			left_node = args.get_left_node(this);
+		}
+		
+		void* data_to_move = unlink_at(old_left_index);
+		out_list.push_back( data_to_move, true );
+		
+		
+		++i;
+	};
+	
+	auto merge_right_node = [&]() -> void
+	{
+		const s32 old_right_index = args.get_right_index();
+		
+		args.right_index = right_node.next_index();
+		
+		if ( args.get_right_index() >= 0 )
+		{
+			right_node = args.get_right_node(this);
+		}
+		
+		void* data_to_move = unlink_at(old_right_index);
+		out_list.push_back( data_to_move, true );
+		
+		
+		++j;
+	};
+	
+	for ( size_t k = 0; k<args.get_out_size(); ++k )
+	{
+		if ( i >= args.get_left_size() )
+		{
+			merge_right_node();
+		}
+		else if ( j >= args.get_right_size() )
+		{
+			merge_left_node();
+		}
+		else // if ( i < args.get_left_size() 
+			// && j < args.get_right_size() )
+		{
+			if ( call_specific_type_less_func( left_node.data_ptr,
+				right_node.data_ptr ) )
+			{
+				merge_left_node();
+			}
+			else
+			{
+				merge_right_node();
+			}
+		}
+	}
+	
+	// If there is a node before the left sublist's start node
+	if (node_before_start_ptr)
+	{
+		node_before_start.next_index() = out_list.get_front_index();
+		get_prev_index_at_index(out_list.get_front_index())
+			= temp_index_before_start;
+	}
+	// If the left sublist's original head index is the front_index
+	else if (old_start_index_is_front_index)
+	{
+		//front_index = args.get_left_head();
+		front_index = out_list.get_front_index();
+	}
+	
+	// If there is a node after the right sublist's end node
+	if (args.get_node_after_end_ptr())
+	{
+		args.set_nae_prev_index(out_list.get_back_index());
+		get_next_index_at_index(out_list.get_back_index())
+			= args.get_index_after_end();
+	}
+	// If the right sublist's original head index is the front_index
+	else if (old_end_index_is_back_index)
+	{
+		//back_index = args.get_right_index();
+		back_index = out_list.get_back_index();
+	}
+	
+	out_list.get_front_index() = -1;
+}
 
 
 s32 list_backend::merge_sort()

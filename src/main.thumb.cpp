@@ -220,22 +220,22 @@ void reinit_test_list_and_profile_deallocate()
 	show_profile_stop();
 	
 	
-	s32& test_list_front_index = test_list.get_front_index();
-	
-	s32 test_list_end = test_list.push_front('g');
-	for ( u32 i=0; i<5; ++i )
-	{
-		test_list.push_front('1' + i );
-	}
-	
-	//s32 second_jtest_list.insert_before( test_list_front_index, 'h' );
-	//test_list.insert_before( test_list_end, 'f' );
-	
-	s32 second_index = test_list.insert_after( test_list_front_index, 
-		'h' );
-	s32 third_index = test_list.get_node_at(second_index).next_index();
-	
-	test_list_end = test_list.insert_after( test_list_end, 'f' );
+	//s32& test_list_front_index = test_list.get_front_index();
+	//
+	//s32 test_list_end = test_list.push_front('g');
+	//for ( u32 i=0; i<5; ++i )
+	//{
+	//	test_list.push_front('1' + i );
+	//}
+	//
+	////s32 second_jtest_list.insert_before( test_list_front_index, 'h' );
+	////test_list.insert_before( test_list_end, 'f' );
+	//
+	//s32 second_index = test_list.insert_after( test_list_front_index, 
+	//	'h' );
+	//s32 third_index = test_list.get_node_at(second_index).next_index();
+	//
+	//test_list_end = test_list.insert_after( test_list_end, 'f' );
 	
 	
 	
@@ -252,17 +252,34 @@ void reinit_test_list_and_profile_deallocate()
 	
 	
 	// These are for testing the internal_func_merge function.
-	//// RAW index 0
-	//test_list.push_front('3');
-	//
-	//// RAW index 1
-	//test_list.push_front('1');
-	//
-	//// RAW index 2
-	//test_list.push_front('4');
-	//
-	//// RAW index 3
-	//test_list.push_front('2');
+	// RAW index 0
+	test_list.push_back('1');
+	
+	// RAW index 1
+	test_list.push_back('2');
+	
+	// RAW index 2
+	test_list.push_back('3');
+	
+	// RAW index 3
+	test_list.push_back('4');
+	
+	
+	
+	
+	// RAW index 4
+	test_list.push_back('1');
+	
+	// RAW index 5
+	test_list.push_back('3');
+	
+	// RAW index 6
+	test_list.push_back('5');
+	
+	// RAW index 7
+	test_list.push_back('9');
+	
+	
 }
 
 //static constexpr size_t test_cbuf_size = 4;
@@ -279,13 +296,13 @@ void sa_list_test()
 	show_test_list();
 	
 	
-	//// Part 2
-	//asm_comment("Part 2");
-	//sa_list_stuff::list_backend::merge_args test_merge_args( 1, 3, 
-	//	test_list.get_front_index(), 2, 2 );
-	//test_list.the_externally_allocated_list.the_list_backend
-	//	.internal_func_merge(test_merge_args);
-	//show_test_list();
+	// Part 2
+	asm_comment("Part 2");
+	sa_list_stuff::list_backend::merge_args test_merge_args( 0, 4, 4, 4 );
+	
+	test_list.the_externally_allocated_list.the_list_backend
+		.internal_func_merge(test_merge_args);
+	show_test_list();
 	
 	
 	//// Part 2

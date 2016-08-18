@@ -532,18 +532,19 @@ public:		// types
 		s32 left_index, right_index, out_index;
 		
 	protected:		// variables
-		// These indices are used for left, right, and out
-		s32 left_head, right_head, out_head;
+		s32 left_head, right_head;
 		size_t left_size, right_size, out_size;
+		
+		s32 index_after_end = -1;
+		node_contents node_after_end;
+		node_contents* node_after_end_ptr = NULL;
 		
 	public:		// functions
 		inline merge_args( s32 s_left_head, s32 s_right_head,
-			s32 s_out_head, s32 s_left_size, s32 s_right_size )
+			s32 s_left_size, s32 s_right_size )
 			: left_index(s_left_head), right_index(s_right_head),
-			out_index(s_out_head), 
 			
 			left_head(s_left_head), right_head(s_right_head),
-			out_head(s_out_head),
 			
 			left_size(s_left_size), right_size(s_right_size),
 			out_size( s_left_size + s_right_size )
@@ -558,10 +559,6 @@ public:		// types
 		{
 			return right_index;
 		}
-		inline s32 get_out_index() const
-		{
-			return out_index;
-		}
 		
 		inline node_contents get_left_node( list_backend* the_list ) const
 		{
@@ -571,10 +568,6 @@ public:		// types
 		{
 			return the_list->get_node_contents_at(get_right_index());
 		}
-		inline node_contents get_out_node( list_backend* the_list ) const
-		{
-			return the_list->get_node_contents_at(get_out_index());
-		}
 		
 		inline s32 get_left_head() const
 		{
@@ -583,10 +576,6 @@ public:		// types
 		inline s32 get_right_head() const
 		{
 			return right_head;
-		}
-		inline s32 get_out_head() const
-		{
-			return out_head;
 		}
 		
 		inline size_t get_left_size() const
@@ -602,14 +591,54 @@ public:		// types
 			return out_size;
 		}
 		
+		
+		
+		
+		inline void init_nae_stuff()
+		{
+			index_after_end = -1;
+			node_after_end_ptr = NULL;
+		}
+		inline bool nae_exists() const
+		{
+			return ( get_index_after_end() >= 0 );
+		}
+		inline void set_nae_prev_index( s32 n_nae_prev_index )
+		{
+			node_after_end.prev_index() = n_nae_prev_index;
+		}
+		inline void update_nae_stuff( list_backend* the_list, 
+			s32 the_index )
+		{
+			index_after_end = the_index;
+			node_after_end = the_list->get_node_contents_at(the_index);
+			node_after_end_ptr = &node_after_end;
+		}
+		
+		
+		inline s32 get_index_after_end() const
+		{
+			return index_after_end;
+		}
+		inline const node_contents& get_node_after_end() const
+		{
+			return node_after_end;
+		}
+		inline const node_contents* get_node_after_end_ptr() const
+		{
+			return node_after_end_ptr;
+		}
+		
+		
 	} __attribute__((_align4));
 	
 	friend node_contents merge_args::get_left_node
 		( list_backend* the_list ) const;
 	friend node_contents merge_args::get_right_node
 		( list_backend* the_list ) const;
-	friend node_contents merge_args::get_out_node
-		( list_backend* the_list ) const;
+	
+	friend void merge_args::update_nae_stuff( list_backend* the_list, 
+		s32 the_index );
 	
 protected:		// variables
 	u32 size = 0;
@@ -1143,7 +1172,7 @@ protected:		// functions
 	
 	
 public:		// functions
-	void internal_func_merge( merge_args& args );
+	void internal_func_merge(merge_args& args);
 	
 protected:		// functions
 	
