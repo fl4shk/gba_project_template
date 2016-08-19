@@ -82,8 +82,8 @@ void list_backend::fully_deallocate_via_unlink()
 	//while ( get_front_index() != -1 )
 	while ( the_front_index >= 0 )
 	{
-		//unlink_at(get_front_index());
-		unlink_at(the_front_index);
+		//unlink_at_with_dealloc(get_front_index());
+		unlink_at_with_dealloc(the_front_index);
 	}
 	
 	//back_index = -1;
@@ -152,47 +152,26 @@ void list_backend::internal_func_allocate_and_assign_to_node
 
 
 s32 list_backend::internal_func_move_unlinked_node_to_front
-	( const void* to_push, node_contents& node_to_move )
+	( s32 to_move_index, node_contents& node_to_move )
 {
 	s32& the_front_index = get_front_index();
 	const s32 old_front_index = the_front_index;
 	
 	
-	//the_front_index = get_the_free_list_backend().peek_top_and_pop();
-	the_front_index = 
-	
-	
-	node_contents the_front_node = get_node_contents_at(the_front_index);
-	
+	the_front_index = to_move_index;
 	
 	s32 new_next_index = -1;
 	
 	
-	//// If there was nothing in the list before the push
-	//if ( old_front_index < 0 )
-	//{
-	//	get_back_index() = the_front_index;
-	//}
-	//// If there's at least one element in the list
-	//else 
+	// If there's at least one element in the list
 	if ( old_front_index >= 0 )
 	{
 		new_next_index = old_front_index;
 		
-		//get_node_at(old_front_index).prev_index()
-		//	= the_front_index;
 		get_prev_index_at_index(old_front_index) = the_front_index;
 	}
 	
-	
-	////the_front_node.data = to_push;
-	////the_front_node.next_index() = new_next_index;
-	////the_front_node.prev_index() = -1;
-	//assign_to_whole_node( the_front_node, to_push, 
-	//	vec2_s16( new_next_index, -1 ), can_move_value );
-	
-	vec2_s16 n_index_pair( new_next_index, -1 );
-	//*the_front_node.index_pair_ptr = n_index_pair;
+	*node_to_move.index_pair_ptr = vec2_s16( new_next_index, -1 );
 	
 	
 	return the_front_index;
@@ -201,61 +180,90 @@ s32 list_backend::internal_func_move_unlinked_node_to_front
 
 
 
-// insert_before() won't affect back_index
-s32 list_backend::insert_before( s32 index, const void* to_insert,
-	u32 can_move_value )
+//// insert_before() won't affect back_index
+//s32 list_backend::insert_before( s32 index, const void* to_insert,
+//	u32 can_move_value )
+//{
+//	//s32 old_prev_index = get_node_at(index)
+//	//	.prev_index();
+//	////s32 old_next_index = get_node_at(index)
+//	////	.next_index()
+//	
+//	// If index == front_index
+//	//if ( old_prev_index == -1 )
+//	if ( index == get_front_index() )
+//	{
+//		return push_front( to_insert, can_move_value );
+//	}
+//	else
+//	{
+//		//node<type>& node_at_index 
+//		//	= get_node_at(index);
+//		node_contents node_at_index = get_node_contents_at(index);
+//		
+//		const s32 old_prev_index = node_at_index.prev_index();
+//		
+//		//const s32 new_index = get_the_free_list_backend()
+//		//	.peek_top();
+//		//get_the_free_list_backend().pop();
+//		const s32 new_index = get_the_free_list_backend()
+//			.peek_top_and_pop();
+//		
+//		
+//		//node<type>& node_at_new_index
+//		//	= get_node_at(new_index);
+//		node_contents node_at_new_index = get_node_contents_at(new_index);
+//		
+//		
+//		//get_node_at(old_prev_index).next_index()
+//		//	= new_index;
+//		
+//		get_next_index_at_index(old_prev_index) = new_index;
+//		
+//		//node_at_new_index.data = to_insert;
+//		//node_at_new_index.next_index() = index;
+//		//node_at_new_index.prev_index() = old_prev_index;
+//		
+//		assign_to_whole_node( node_at_new_index, to_insert, 
+//			vec2_s16( index, old_prev_index ), can_move_value );
+//		
+//		
+//		node_at_index.prev_index() = new_index;
+//		
+//		return new_index;
+//	}
+//	
+//	//return index;
+//	//return new_index;
+//}
+
+
+s32 list_backend::internal_func_move_unlinked_node_before
+	( s32 to_move_before_index, s32 to_move_index, 
+	node_contents& node_to_move )
 {
-	//s32 old_prev_index = get_node_at(index)
-	//	.prev_index();
-	////s32 old_next_index = get_node_at(index)
-	////	.next_index()
-	
-	// If index == front_index
-	//if ( old_prev_index == -1 )
-	if ( index == get_front_index() )
+	// If to_move_before_index == front_index
+	if ( to_move_before_index == get_front_index() )
 	{
-		return push_front( to_insert, can_move_value );
-	}
-	else
-	{
-		//node<type>& node_at_index 
-		//	= get_node_at(index);
-		node_contents node_at_index = get_node_contents_at(index);
-		
-		const s32 old_prev_index = node_at_index.prev_index();
-		
-		//const s32 new_index = get_the_free_list_backend()
-		//	.peek_top();
-		//get_the_free_list_backend().pop();
-		const s32 new_index = get_the_free_list_backend()
-			.peek_top_and_pop();
-		
-		
-		//node<type>& node_at_new_index
-		//	= get_node_at(new_index);
-		node_contents node_at_new_index = get_node_contents_at(new_index);
-		
-		
-		//get_node_at(old_prev_index).next_index()
-		//	= new_index;
-		
-		get_next_index_at_index(old_prev_index) = new_index;
-		
-		//node_at_new_index.data = to_insert;
-		//node_at_new_index.next_index() = index;
-		//node_at_new_index.prev_index() = old_prev_index;
-		
-		assign_to_whole_node( node_at_new_index, to_insert, 
-			vec2_s16( index, old_prev_index ), can_move_value );
-		
-		
-		node_at_index.prev_index() = new_index;
-		
-		return new_index;
+		//return push_front( to_insert, can_move_value );
+		return internal_func_move_unlinked_node_to_front( to_move_index,
+			node_to_move );
 	}
 	
-	//return index;
-	//return new_index;
+	
+	node_contents node_to_move_before = get_node_contents_at
+		(to_move_before_index);
+	const s32 old_prev_index = node_to_move_before.prev_index();
+	
+	
+	get_next_index_at_index(old_prev_index) = to_move_index;
+	
+	*node_to_move.index_pair_ptr = vec2_s16( to_move_before_index, 
+		old_prev_index );
+	
+	node_to_move_before.prev_index() = to_move_index;
+	
+	return to_move_index;
 }
 
 //s32 list_backend::internal_func_move_unlinked_node_before
@@ -265,34 +273,79 @@ s32 list_backend::insert_before( s32 index, const void* to_insert,
 //}
 
 
-// insert_after() CAN affect back_index
-s32 list_backend::insert_after( s32 index, const void* to_insert,
-	u32 can_move_value )
+//// insert_after() CAN affect back_index
+//s32 list_backend::insert_after( s32 index, const void* to_insert,
+//	u32 can_move_value )
+//{
+//	////s32 old_prev_index = get_node_at(index)
+//	////	.prev_index();
+//	//s32 old_next_index = get_node_at(index)
+//	//	.next_index();
+//	
+//	//node<type>& node_at_index = get_node_at(index);
+//	//const s32 old_next_index = node_at_index
+//	//	.next_index();
+//	
+//	node_contents node_at_index = get_node_contents_at(index);
+//	const s32 old_next_index = node_at_index.next_index();
+//	
+//	
+//	////s32 new_index = get_the_free_list_backend().pop();
+//	//const s32 new_index = get_the_free_list_backend().peek_top();
+//	//get_the_free_list_backend().pop();
+//	const s32 new_index = get_the_free_list_backend().peek_top_and_pop();
+//	
+//	
+//	node_at_index.next_index() = new_index;
+//	
+//	//node<type>& node_at_new_index 
+//	//	= get_node_at(new_index);
+//	node_contents node_at_new_index = get_node_contents_at(new_index);
+//	
+//	s32 new_next_index = -1;
+//	
+//	// Special code is used for inserting an element at the end of the
+//	// list.
+//	if ( old_next_index < 0 )
+//	{
+//		get_back_index() = new_index;
+//	}
+//	else if ( old_next_index >= 0 )
+//	{
+//		//get_node_at(old_next_index).prev_index() 
+//		//	= new_index;
+//		get_prev_index_at_index(old_next_index) = new_index;
+//		new_next_index = old_next_index;
+//	}
+//	
+//	//node_at_new_index.data = to_insert;
+//	//node_at_new_index.next_index() = new_next_index;
+//	//node_at_new_index.prev_index() = index;
+//	
+//	assign_to_whole_node( node_at_new_index, to_insert,
+//		vec2_s16( new_next_index, index ), can_move_value );
+//	
+//	
+//	//return index;
+//	return new_index;
+//}
+
+s32 list_backend::internal_func_move_unlinked_node_after
+	( s32 to_move_after_index, s32 to_move_index, 
+	node_contents& node_to_move )
 {
-	////s32 old_prev_index = get_node_at(index)
-	////	.prev_index();
-	//s32 old_next_index = get_node_at(index)
-	//	.next_index();
+	//node_contents node_at_index = get_node_contents_at(index);
+	//const s32 old_next_index = node_at_index.next_index();
+	node_contents node_to_move_after = get_node_contents_at
+		(to_move_after_index);
+	s16& node_to_move_after_next_index = node_to_move_after.next_index();
+	const s32 old_next_index = node_to_move_after_next_index;
 	
-	//node<type>& node_at_index = get_node_at(index);
-	//const s32 old_next_index = node_at_index
-	//	.next_index();
+	//const s32 new_index = get_the_free_list_backend().peek_top_and_pop();
+	//node_at_index.next_index() = new_index;
+	node_to_move_after_next_index = to_move_index;
 	
-	node_contents node_at_index = get_node_contents_at(index);
-	const s32 old_next_index = node_at_index.next_index();
-	
-	
-	////s32 new_index = get_the_free_list_backend().pop();
-	//const s32 new_index = get_the_free_list_backend().peek_top();
-	//get_the_free_list_backend().pop();
-	const s32 new_index = get_the_free_list_backend().peek_top_and_pop();
-	
-	
-	node_at_index.next_index() = new_index;
-	
-	//node<type>& node_at_new_index 
-	//	= get_node_at(new_index);
-	node_contents node_at_new_index = get_node_contents_at(new_index);
+	//node_contents node_at_new_index = get_node_contents_at(new_index);
 	
 	s32 new_next_index = -1;
 	
@@ -300,28 +353,25 @@ s32 list_backend::insert_after( s32 index, const void* to_insert,
 	// list.
 	if ( old_next_index < 0 )
 	{
-		get_back_index() = new_index;
+		//get_back_index() = new_index;
+		get_back_index() = to_move_index;
 	}
 	else if ( old_next_index >= 0 )
 	{
-		//get_node_at(old_next_index).prev_index() 
-		//	= new_index;
-		get_prev_index_at_index(old_next_index) = new_index;
+		//get_prev_index_at_index(old_next_index) = new_index;
+		get_prev_index_at_index(old_next_index) = to_move_index;
 		new_next_index = old_next_index;
 	}
 	
-	//node_at_new_index.data = to_insert;
-	//node_at_new_index.next_index() = new_next_index;
-	//node_at_new_index.prev_index() = index;
-	
-	assign_to_whole_node( node_at_new_index, to_insert,
-		vec2_s16( new_next_index, index ), can_move_value );
-	
+	//assign_to_whole_node( node_at_new_index, to_insert,
+	//	vec2_s16( new_next_index, index ), can_move_value );
+	*node_to_move.index_pair_ptr = vec2_s16( new_next_index,
+		to_move_after_index );
 	
 	//return index;
-	return new_index;
+	//return new_index;
+	return to_move_index;
 }
-
 
 //s32 list_backend::internal_func_move_unlinked_node_after
 //	( s32 to_move_after_index, s32 to_move_index, 
@@ -345,29 +395,107 @@ s32 list_backend::insert_after( s32 index, const void* to_insert,
 //}
 
 
-// unlink_at() CAN affect back_index
-void* list_backend::unlink_at( s32 index )
+//// unlink_at_with_dealloc() CAN affect back_index
+//void* list_backend::unlink_at_with_dealloc( s32 index )
+//{
+//	//s32 old_prev_index = get_node_at(index)
+//	//	.prev_index(),
+//	//	old_next_index = get_node_at(index)
+//	//	.next_index();
+//	
+//	//node<type>& node_at_index = get_node_at(index);
+//	//
+//	//const s32 old_prev_index = node_at_index
+//	//	.prev_index(),
+//	//	old_next_index = node_at_index.next_index();
+//	
+//	
+//	
+//	s32& the_front_index = get_front_index();
+//	s32& the_back_index = get_back_index();
+//	
+//	const s32 old_front_index = the_front_index,
+//		old_back_index = the_back_index;
+//	
+//	//vec2_s16& index_pair_at_index = *get_index_pair_at_index(index);
+//	
+//	node_contents node_at_index = get_node_contents_at(index);
+//	vec2_s16& index_pair_at_index = *node_at_index.index_pair_ptr;
+//	
+//	const s32 old_next_index = index_pair_at_index
+//		[node_contents::vec2_index_for_next_index],
+//	old_prev_index = index_pair_at_index
+//		[node_contents::vec2_index_for_prev_index];
+//	
+//	index_pair_at_index = { -1, -1 };
+//	
+//	
+//	
+//	////node_at_index.data = type();
+//	////node_at_index.next_index() = -1;
+//	////node_at_index.prev_index() = -1;
+//	//node_at_index = node<type>();
+//	
+//	
+//	get_the_free_list_backend().push(index);
+//	
+//	if ( index == old_front_index && index != old_back_index )
+//	{
+//		the_front_index = old_next_index;
+//		
+//		if ( old_next_index >= 0 )
+//		{
+//			////front().prev_index() = -1;
+//			//get_node_at(the_front_index).prev_index() = -1;
+//			get_prev_index_at_index(the_front_index) = -1;
+//		}
+//	}
+//	else if ( index != old_front_index && index == old_back_index )
+//	{
+//		the_back_index = old_prev_index;
+//		
+//		if ( old_prev_index >= 0 )
+//		{
+//			get_next_index_at_index(the_back_index) = -1;
+//		}
+//	}
+//	else if ( index == old_front_index && index == old_back_index )
+//	{
+//		the_front_index = the_back_index = -1;
+//	}
+//	else //if ( index != old_front_index && index != old_back_index )
+//	{
+//		//node<type>& old_prev_node 
+//		//	= get_node_at(old_prev_index);
+//		s16& the_next_index = get_next_index_at_index(old_prev_index);
+//		
+//		if ( old_next_index >= 0 )
+//		{
+//			//old_prev_node.next_index() = old_next_index;
+//			//get_node_at(old_next_index).prev_index()
+//			//	= old_prev_index;
+//			
+//			the_next_index = old_next_index;
+//			get_prev_index_at_index(old_next_index) = old_prev_index;
+//		}
+//		else
+//		{
+//			//old_prev_node.next_index() = -1;
+//			the_next_index = -1;
+//		}
+//	}
+//	
+//	return node_at_index.data_ptr;
+//}
+
+void* list_backend::internal_func_unlink_at( s32 index, 
+	node_contents* node_at_index_ptr )
 {
-	//s32 old_prev_index = get_node_at(index)
-	//	.prev_index(),
-	//	old_next_index = get_node_at(index)
-	//	.next_index();
-	
-	//node<type>& node_at_index = get_node_at(index);
-	//
-	//const s32 old_prev_index = node_at_index
-	//	.prev_index(),
-	//	old_next_index = node_at_index.next_index();
-	
-	
-	
 	s32& the_front_index = get_front_index();
 	s32& the_back_index = get_back_index();
 	
 	const s32 old_front_index = the_front_index,
 		old_back_index = the_back_index;
-	
-	//vec2_s16& index_pair_at_index = *get_index_pair_at_index(index);
 	
 	node_contents node_at_index = get_node_contents_at(index);
 	vec2_s16& index_pair_at_index = *node_at_index.index_pair_ptr;
@@ -381,13 +509,7 @@ void* list_backend::unlink_at( s32 index )
 	
 	
 	
-	////node_at_index.data = type();
-	////node_at_index.next_index() = -1;
-	////node_at_index.prev_index() = -1;
-	//node_at_index = node<type>();
-	
-	
-	get_the_free_list_backend().push(index);
+	//get_the_free_list_backend().push(index);
 	
 	if ( index == old_front_index && index != old_back_index )
 	{
@@ -395,8 +517,6 @@ void* list_backend::unlink_at( s32 index )
 		
 		if ( old_next_index >= 0 )
 		{
-			////front().prev_index() = -1;
-			//get_node_at(the_front_index).prev_index() = -1;
 			get_prev_index_at_index(the_front_index) = -1;
 		}
 	}
@@ -415,22 +535,15 @@ void* list_backend::unlink_at( s32 index )
 	}
 	else //if ( index != old_front_index && index != old_back_index )
 	{
-		//node<type>& old_prev_node 
-		//	= get_node_at(old_prev_index);
 		s16& the_next_index = get_next_index_at_index(old_prev_index);
 		
 		if ( old_next_index >= 0 )
 		{
-			//old_prev_node.next_index() = old_next_index;
-			//get_node_at(old_next_index).prev_index()
-			//	= old_prev_index;
-			
 			the_next_index = old_next_index;
 			get_prev_index_at_index(old_next_index) = old_prev_index;
 		}
 		else
 		{
-			//old_prev_node.next_index() = -1;
 			the_next_index = -1;
 		}
 	}
@@ -438,8 +551,9 @@ void* list_backend::unlink_at( s32 index )
 	return node_at_index.data_ptr;
 }
 
-void list_backend::internal_func_unlink_from_connected_index_at( s32 index, 
-	u32 index_to_vec2 )
+
+void list_backend::internal_func_unlink_from_connected_index_at
+	( s32 index, u32 index_to_vec2 )
 {
 	vec2_s16& index_pair_at_index = *get_index_pair_at_index(index);
 	
@@ -470,6 +584,7 @@ void list_backend::internal_func_unlink_from_connected_index_at( s32 index,
 s32 list_backend::insertion_sort()
 {
 	s32& the_front_index = get_front_index();
+	s32& the_back_index = get_back_index();
 	
 	// Don't do anything if this list has zero or one nodes.
 	if ( the_front_index < 0 )
@@ -512,11 +627,12 @@ s32 list_backend::insertion_sort()
 			i = node_at_index_low.next_index();
 		}
 		
-		sorted_list.push_back( unlink_at(index_low), true );
+		sorted_list.push_back( unlink_at_with_dealloc(index_low), true );
 	}
 	
 	
 	the_front_index = temp_front_index;
+	the_back_index = sorted_list.get_back_index();
 	
 	// Prevent any nodes from being erased when sorted_list's destructor is
 	// called.
@@ -634,7 +750,7 @@ s32 list_backend::insertion_sort()
 //			}
 //		}
 //		
-//		void* data_to_move = unlink_at(old_left_index);
+//		void* data_to_move = unlink_at_with_dealloc(old_left_index);
 //		out_list.push_back( data_to_move, true );
 //	};
 //	
@@ -657,7 +773,7 @@ s32 list_backend::insertion_sort()
 //			}
 //		}
 //		
-//		void* data_to_move = unlink_at(old_right_index);
+//		void* data_to_move = unlink_at_with_dealloc(old_right_index);
 //		out_list.push_back( data_to_move, true );
 //	};
 //	
@@ -820,10 +936,9 @@ s32 list_backend::insertion_sort()
 
 
 
-void list_backend::internal_func_subarr_merge
-	( node_data_and_index* left_subarr, const size_t left_subarr_size, 
-	node_data_and_index* right_subarr, const size_t right_subarr_size, 
-	node_data_and_index* out_subarr )
+void list_backend::internal_func_subarr_merge( node_data* left_subarr, 
+	const size_t left_subarr_size, node_data* right_subarr, 
+	const size_t right_subarr_size, node_data* out_subarr )
 {
 	const size_t out_subarr_size = left_subarr_size + right_subarr_size;
 	
@@ -915,7 +1030,7 @@ s32 list_backend::merge_sort_via_array()
 	//	
 	//	
 	//	// Unlink every node so they can all be re-linked.
-	//	unlink_at(i);
+	//	unlink_at_with_dealloc(i);
 	//}
 	//
 	//}

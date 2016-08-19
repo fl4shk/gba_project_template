@@ -1045,30 +1045,27 @@ protected:		// functions
 	void fully_deallocate_via_unlink() __attribute__((_iwram_code));
 	
 	
+	
 	// This is used by frontends to the move_unlinked_node* functions
-	void internal_func_allocate_and_assign_to_node
-		( s32& index, node_contents& node,
-		const void* n_data, u32 can_move_value );
+	void internal_func_allocate_and_assign_to_node( s32& index, 
+		node_contents& node, const void* n_data, u32 can_move_value );
 		//__attribute__((_iwram_code));
 	
 	
-	// push_front() CAN affect back_index
-	inline s32 push_front( const void* to_push, u32 can_move_value=false )
+	
+	
+	
+	// This is its own function because it's used by both push_front() and
+	// push_back().
+	inline s32 internal_func_push_front_unique_code( s32 to_push_index,
+		node_contents node_to_push )
 	{
-		s32 to_push_index;
-		node_contents node_to_push;
-		
-		internal_func_allocate_and_assign_to_node( to_push_index, 
-			node_to_push, to_push, can_move_value );
-		
 		s32& the_front_index = get_front_index();
-		const s32 old_front_index = get_front_index();
+		const s32 old_front_index = the_front_index;
 		
 		
-		
-		s32 ret = internal_func_move_unlinked_node_to_front
-			( to_push_index, node_to_push );
-		
+		s32 ret = internal_func_move_unlinked_node_to_front( to_push_index,
+			node_to_push );
 		
 		if ( old_front_index < 0 )
 		{
@@ -1078,45 +1075,71 @@ protected:		// functions
 		return ret;
 	}
 	
+	// push_front() CAN affect back_index
+	inline s32 push_front( const void* to_push, u32 can_move_value=false )
+	{
+		s32 to_push_index;
+		node_contents node_to_push;
+		
+		internal_func_allocate_and_assign_to_node( to_push_index,
+			node_to_push, to_push, can_move_value );
+		
+		return internal_func_push_front_unique_code( to_push_index,
+			node_to_push );
+	}
+	
+	// push_back() ALWAYS affects back_index
 	inline s32 push_back( const void* to_push, u32 can_move_value=false )
 	{
+		s32 new_index;
+		node_contents new_node;
+		internal_func_allocate_and_assign_to_node( new_index, new_node,
+			to_push, can_move_value );
+		
 		// If there's nothing in the list
 		if ( get_back_index() < 0 )
 		{
-			return push_front( to_push, can_move_value );
+			//return push_front( to_push, can_move_value );
+			return internal_func_push_front_unique_code( new_index,
+				new_node );
 		}
 		// If there's at least one element in the list
 		else // if ( get_back_index() >= 0 )
 		{
-			return insert_after( get_back_index(), to_push,
-				can_move_value );
+			//return insert_after( get_back_index(), to_push, 
+			//	can_move_value );
+			return internal_func_move_unlinked_node_after
+				( get_back_index(), new_index, new_node );
 		}
 	}
 	
-	//inline s32 insert_before( s32 index, const void* to_insert,
-	//	u32 can_move_value=false )
-	//{
-	//	s32 to_insert_index;
-	//	node_contents node_to_insert;
-	//	
-	//	internal_func_allocate_and_assign_to_node( to_insert_index,
-	//		node_to_insert, to_insert, can_move_value );
-	//	
-	//	return internal_func_move_unlinked_node_before( index, 
-	//		to_insert_index, node_to_insert );
-	//}
-	//inline s32 insert_after( s32 index, const void* to_insert,
-	//	u32 can_move_value=false )
-	//{
-	//	s32 to_insert_index;
-	//	node_contents node_to_insert;
-	//	
-	//	internal_func_allocate_and_assign_to_node( to_insert_index,
-	//		node_to_insert, to_insert, can_move_value );
-	//	
-	//	return internal_func_move_unlinked_node_after( index, 
-	//		to_insert_index, node_to_insert );
-	//}
+	// insert_before() won't affect back_index
+	inline s32 insert_before( s32 index, const void* to_insert,
+		u32 can_move_value=false )
+	{
+		s32 to_insert_index;
+		node_contents node_to_insert;
+		
+		internal_func_allocate_and_assign_to_node( to_insert_index,
+			node_to_insert, to_insert, can_move_value );
+		
+		return internal_func_move_unlinked_node_before( index,
+			to_insert_index, node_to_insert );
+	}
+	// insert_after() CAN affect back_index
+	inline s32 insert_after( s32 index, const void* to_insert,
+		u32 can_move_value=false )
+	{
+		s32 to_insert_index;
+		node_contents node_to_insert;
+		
+		internal_func_allocate_and_assign_to_node( to_insert_index,
+			node_to_insert, to_insert, can_move_value );
+		
+		return internal_func_move_unlinked_node_after( index,
+			to_insert_index, node_to_insert );
+	}
+	
 	
 	
 	
@@ -1137,10 +1160,10 @@ protected:		// functions
 		return the_back_index;
 	}
 	
-	s32 insert_before( s32 index, const void* to_insert,
-		u32 can_move_value=false );
-	s32 insert_after( s32 index, const void* to_insert,
-		u32 can_move_value=false );
+	//s32 insert_before( s32 index, const void* to_insert,
+	//	u32 can_move_value=false );
+	//s32 insert_after( s32 index, const void* to_insert,
+	//	u32 can_move_value=false );
 	
 	
 	// Functions for internal use 
@@ -1148,6 +1171,22 @@ protected:		// functions
 		node_contents& node_to_move );
 		//__attribute__((_iwram_code));
 		//__attribute__((noinline));
+	inline s32 internal_func_move_unlinked_node_to_back( s32 to_move_index,
+		node_contents& node_to_move )
+	{
+		// If there's nothing in the list
+		if ( get_back_index() < 0 )
+		{
+			return internal_func_move_unlinked_node_to_front
+				( to_move_index, node_to_move );
+		}
+		// If there's at least one element in the list
+		else // if ( get_back_index() >= 0 )
+		{
+			return internal_func_move_unlinked_node_after
+				( get_back_index(), to_move_index, node_to_move );
+		}
+	}
 	s32 internal_func_move_unlinked_node_before( s32 to_move_before_index, 
 		s32 to_move_index, node_contents& node_to_move );
 		//__attribute__((_iwram_code));
@@ -1161,11 +1200,9 @@ protected:		// functions
 	// Give slightly more flexibility, at the expense of a small amount of
 	// speed, to this function by allowing a pointer to the
 	// node_at_index be passed to it.
-	void* internal_func_unlink_at_without_dealloc( s32 index, 
+	void* internal_func_unlink_at( s32 index, 
 		node_contents* node_at_index_ptr=NULL );
 		//__attribute__((noinline));
-	
-	void* unlink_at( s32 index );
 	
 	
 	void internal_func_unlink_from_connected_index_at( s32 index, 
@@ -1185,8 +1222,7 @@ protected:		// functions
 	//inline void move_linked_node_to_front( s32 to_move_index, 
 	//	node_contents& node_to_move, list_backend& dst )
 	//{
-	//	internal_func_unlink_at_without_dealloc( to_move_index, 
-	//		&node_to_move );
+	//	internal_func_unlink_at( to_move_index, &node_to_move );
 	//	dst.internal_func_move_unlinked_node_to_front( to_move_index, 
 	//		node_to_move );
 	//}
@@ -1194,8 +1230,7 @@ protected:		// functions
 	//	s32 to_move_index, node_contents& node_to_move, 
 	//	list_backend& dst )
 	//{
-	//	internal_func_unlink_at_without_dealloc( to_move_index, 
-	//		&node_to_move );
+	//	internal_func_unlink_at( to_move_index, &node_to_move );
 	//	dst.internal_func_move_unlinked_node_before( to_move_before_index, 
 	//		to_move_index, node_to_move );
 	//}
@@ -1203,29 +1238,27 @@ protected:		// functions
 	//	s32 to_move_index, node_contents& node_to_move, 
 	//	list_backend& dst )
 	//{
-	//	internal_func_unlink_at_without_dealloc( to_move_index, 
-	//		&node_to_move );
+	//	internal_func_unlink_at( to_move_index, &node_to_move );
 	//	dst.internal_func_move_unlinked_node_after( to_move_after_index, 
 	//		to_move_index, node_to_move );
 	//}
 	
 	
-	
 	// End of functions for internal use.
 	
-	//// It is (slightly) faster to just unlink a node than it is to erase it
-	//// because erase_at() ALSO resets the data of the node.  Use caution
-	//// when using this function!
-	//inline void* unlink_at( s32 index )
-	//{
-	//	get_the_free_list_backend().push(index);
-	//	
-	//	return internal_func_unlink_at_without_dealloc(index);
-	//}
+	// It is (slightly) faster to just unlink a node than it is to erase it
+	// because erase_at() ALSO resets the data of the node.  Use caution
+	// when using this function!
+	inline void* unlink_at_with_dealloc( s32 index )
+	{
+		get_the_free_list_backend().push(index);
+		
+		return internal_func_unlink_at(index);
+	}
 	
 	inline void erase_at( s32 index )
 	{
-		get_specific_type_reset_fp()(unlink_at(index));
+		get_specific_type_reset_fp()(unlink_at_with_dealloc(index));
 	}
 	
 	
@@ -1246,9 +1279,9 @@ protected:		// functions
 	
 	
 	
-	void internal_func_subarr_merge( node_data_and_index* left_subarr,
-		const size_t left_subarr_size, node_data_and_index* right_subarr, 
-		const size_t right_subarr_size, node_data_and_index* out_subarr );
+	void internal_func_subarr_merge( node_data* left_subarr,
+		const size_t left_subarr_size, node_data* right_subarr, 
+		const size_t right_subarr_size, node_data* out_subarr );
 	//void internal_func_merge_sort( node_data_and_index* left_subarr,
 	//	const size_t left_subarr_size, node_data_and_index* right_subarr,
 	//	const size_t right_subarr_size );
@@ -1827,10 +1860,10 @@ public:		// functions
 	{
 		the_list_backend.erase_at(index);
 	}
-	inline type&& unlink_at( s32 index )
+	inline type&& unlink_at_with_dealloc( s32 index )
 	{
-		return std::move(*reinterpret_cast<type*>
-			(the_list_backend.unlink_at(index)));
+		return std::move(*static_cast<type*>
+			(the_list_backend.unlink_at_with_dealloc(index)));
 	}
 	
 	
@@ -1974,7 +2007,7 @@ public:		// functions
 			}
 			
 			//erase_at(index_low);
-			type&& data_to_move = unlink_at(index_low);
+			type&& data_to_move = unlink_at_with_dealloc(index_low);
 			
 			if ( temp_front_index < 0 )
 			{
@@ -2088,7 +2121,7 @@ public:		// functions
 			}
 			
 			//erase_at(index_low);
-			type&& data_to_move = unlink_at(index_low);
+			type&& data_to_move = unlink_at_with_dealloc(index_low);
 			
 			if ( temp_front_index < 0 )
 			{
@@ -2116,7 +2149,8 @@ public:		// functions
 					i = node_at_curr_prev_index_low.next_index();
 				}
 				
-				type&& curr_data_to_move = unlink_at(curr_prev_index_low);
+				type&& curr_data_to_move = unlink_at_with_dealloc
+					(curr_prev_index_low);
 				
 				//if ( temp_front_index < 0 )
 				//{

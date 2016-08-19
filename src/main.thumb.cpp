@@ -215,29 +215,29 @@ inline void show_test_list()
 
 void reinit_test_list_and_profile_deallocate()
 {
-	//profile_start();
-	//test_list.fully_deallocate_via_unlink();
-	//show_profile_stop();
+	profile_start();
+	test_list.fully_deallocate_via_unlink();
+	show_profile_stop();
 	
 	
 	s32& test_list_front_index = test_list.get_front_index();
 	
-	//s32 test_list_end = test_list.push_back('g');
+	s32 test_list_end = test_list.push_back('g');
 	
 	for ( u32 i=0; i<5; ++i )
 	{
 		test_list.push_front('1' + i );
 	}
 	
-	//s32 second_jtest_list.insert_before( test_list_front_index, 'h' );
+	//s32 second_index = test_list.insert_before( test_list_front_index, 
+	//	'h' );
 	//test_list.insert_before( test_list_end, 'f' );
 	
-	//s32 second_index = test_list.insert_after( test_list_front_index, 
-	//	'h' );
+	s32 second_index = test_list.insert_after( test_list_front_index, 
+		'h' );
 	//s32 third_index = test_list.get_node_at(second_index).next_index();
-	//
-	//test_list_end = test_list.insert_after( test_list_end, 'f' );
 	
+	test_list_end = test_list.insert_after( test_list_end, 'f' );
 	
 	
 	
@@ -310,21 +310,21 @@ void sa_list_test()
 	//test_list.merge_sort_via_array();
 	//show_profile_stop();
 	//show_test_list();
-	//
-	//
-	//
-	//// Part 3
-	//asm_comment("Part 3");
-	//reinit_test_list_and_profile_deallocate();
-	//show_test_list();
-	//
-	//// Part 4
-	//asm_comment("Part 4");
-	//profile_start();
-	//test_list.insertion_sort();
-	////test_list.merge_sort();
-	//show_profile_stop();
-	//show_test_list();
+	
+	
+	
+	// Part 3
+	asm_comment("Part 3");
+	reinit_test_list_and_profile_deallocate();
+	show_test_list();
+	
+	// Part 4
+	asm_comment("Part 4");
+	profile_start();
+	test_list.insertion_sort();
+	//test_list.merge_sort();
+	show_profile_stop();
+	show_test_list();
 	
 	
 	
