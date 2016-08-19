@@ -49,7 +49,7 @@ public:		// variables
 	
 public:		// functions
 	// This is safe so long as data_ptr is the first member variable of the
-	// node class.
+	// node_contents class.
 	inline void* get_node_as_void_ptr()
 	{
 		return data_ptr;
@@ -71,6 +71,24 @@ public:		// functions
 	}
 	
 } __attribute__((_align4));
+
+
+class node_data
+{
+public:		// variables
+	void* data_ptr = NULL;
+	
+public:		// functions
+	inline node_data()
+	{
+	}
+	
+	inline node_data( void* n_data_ptr ) : data_ptr(n_data_ptr)
+	{
+	}
+	
+} __attribute__((_align4));
+
 
 
 template< typename type >
@@ -526,119 +544,149 @@ class list_backend
 {
 //protected:		// types
 public:		// types
-	class merge_args
-	{
-	public:		// variables
-		s32 left_index, right_index, out_index;
-		
-	protected:		// variables
-		s32 left_head, right_head;
-		size_t left_size, right_size, out_size;
-		
-		s32 index_after_end = -1;
-		node_contents node_after_end;
-		node_contents* node_after_end_ptr = NULL;
-		
-	public:		// functions
-		inline merge_args( s32 s_left_head, s32 s_right_head,
-			s32 s_left_size, s32 s_right_size )
-			: left_index(s_left_head), right_index(s_right_head),
-			
-			left_head(s_left_head), right_head(s_right_head),
-			
-			left_size(s_left_size), right_size(s_right_size),
-			out_size( s_left_size + s_right_size )
-		{
-		}
-		
-		inline s32 get_left_index( ) const
-		{
-			return left_index;
-		}
-		inline s32 get_right_index() const
-		{
-			return right_index;
-		}
-		
-		inline node_contents get_left_node( list_backend* the_list ) const
-		{
-			return the_list->get_node_contents_at(get_left_index());
-		}
-		inline node_contents get_right_node( list_backend* the_list ) const
-		{
-			return the_list->get_node_contents_at(get_right_index());
-		}
-		
-		inline s32 get_left_head() const
-		{
-			return left_head;
-		}
-		inline s32 get_right_head() const
-		{
-			return right_head;
-		}
-		
-		inline size_t get_left_size() const
-		{
-			return left_size;
-		}
-		inline size_t get_right_size() const
-		{
-			return right_size;
-		}
-		inline size_t get_out_size() const
-		{
-			return out_size;
-		}
-		
-		
-		
-		
-		inline void init_nae_stuff()
-		{
-			index_after_end = -1;
-			node_after_end_ptr = NULL;
-		}
-		inline bool nae_exists() const
-		{
-			return ( get_index_after_end() >= 0 );
-		}
-		inline void set_nae_prev_index( s32 n_nae_prev_index )
-		{
-			node_after_end.prev_index() = n_nae_prev_index;
-		}
-		inline void update_nae_stuff( list_backend* the_list, 
-			s32 the_index )
-		{
-			index_after_end = the_index;
-			node_after_end = the_list->get_node_contents_at(the_index);
-			node_after_end_ptr = &node_after_end;
-		}
-		
-		
-		inline s32 get_index_after_end() const
-		{
-			return index_after_end;
-		}
-		inline const node_contents& get_node_after_end() const
-		{
-			return node_after_end;
-		}
-		inline const node_contents* get_node_after_end_ptr() const
-		{
-			return node_after_end_ptr;
-		}
-		
-		
-	} __attribute__((_align4));
-	
-	friend node_contents merge_args::get_left_node
-		( list_backend* the_list ) const;
-	friend node_contents merge_args::get_right_node
-		( list_backend* the_list ) const;
-	
-	friend void merge_args::update_nae_stuff( list_backend* the_list, 
-		s32 the_index );
+	//class merge_args
+	//{
+	//public:		// variables
+	//	// left_index and right_index are used for traversal along the list
+	//	// during list_backend::internal_func_merge().
+	//	s32 left_index = -1, right_index = -1;
+	//	
+	//protected:		// variables
+	//	s32 left_head = -1, left_tail = -1;
+	//	s32 right_head = -1, right_tail = -1;
+	//	
+	//public:		// functions
+	//	inline merge_args()
+	//	{
+	//	}
+	//	inline merge_args( s32 s_left_head, s32 s_left_tail,
+	//		s32 s_right_head, s32 s_right_tail )
+	//	{
+	//		init( s_left_head, s_left_tail, s_right_head, s_right_tail );
+	//	}
+	//	inline void init( s32 n_left_head, s32 n_left_tail,
+	//		s32 n_right_head, s32 n_right_tail )
+	//	{
+	//		left_index = n_left_head;
+	//		right_index = n_right_head;
+	//		
+	//		left_head = n_left_head;
+	//		left_tail = n_left_tail;
+	//		
+	//		right_head = n_right_head;
+	//		right_tail = n_right_tail;
+	//	}
+	//	
+	//	inline s32 get_left_index() const
+	//	{
+	//		return left_index;
+	//	}
+	//	inline s32 get_right_index() const
+	//	{
+	//		return right_index;
+	//	}
+	//	
+	//	inline node_contents get_left_node( list_backend* the_list ) const
+	//	{
+	//		return the_list->get_node_contents_at(get_left_index());
+	//	}
+	//	inline node_contents get_right_node( list_backend* the_list ) const
+	//	{
+	//		return the_list->get_node_contents_at(get_right_index());
+	//	}
+	//	inline node_contents get_left_head_node( list_backend* the_list )
+	//		const
+	//	{
+	//		return the_list->get_node_contents_at(get_left_head());
+	//	}
+	//	inline node_contents get_right_head_node( list_backend* the_list )
+	//		const
+	//	{
+	//		return the_list->get_node_contents_at(get_right_head());
+	//	}
+	//	inline node_contents get_left_tail_node( list_backend* the_list )
+	//		const
+	//	{
+	//		return the_list->get_node_contents_at(get_left_tail());
+	//	}
+	//	inline node_contents get_right_tail_node( list_backend* the_list )
+	//		const
+	//	{
+	//		return the_list->get_node_contents_at(get_right_tail());
+	//	}
+	//	
+	//	inline s32 get_left_head() const
+	//	{
+	//		return left_head;
+	//	}
+	//	inline s32 get_right_head() const
+	//	{
+	//		return right_head;
+	//	}
+	//	
+	//	inline s32 get_left_tail() const
+	//	{
+	//		return left_tail;
+	//	}
+	//	inline s32 get_right_tail() const
+	//	{
+	//		return right_tail;
+	//	}
+	//	
+	//	
+	//	//inline void init_nae_stuff()
+	//	//{
+	//	//	index_after_end = -1;
+	//	//	node_after_end_ptr = NULL;
+	//	//}
+	//	//inline bool nae_exists() const
+	//	//{
+	//	//	return ( get_index_after_end() >= 0 );
+	//	//}
+	//	//inline void set_nae_prev_index( s32 n_nae_prev_index )
+	//	//{
+	//	//	node_after_end.prev_index() = n_nae_prev_index;
+	//	//}
+	//	//inline void update_nae_stuff( list_backend* the_list, 
+	//	//	s32 the_index )
+	//	//{
+	//	//	index_after_end = the_index;
+	//	//	node_after_end = the_list->get_node_contents_at(the_index);
+	//	//	node_after_end_ptr = &node_after_end;
+	//	//}
+	//	//
+	//	//
+	//	//inline s32 get_index_after_end() const
+	//	//{
+	//	//	return index_after_end;
+	//	//}
+	//	//inline const node_contents& get_node_after_end() const
+	//	//{
+	//	//	return node_after_end;
+	//	//}
+	//	//inline const node_contents* get_node_after_end_ptr() const
+	//	//{
+	//	//	return node_after_end_ptr;
+	//	//}
+	//	
+	//	
+	//} __attribute__((_align4));
+	//
+	//friend node_contents merge_args::get_left_node
+	//	( list_backend* the_list ) const;
+	//friend node_contents merge_args::get_right_node
+	//	( list_backend* the_list ) const;
+	//friend node_contents merge_args::get_left_head_node
+	//	( list_backend* the_list ) const;
+	//friend node_contents merge_args::get_right_head_node
+	//	( list_backend* the_list ) const;
+	//friend node_contents merge_args::get_left_tail_node
+	//	( list_backend* the_list ) const;
+	//friend node_contents merge_args::get_right_tail_node
+	//	( list_backend* the_list ) const;
+	//
+	////friend void merge_args::update_nae_stuff( list_backend* the_list, 
+	////	s32 the_index );
 	
 protected:		// variables
 	u32 size = 0;
@@ -1003,18 +1051,48 @@ protected:		// functions
 		const void* n_data, u32 can_move_value );
 		//__attribute__((_iwram_code));
 	
-	//inline s32 push_front( const void* to_push, u32 can_move_value=false )
-	//{
-	//	s32 to_push_index;
-	//	node_contents node_to_push;
-	//	
-	//	internal_func_allocate_and_assign_to_node( to_push_index, 
-	//		node_to_push, to_push, can_move_value );
-	//	
-	//	return internal_func_move_unlinked_node_to_front( to_push_index, 
-	//		node_to_push );
-	//}
-	//
+	
+	// push_front() CAN affect back_index
+	inline s32 push_front( const void* to_push, u32 can_move_value=false )
+	{
+		s32 to_push_index;
+		node_contents node_to_push;
+		
+		internal_func_allocate_and_assign_to_node( to_push_index, 
+			node_to_push, to_push, can_move_value );
+		
+		s32& the_front_index = get_front_index();
+		const s32 old_front_index = get_front_index();
+		
+		
+		
+		s32 ret = internal_func_move_unlinked_node_to_front
+			( to_push_index, node_to_push );
+		
+		
+		if ( old_front_index < 0 )
+		{
+			get_back_index() = the_front_index;
+		}
+		
+		return ret;
+	}
+	
+	inline s32 push_back( const void* to_push, u32 can_move_value=false )
+	{
+		// If there's nothing in the list
+		if ( get_back_index() < 0 )
+		{
+			return push_front( to_push, can_move_value );
+		}
+		// If there's at least one element in the list
+		else // if ( get_back_index() >= 0 )
+		{
+			return insert_after( get_back_index(), to_push,
+				can_move_value );
+		}
+	}
+	
 	//inline s32 insert_before( s32 index, const void* to_insert,
 	//	u32 can_move_value=false )
 	//{
@@ -1041,21 +1119,6 @@ protected:		// functions
 	//}
 	
 	
-	s32 push_front( const void* to_push, u32 can_move_value=false );
-	inline s32 push_back( const void* to_push, u32 can_move_value=false )
-	{
-		// If there's nothing in the list
-		if ( get_back_index() < 0 )
-		{
-			return push_front( to_push, can_move_value );
-		}
-		// If there's at least one element in the list
-		else // if ( get_back_index() >= 0 )
-		{
-			return insert_after( get_back_index(), to_push,
-				can_move_value );
-		}
-	}
 	
 	inline s32 pop_front_basic()
 	{
@@ -1083,21 +1146,24 @@ protected:		// functions
 	// Functions for internal use 
 	s32 internal_func_move_unlinked_node_to_front( s32 to_move_index, 
 		node_contents& node_to_move );
+		//__attribute__((_iwram_code));
 		//__attribute__((noinline));
 	s32 internal_func_move_unlinked_node_before( s32 to_move_before_index, 
 		s32 to_move_index, node_contents& node_to_move );
+		//__attribute__((_iwram_code));
 		//__attribute__((noinline));
 	s32 internal_func_move_unlinked_node_after( s32 to_move_after_index, 
 		s32 to_move_index, node_contents& node_to_move );
+		//__attribute__((_iwram_code));
 		//__attribute__((noinline));
 	
 	
-	//// Give slightly more flexibility, at the expense of a small amount of
-	//// speed, to this function by allowing a pointer to the
-	//// node_at_index be passed to it.
-	//void* internal_func_unlink_at_without_dealloc( s32 index, 
-	//	node_contents* node_at_index_ptr=NULL );
-	//	//__attribute__((noinline));
+	// Give slightly more flexibility, at the expense of a small amount of
+	// speed, to this function by allowing a pointer to the
+	// node_at_index be passed to it.
+	void* internal_func_unlink_at_without_dealloc( s32 index, 
+		node_contents* node_at_index_ptr=NULL );
+		//__attribute__((noinline));
 	
 	void* unlink_at( s32 index );
 	
@@ -1171,13 +1237,27 @@ protected:		// functions
 	
 	
 	
-public:		// functions
-	void internal_func_merge(merge_args& args);
-	
-protected:		// functions
-	
+	//// These two functions are slowwwwwww because there is too much list
+	//// traversal.  Thus, I have replaced them with an array of pointers
+	//// based method.
+	//s32 internal_func_merge( merge_args& args )
+	//	__attribute__((_iwram_code));
 	//s32 merge_sort() __attribute__((_iwram_code));
-	s32 merge_sort();
+	
+	
+	
+	void internal_func_subarr_merge( node_data_and_index* left_subarr,
+		const size_t left_subarr_size, node_data_and_index* right_subarr, 
+		const size_t right_subarr_size, node_data_and_index* out_subarr );
+	//void internal_func_merge_sort( node_data_and_index* left_subarr,
+	//	const size_t left_subarr_size, node_data_and_index* right_subarr,
+	//	const size_t right_subarr_size );
+	
+	// Top-down merge sort using an array of node_data_and_index's.
+	s32 merge_sort_via_array();
+	
+	
+	//s32 heapsort_via_array();
 	
 	
 } __attribute__((_align4));
@@ -2069,10 +2149,15 @@ public:		// functions
 	}
 	
 	
-	inline s32 merge_sort()
+	inline s32 merge_sort_via_array()
 	{
-		return the_list_backend.merge_sort();
+		return the_list_backend.merge_sort_via_array();
 	}
+	
+	//inline s32 heapsort_via_array()
+	//{
+	//	return the_list_backend.heapsort_via_array();
+	//}
 	
 	
 } __attribute__((_align4));

@@ -93,7 +93,7 @@ int main()
 
 
 
-static constexpr u32 total_num_nodes = 20;
+static constexpr u32 total_num_nodes = 500;
 //typedef sa_list_stuff::sorted_always_list< u32, total_num_nodes >
 //	the_sorted_always_list_type;
 //
@@ -215,22 +215,23 @@ inline void show_test_list()
 
 void reinit_test_list_and_profile_deallocate()
 {
-	profile_start();
-	test_list.fully_deallocate_via_unlink();
-	show_profile_stop();
+	//profile_start();
+	//test_list.fully_deallocate_via_unlink();
+	//show_profile_stop();
 	
 	
-	//s32& test_list_front_index = test_list.get_front_index();
-	//
-	//s32 test_list_end = test_list.push_front('g');
-	//for ( u32 i=0; i<5; ++i )
-	//{
-	//	test_list.push_front('1' + i );
-	//}
-	//
-	////s32 second_jtest_list.insert_before( test_list_front_index, 'h' );
-	////test_list.insert_before( test_list_end, 'f' );
-	//
+	s32& test_list_front_index = test_list.get_front_index();
+	
+	//s32 test_list_end = test_list.push_back('g');
+	
+	for ( u32 i=0; i<5; ++i )
+	{
+		test_list.push_front('1' + i );
+	}
+	
+	//s32 second_jtest_list.insert_before( test_list_front_index, 'h' );
+	//test_list.insert_before( test_list_end, 'f' );
+	
 	//s32 second_index = test_list.insert_after( test_list_front_index, 
 	//	'h' );
 	//s32 third_index = test_list.get_node_at(second_index).next_index();
@@ -241,45 +242,52 @@ void reinit_test_list_and_profile_deallocate()
 	
 	
 	
-	//test_list.push_front('5');
-	//test_list.push_front('9');
-	//test_list.push_front('2');
-	//test_list.push_front('3');
-	//test_list.push_front('4');
-	//test_list.push_front('5');
+	//test_list.push_back('5');
+	//test_list.push_back('9');
+	//test_list.push_back('2');
+	//test_list.push_back('3');
+	//test_list.push_back('4');
+	//test_list.push_back('5');
 	
 	
 	
 	
-	// These are for testing the internal_func_merge function.
-	// RAW index 0
-	test_list.push_back('1');
-	
-	// RAW index 1
-	test_list.push_back('2');
-	
-	// RAW index 2
-	test_list.push_back('3');
-	
-	// RAW index 3
-	test_list.push_back('4');
-	
-	
-	
-	
-	// RAW index 4
-	test_list.push_back('1');
-	
-	// RAW index 5
-	test_list.push_back('3');
-	
-	// RAW index 6
-	test_list.push_back('5');
-	
-	// RAW index 7
-	test_list.push_back('9');
-	
-	
+	//// These are for testing the internal_func_merge function.
+	//// index 0
+	//test_list.push_back('9');
+	//
+	//// index 1
+	//test_list.push_back('4');
+	//
+	//// index 2
+	//test_list.push_back('5');
+	//
+	//// index 3
+	//test_list.push_back('3');
+	//
+	//
+	//
+	//
+	//// index 4
+	//test_list.push_back('3');
+	//
+	//// index 5
+	//test_list.push_back('1');
+	//
+	//// index 6
+	//test_list.push_back('2');
+	//
+	//// index 7
+	//test_list.push_back('4');
+	//
+	//
+	//test_list.push_back('z');
+	//test_list.push_back('d');
+	//
+	//for ( u32 i=0; i<200; ++i )
+	//{
+	//	test_list.push_front('a' + ( i % 25 ) );
+	//}
 }
 
 //static constexpr size_t test_cbuf_size = 4;
@@ -296,22 +304,13 @@ void sa_list_test()
 	show_test_list();
 	
 	
-	// Part 2
-	asm_comment("Part 2");
-	sa_list_stuff::list_backend::merge_args test_merge_args( 0, 4, 4, 4 );
-	
-	test_list.the_externally_allocated_list.the_list_backend
-		.internal_func_merge(test_merge_args);
-	show_test_list();
-	
-	
 	//// Part 2
 	//asm_comment("Part 2");
 	//profile_start();
-	//test_list.insertion_sort();
-	////test_list.merge_sort();
+	//test_list.merge_sort_via_array();
 	//show_profile_stop();
 	//show_test_list();
+	//
 	//
 	//
 	//// Part 3
@@ -321,6 +320,21 @@ void sa_list_test()
 	//
 	//// Part 4
 	//asm_comment("Part 4");
+	//profile_start();
+	//test_list.insertion_sort();
+	////test_list.merge_sort();
+	//show_profile_stop();
+	//show_test_list();
+	
+	
+	
+	//// Part 5
+	//asm_comment("Part 5");
+	//reinit_test_list_and_profile_deallocate();
+	//show_test_list();
+	//
+	//// Part 6
+	//asm_comment("Part 6");
 	//profile_start();
 	////test_list.insertion_sort();
 	//test_list.merge_sort();
