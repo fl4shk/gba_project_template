@@ -37,6 +37,9 @@ public:		// variables
 	node<type> node_array[total_num_nodes];
 	sa_free_list<total_num_nodes> the_free_list;
 	
+	s32& front_index;
+	s32& back_index;
+	
 public:		// functions
 	
 	
@@ -44,25 +47,31 @@ protected:		// functions
 	// This may be the first time I've ever made a constructor protected.
 	inline regular_list_base() : the_externally_allocated_list
 		( node_array, &the_free_list.the_sa_free_list_backend, 
-		get_total_num_nodes() )
+		get_total_num_nodes() ), front_index(the_externally_allocated_list
+		.get_front_index()), back_index(the_externally_allocated_list
+		.get_back_index())
 	{
 	}
 	
 	inline s32& get_front_index()
 	{
-		return the_externally_allocated_list.get_front_index();
+		//return the_externally_allocated_list.get_front_index();
+		return front_index;
 	}
 	inline const s32 get_front_index() const
 	{
-		return the_externally_allocated_list.get_front_index();
+		//return the_externally_allocated_list.get_front_index();
+		return front_index;
 	}
 	inline s32& get_back_index()
 	{
-		return the_externally_allocated_list.get_back_index();
+		//return the_externally_allocated_list.get_back_index();r
+		return back_index;
 	}
 	inline const s32 get_back_index() const
 	{
-		return the_externally_allocated_list.get_back_index();
+		//return the_externally_allocated_list.get_back_index();r
+		return back_index;
 	}
 	
 	inline node<type>* get_node_array()

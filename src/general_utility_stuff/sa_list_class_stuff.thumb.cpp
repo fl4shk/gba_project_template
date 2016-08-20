@@ -21,10 +21,6 @@
 #include "debug_vars.hpp"
 
 
-#include <utility>
-#include <memory>
-
-
 
 namespace sa_list_stuff
 {
@@ -80,11 +76,23 @@ void list_backend::fully_deallocate_via_unlink()
 {
 	s32& the_front_index = get_front_index();
 	//while ( get_front_index() != -1 )
+	
+	
 	while ( the_front_index >= 0 )
 	{
 		//unlink_at_with_dealloc(get_front_index());
 		unlink_at_with_dealloc(the_front_index);
+		
+		//if ( the_front_index == 105 )
+		//{
+		//	debug_arr_group::gdb_breakpoint_helper = 0;
+		//}
 	}
+	
+	//if ( get_back_index() >= 0 )
+	//{
+	//	debug_arr_group::
+	//}
 	
 	//back_index = -1;
 }
@@ -173,6 +181,10 @@ s32 list_backend::internal_func_move_unlinked_node_to_front
 	
 	*node_to_move.index_pair_ptr = vec2_s16( new_next_index, -1 );
 	
+	if ( old_front_index < 0 )
+	{
+		get_back_index() = the_front_index;
+	}
 	
 	return the_front_index;
 }
@@ -488,6 +500,8 @@ s32 list_backend::internal_func_move_unlinked_node_after
 //	return node_at_index.data_ptr;
 //}
 
+
+
 void* list_backend::internal_func_unlink_at( s32 index, 
 	node_contents* node_at_index_ptr )
 {
@@ -497,8 +511,24 @@ void* list_backend::internal_func_unlink_at( s32 index,
 	const s32 old_front_index = the_front_index,
 		old_back_index = the_back_index;
 	
-	node_contents node_at_index = get_node_contents_at(index);
-	vec2_s16& index_pair_at_index = *node_at_index.index_pair_ptr;
+	
+	//node_contents node_at_index = get_node_contents_at(index);
+	node_contents local_node_at_index_raw;
+	node_contents* local_node_at_index_ptr;
+	
+	if ( node_at_index_ptr )
+	{
+		local_node_at_index_ptr = node_at_index_ptr;
+	}
+	else
+	{
+		local_node_at_index_raw = get_node_contents_at(index);
+		local_node_at_index_ptr = &local_node_at_index_raw;
+	}
+	
+	
+	vec2_s16& index_pair_at_index = *local_node_at_index_ptr
+		->index_pair_ptr;
 	
 	const s32 old_next_index = index_pair_at_index
 		[node_contents::vec2_index_for_next_index],
@@ -548,7 +578,14 @@ void* list_backend::internal_func_unlink_at( s32 index,
 		}
 	}
 	
-	return node_at_index.data_ptr;
+	
+	if ( the_back_index != old_back_index )
+	{
+		debug_arr_group::gdb_breakpoint_helper = 0;
+	}
+	
+	
+	return local_node_at_index_ptr->data_ptr;
 }
 
 
@@ -627,7 +664,11 @@ s32 list_backend::insertion_sort()
 			i = node_at_index_low.next_index();
 		}
 		
-		sorted_list.push_back( unlink_at_with_dealloc(index_low), true );
+		//sorted_list.push_back( unlink_at_with_dealloc(index_low), true );
+		
+		internal_func_unlink_at( index_low, &node_at_index_low );
+		sorted_list.internal_func_move_unlinked_node_to_back( index_low,
+			node_at_index_low );
 	}
 	
 	
@@ -936,9 +977,10 @@ s32 list_backend::insertion_sort()
 
 
 
-void list_backend::internal_func_subarr_merge( node_data* left_subarr, 
-	const size_t left_subarr_size, node_data* right_subarr, 
-	const size_t right_subarr_size, node_data* out_subarr )
+void list_backend::internal_func_subarr_merge
+	( node_data_and_index* left_subarr, const size_t left_subarr_size, 
+	node_data_and_index* right_subarr, const size_t right_subarr_size, 
+	node_data_and_index* out_subarr )
 {
 	const size_t out_subarr_size = left_subarr_size + right_subarr_size;
 	
@@ -948,20 +990,20 @@ void list_backend::internal_func_subarr_merge( node_data* left_subarr,
 	{
 		if ( i >= left_subarr_size )
 		{
-			out_subarr[k] = right_subarr[i];
-			++i;
-		}
-		else if ( j >= right_subarr_size )
-		{
 			out_subarr[k] = right_subarr[j];
 			++j;
+		}
+		else if ( j >= left_subarr_size )
+		{
+			out_subarr[k] = left_subarr[i];
+			++i;
 		}
 		else // if ( i < left_subarr_size && j < right_subarr_size )
 		{
 			if ( call_specific_type_less_func( left_subarr[i].data_ptr,
 				right_subarr[j].data_ptr ) )
 			{
-				out_subarr[k] = right_subarr[i];
+				out_subarr[k] = left_subarr[i];
 				++i;
 			}
 			else
@@ -974,69 +1016,200 @@ void list_backend::internal_func_subarr_merge( node_data* left_subarr,
 	
 }
 
-// Top-down merge sort using an array of node_data_and_index's.
+class ndai_dyn_arr
+{
+public:		// variables
+	node_data_and_index* arr = NULL;
+	
+public:		// functions
+	ndai_dyn_arr( u32 s_size )
+	{
+		arr = new node_data_and_index[s_size];
+	}
+	~ndai_dyn_arr()
+	{
+		delete [] arr;
+	}
+	
+	inline node_data_and_index* get_arr()
+	{
+		return arr;
+	}
+	
+	inline node_data_and_index& operator [] ( size_t index )
+	{
+		return get_arr()[index];
+	}
+	
+} __attribute__((_align4));
+
+
+
+// Top-down merge sort using an array of node_data_and_index_and_index's.
 s32 list_backend::merge_sort_via_array()
 {
 	s32& the_front_index = get_front_index();
-	//s32& the_back_index = get_back_index();
-	//
-	//const s32 old_front_index = the_front_index, old_back_index 
-	//	= the_back_index;
-	//
-	//
+	s32& the_back_index = get_back_index();
+	
+	const s32 old_front_index = the_front_index, old_back_index 
+		= the_back_index;
+	
+	
+	
+	
 	//std::unique_ptr<node_data_and_index[]> arr_a, work_arr;
-	//
-	//
-	////arr_a.reset(new node_data_and_index[get_total_num_nodes()]);
-	////work_arr.reset(new node_data_and_index[get_total_num_nodes()]);
-	//
-	//size_t real_num_nodes_raw = 0;
-	//
-	//for ( s32 i=old_front_index; 
-	//	i!=-1;
-	//	i=get_next_index_at_index(i) )
-	//{
-	//	//arr_a[real_num_nodes_raw] = get_node_data_and_index_at(i);
-	//	
-	//	++real_num_nodes_raw;
-	//}
-	//
-	//const size_t& real_num_nodes = real_num_nodes_raw;
-	//
-	//
-	//
-	//
-	//
-	//// This is slower than filling arr_a in the previous for loop, but it
-	//// can use SIGNIFICANTLY less memory in the general case if the sa_list
-	//// is not full.  This might be a good use case for an std::vector.
+	
+	
+	//arr_a.reset(new node_data_and_index[get_total_num_nodes()]);
+	//work_arr.reset(new node_data_and_index[get_total_num_nodes()]);
+	
+	
+	
+	// The number of used nodes
+	size_t real_num_nodes_raw = 0;
+	
+	for ( s32 i=old_front_index; 
+		i!=-1;
+		i=get_next_index_at_index(i) )
+	{
+		//arr_a[real_num_nodes_raw] = get_node_data_and_index_at(i);
+		
+		++real_num_nodes_raw;
+	}
+	
+	const size_t& real_num_nodes = real_num_nodes_raw;
+	
+	
+	
+	// This is slower than filling arr_a in the previous for loop, but it
+	// can use SIGNIFICANTLY less memory in the general case if the sa_list
+	// is not full.  This might be a good use case for an std::vector.
 	//arr_a.reset(new node_data_and_index[real_num_nodes]);
 	//work_arr.reset(new node_data_and_index[real_num_nodes]);
-	//
+	ndai_dyn_arr arr_a(real_num_nodes), work_arr(real_num_nodes);
+	
+	
+	{
+	
+	size_t temp = 0;
+	node_contents temp_node;
+	
+	for ( s32 i=old_front_index; i!=-1; i=temp_node.next_index() )
+	{
+		temp_node = get_node_contents_at(i);
+		
+		//arr_a[temp] = get_node_at(i);
+		arr_a[temp] = node_data_and_index( temp_node.data_ptr, 
+			i );
+		
+		++temp;
+	}
+	
+	}
+	
+	
+	
+	//bool use_arr_a = false;
+	
+	node_data_and_index * left_subarr, * right_subarr;
+	size_t left_subarr_size = 0, right_subarr_size = 0;
+	
+	// Avoid recursion
+	for ( size_t subarr_size=1;
+		subarr_size<real_num_nodes;
+		subarr_size*=2 )
+	{
+		auto get_merge_args = [&]( node_data_and_index* n_left_subarr )
+			-> void
+		{
+			left_subarr = n_left_subarr;
+			left_subarr_size = subarr_size;
+			
+			right_subarr = NULL;
+			right_subarr_size = 0;
+			
+			
+			if ( left_subarr_size >= real_num_nodes )
+			{
+				left_subarr_size = real_num_nodes;
+				return;
+			}
+			
+			right_subarr = &(left_subarr[left_subarr_size]);
+			
+			
+			if ( left_subarr_size + subarr_size >= real_num_nodes )
+			{
+				right_subarr_size = real_num_nodes - left_subarr_size;
+			}
+			else
+			{
+				right_subarr_size = subarr_size;
+			}
+			
+		};
+		
+		get_merge_args(&(arr_a[0]));
+		
+		for ( size_t i=0; i<real_num_nodes; i+=subarr_size*2 )
+		{
+			internal_func_subarr_merge( left_subarr, left_subarr_size,
+				right_subarr, right_subarr_size, &(work_arr[i]) );
+			
+			if ( i + ( subarr_size * 2 ) < real_num_nodes )
+			{
+				get_merge_args( &(arr_a[i + ( subarr_size * 2 )]) );
+			}
+		}
+		
+		for ( s32 i=real_num_nodes-1; i>=0; --i )
+		{
+			arr_a[i] = work_arr[i];
+		}
+	}
+	
+	//for ( s32 i=real_num_nodes-1; i>=0; --i )
 	//{
-	//
-	//size_t temp = 0;
-	//node_contents temp_node_contents;
-	//
-	//for ( s32 i=old_front_index; i!=-1; i=temp_node_contents.next_index() )
+	//	node_contents temp_node = get_node_contents_at(arr_a[i].index);
+	//	
+	//	internal_func_move_unlinked_node_to_front( i, temp_node );
+	//}
+	
+	//for ( u32 i=0; i<real_num_nodes; ++i )
 	//{
-	//	temp_node_contents = get_node_contents_at(i);
-	//	
-	//	//arr_a[temp] = get_node_contents_at(i);
-	//	arr_a[temp] = node_data_and_index( temp_node_contents.data_ptr, 
-	//		i );
-	//	
-	//	++temp;
-	//	
-	//	
-	//	// Unlink every node so they can all be re-linked.
-	//	unlink_at_with_dealloc(i);
-	//}
-	//
+	//	debug_arr_group::write_s32_and_inc(*(u32*)(arr_a[i].data_ptr));
 	//}
 	
 	
 	
+	list_backend out_list(*this);
+	
+	while ( the_front_index >= 0 )
+	{
+		// Unlink every node so they can all be re-linked in sorted order.
+		// Part of the strategy here is to avoid allocating and
+		// deallocating node array indices.
+		internal_func_unlink_at(the_front_index);
+		
+		
+		////out_list.push_back(unlink_at_with_dealloc(the_front_index));
+		//node_contents the_front_node 
+		//	= get_node_contents_at(the_front_index);
+		//move_linked_node_to_back( 
+	}
+	
+	for ( u32 i=0; i<real_num_nodes; ++i )
+	{
+		const s32& curr_index = arr_a[i].index;
+		node_contents temp_node = get_node_contents_at(curr_index);
+		
+		internal_func_move_unlinked_node_to_back( curr_index, temp_node );
+	}
+	
+	//the_front_index = out_list.get_front_index();
+	//the_back_index = out_list.get_back_index();
+	
+	//out_list.get_front_index() = -1;
 	
 	return the_front_index;
 }

@@ -93,7 +93,7 @@ int main()
 
 
 
-static constexpr u32 total_num_nodes = 500;
+static constexpr u32 total_num_nodes = 200;
 //typedef sa_list_stuff::sorted_always_list< u32, total_num_nodes >
 //	the_sorted_always_list_type;
 //
@@ -219,6 +219,10 @@ void reinit_test_list_and_profile_deallocate()
 	test_list.fully_deallocate_via_unlink();
 	show_profile_stop();
 	
+	//if ( test_list.get_front_index() == 105 )
+	//{
+	//	debug_arr_group::gdb_breakpoint_helper = 0;
+	//}
 	
 	s32& test_list_front_index = test_list.get_front_index();
 	
@@ -242,52 +246,11 @@ void reinit_test_list_and_profile_deallocate()
 	
 	
 	
-	//test_list.push_back('5');
-	//test_list.push_back('9');
-	//test_list.push_back('2');
-	//test_list.push_back('3');
-	//test_list.push_back('4');
-	//test_list.push_back('5');
-	
-	
-	
-	
-	//// These are for testing the internal_func_merge function.
-	//// index 0
-	//test_list.push_back('9');
-	//
-	//// index 1
-	//test_list.push_back('4');
-	//
-	//// index 2
-	//test_list.push_back('5');
-	//
-	//// index 3
-	//test_list.push_back('3');
-	//
-	//
-	//
-	//
-	//// index 4
-	//test_list.push_back('3');
-	//
-	//// index 5
-	//test_list.push_back('1');
-	//
-	//// index 6
-	//test_list.push_back('2');
-	//
-	//// index 7
-	//test_list.push_back('4');
-	//
-	//
-	//test_list.push_back('z');
-	//test_list.push_back('d');
-	//
-	//for ( u32 i=0; i<200; ++i )
-	//{
-	//	test_list.push_front('a' + ( i % 25 ) );
-	//}
+	for ( u32 i=0; i<150; ++i )
+	{
+		//test_list.push_front('a' + ( i % 25 ) );
+		test_list.push_front('a' + ( i % 4 ) );
+	}
 }
 
 //static constexpr size_t test_cbuf_size = 4;
@@ -304,13 +267,12 @@ void sa_list_test()
 	show_test_list();
 	
 	
-	//// Part 2
-	//asm_comment("Part 2");
-	//profile_start();
-	//test_list.merge_sort_via_array();
-	//show_profile_stop();
-	//show_test_list();
-	
+	// Part 2
+	asm_comment("Part 2");
+	profile_start();
+	test_list.merge_sort_via_array();
+	show_profile_stop();
+	show_test_list();
 	
 	
 	// Part 3
@@ -322,24 +284,24 @@ void sa_list_test()
 	asm_comment("Part 4");
 	profile_start();
 	test_list.insertion_sort();
-	//test_list.merge_sort();
+	//test_list.merge_sort_via_array();
 	show_profile_stop();
 	show_test_list();
 	
 	
 	
-	//// Part 5
-	//asm_comment("Part 5");
-	//reinit_test_list_and_profile_deallocate();
-	//show_test_list();
-	//
-	//// Part 6
-	//asm_comment("Part 6");
-	//profile_start();
-	////test_list.insertion_sort();
-	//test_list.merge_sort();
-	//show_profile_stop();
-	//show_test_list();
+	// Part 5
+	asm_comment("Part 5");
+	reinit_test_list_and_profile_deallocate();
+	show_test_list();
+	
+	// Part 6
+	asm_comment("Part 6");
+	profile_start();
+	test_list.insertion_sort();
+	//test_list.merge_sort_via_array();
+	show_profile_stop();
+	show_test_list();
 	
 	
 	
