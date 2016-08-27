@@ -21,6 +21,9 @@
 #include "debug_vars.hpp"
 
 
+const size_t get_temp_sram_buf_size();
+extern u8 temp_sram_buf[];
+
 
 namespace sa_list_stuff
 {
@@ -30,16 +33,10 @@ void list_backend::init( void* n_node_array,
 	u32 n_total_num_nodes, u32 n_specific_type_size,
 	u32 n_whole_node_size, 
 	
-	generic_void_2arg_fp n_specific_type_copy_fp, 
-	generic_void_2arg_fp n_specific_type_move_fp,
-	generic_void_1arg_fp n_specific_type_reset_fp, 
-	generic_u32_2arg_fp n_specific_type_less_fp, 
-	
-	generic_void_ptr_1arg_fp n_get_node_data_fp, 
-	generic_vec2_s16_ptr_1arg_fp n_get_index_pair_fp,
-	generic_void_2arg_fp n_conv_node_to_contents_fp,
-	generic_void_2arg_fp n_insertion_sort_inner_loop_fp )
+	const extras_fp_group& n_the_extras_fp_group )
 {
+	size = 0;
+	
 	node_array = n_node_array;
 	the_free_list_backend_ptr = n_the_free_list_backend_ptr;
 	total_num_nodes = n_total_num_nodes;
@@ -47,16 +44,7 @@ void list_backend::init( void* n_node_array,
 	specific_type_size = n_specific_type_size;
 	whole_node_size = n_whole_node_size;
 	
-	specific_type_copy_fp = n_specific_type_copy_fp;
-	specific_type_move_fp = n_specific_type_move_fp;
-	specific_type_reset_fp = n_specific_type_reset_fp;
-	specific_type_less_fp = n_specific_type_less_fp;
-	
-	get_node_data_fp = n_get_node_data_fp;
-	get_index_pair_fp = n_get_index_pair_fp;
-	
-	conv_node_to_contents_fp = n_conv_node_to_contents_fp;
-	insertion_sort_inner_loop_fp = n_insertion_sort_inner_loop_fp;
+	the_extras_fp_group = n_the_extras_fp_group;
 }
 
 void list_backend::fully_deallocate()
@@ -76,31 +64,23 @@ void list_backend::fully_deallocate_via_unlink()
 {
 	s32& the_front_index = get_front_index();
 	//while ( get_front_index() != -1 )
-	
-	
 	while ( the_front_index >= 0 )
 	{
 		//unlink_at_with_dealloc(get_front_index());
 		unlink_at_with_dealloc(the_front_index);
-		
-		//if ( the_front_index == 105 )
-		//{
-		//	debug_arr_group::gdb_breakpoint_helper = 0;
-		//}
 	}
-	
-	//if ( get_back_index() >= 0 )
-	//{
-	//	debug_arr_group::
-	//}
 	
 	//back_index = -1;
 }
 
 void list_backend::internal_func_allocate_and_assign_to_node
-	( s32& index, node_contents& node,
-	const void* n_data, u32 can_move_value )
+	( s32& index, node_contents& node, const void* n_data, 
+	u32 can_move_value )
 {
+	// Don't increment size here because allocating and assigning to a node
+	// doesn't add it to the list.
+	
+	
 	index = get_the_free_list_backend().peek_top_and_pop();
 	
 	//index = get_the_free_list_backend().peek_top();
@@ -115,6 +95,8 @@ void list_backend::internal_func_allocate_and_assign_to_node
 //s32 list_backend::push_front( const void* to_push,
 //	u32 can_move_value )
 //{
+//	++get_size();
+//	
 //	s32& the_front_index = get_front_index();
 //	s32 old_front_index = the_front_index;
 //	
@@ -159,36 +141,141 @@ void list_backend::internal_func_allocate_and_assign_to_node
 //}
 
 
+//s32 list_backend::internal_func_move_unlinked_node_to_front
+//	( s32 to_move_index, node_contents& node_to_move )
+//{
+//	++get_size();
+//	
+//	s32& the_front_index = get_front_index();
+//	const s32 old_front_index = the_front_index;
+//	
+//	
+//	the_front_index = to_move_index;
+//	
+//	s32 new_next_index = -1;
+//	
+//	
+//	// If there's at least one element in the list
+//	if ( old_front_index < 0 )
+//	{
+//		get_back_index() = the_front_index;
+//	}
+//	else //if ( old_front_index >= 0 )
+//	{
+//		new_next_index = old_front_index;
+//		
+//		get_prev_index_at_index(old_front_index) = the_front_index;
+//	}
+//	
+//	*node_to_move.index_pair_ptr = vec2_s16( new_next_index, -1 );
+//	
+//	
+//	return the_front_index;
+//}
+
+
 s32 list_backend::internal_func_move_unlinked_node_to_front
 	( s32 to_move_index, node_contents& node_to_move )
 {
-	s32& the_front_index = get_front_index();
-	const s32 old_front_index = the_front_index;
+	++get_size();
 	
+	s32& the_front_index = get_front_index();
+	s32 old_front_index = the_front_index;
+	
+	//sa_free_list_backend& the_free_list_backend 
+	//	= get_the_free_list_backend();
+	//
+	//the_front_index = the_free_list_backend.peek_top();
+	//the_free_list_backend.pop();
+	
+	
+	//node<type>& the_front_node 
+	//	= get_node_at(the_front_index);
 	
 	the_front_index = to_move_index;
 	
+	
 	s32 new_next_index = -1;
 	
-	
-	// If there's at least one element in the list
-	if ( old_front_index >= 0 )
+	// If there was nothing in the list
+	if ( old_front_index < 0 )
+	{
+		get_back_index() = to_move_index;
+	}
+	// If there was at least one element in the list
+	else //if ( old_front_index >= 0 )
 	{
 		new_next_index = old_front_index;
 		
-		get_prev_index_at_index(old_front_index) = the_front_index;
+		//get_node_at(old_front_index).prev_index()
+		//	= the_front_index;
+		
+		get_prev_index_at_index(old_front_index)
+			= to_move_index;
+		
 	}
+	
+	
+	//the_front_node.data = to_push;
+	//the_front_node.next_index() = new_next_index;
+	//the_front_node.prev_index() = -1;
+	
 	
 	*node_to_move.index_pair_ptr = vec2_s16( new_next_index, -1 );
-	
-	if ( old_front_index < 0 )
-	{
-		get_back_index() = the_front_index;
-	}
 	
 	return the_front_index;
 }
 
+
+//s32 list_backend::internal_func_move_unlinked_node_to_front
+//	( s32 to_move_index, node_contents& node_to_move )
+//{
+//	++get_size();
+//	
+//	s32& the_front_index = get_front_index();
+//	s32 old_front_index = the_front_index;
+//	
+//	////sa_free_list_backend& the_free_list_backend 
+//	////	= get_the_free_list_backend();
+//	//
+//	////the_front_index = the_free_list_backend.peek_top();
+//	////the_free_list_backend.pop();
+//	//the_front_index = get_the_free_list_backend().peek_top_and_pop();
+//	
+//	the_front_index = to_move_index;
+//	
+//	//node<type>& the_front_node 
+//	//	= get_node_at(the_front_index);
+//	
+//	node_contents the_front_node = get_node_contents_at(the_front_index);
+//	
+//	s32 new_next_index = -1;
+//	
+//	// If there was nothing in the list before the push
+//	if ( old_front_index < 0 )
+//	{
+//		get_back_index() = the_front_index;
+//	}
+//	// If there's at least one element in the list
+//	else //if ( old_front_index >= 0 )
+//	{
+//		new_next_index = old_front_index;
+//		
+//		//get_node_at(old_front_index).prev_index()
+//		//	= the_front_index;
+//		get_prev_index_at_index(old_front_index) = the_front_index;
+//	}
+//	
+//	
+//	////the_front_node.data = to_push;
+//	////the_front_node.next_index() = new_next_index;
+//	////the_front_node.prev_index() = -1;
+//	//assign_to_whole_node( the_front_node, to_push, 
+//	//	vec2_s16( new_next_index, -1 ), can_move_value );
+//	*node_to_move.index_pair_ptr = vec2_s16( new_next_index, -1 );
+//	
+//	return the_front_index;
+//}
 
 
 
@@ -196,6 +283,8 @@ s32 list_backend::internal_func_move_unlinked_node_to_front
 //s32 list_backend::insert_before( s32 index, const void* to_insert,
 //	u32 can_move_value )
 //{
+//	++get_size();
+//	
 //	//s32 old_prev_index = get_node_at(index)
 //	//	.prev_index();
 //	////s32 old_next_index = get_node_at(index)
@@ -254,6 +343,8 @@ s32 list_backend::internal_func_move_unlinked_node_before
 	( s32 to_move_before_index, s32 to_move_index, 
 	node_contents& node_to_move )
 {
+	++get_size();
+	
 	// If to_move_before_index == front_index
 	if ( to_move_before_index == get_front_index() )
 	{
@@ -278,17 +369,13 @@ s32 list_backend::internal_func_move_unlinked_node_before
 	return to_move_index;
 }
 
-//s32 list_backend::internal_func_move_unlinked_node_before
-//	( s32 to_move_before_index, s32 to_move_index, 
-//	node_contents& node_to_move )
-//{
-//}
-
 
 //// insert_after() CAN affect back_index
 //s32 list_backend::insert_after( s32 index, const void* to_insert,
 //	u32 can_move_value )
 //{
+//	++get_size();
+//	
 //	////s32 old_prev_index = get_node_at(index)
 //	////	.prev_index();
 //	//s32 old_next_index = get_node_at(index)
@@ -346,6 +433,8 @@ s32 list_backend::internal_func_move_unlinked_node_after
 	( s32 to_move_after_index, s32 to_move_index, 
 	node_contents& node_to_move )
 {
+	++get_size();
+	
 	//node_contents node_at_index = get_node_contents_at(index);
 	//const s32 old_next_index = node_at_index.next_index();
 	node_contents node_to_move_after = get_node_contents_at
@@ -385,31 +474,14 @@ s32 list_backend::internal_func_move_unlinked_node_after
 	return to_move_index;
 }
 
-//s32 list_backend::internal_func_move_unlinked_node_after
-//	( s32 to_move_after_index, s32 to_move_index, 
-//	node_contents& node_to_move )
-//{
-//}
 
-
-
-
-
-// This function is ever so slightly slower than it used to be, but it
-// allows more flexiblity since some functions will call unlink_at (or
-// erase_at) instead of calling this function directly.  
-// 
-// Functions that call this one directly are still able to pass in a
-// pointer to the node_at_index.
-//void* list_backend::internal_func_unlink_at_without_dealloc( s32 index,
-//	node_contents* node_at_index_ptr )
-//{
-//}
 
 
 //// unlink_at_with_dealloc() CAN affect back_index
 //void* list_backend::unlink_at_with_dealloc( s32 index )
 //{
+//	--get_size();
+//	
 //	//s32 old_prev_index = get_node_at(index)
 //	//	.prev_index(),
 //	//	old_next_index = get_node_at(index)
@@ -502,9 +574,17 @@ s32 list_backend::internal_func_move_unlinked_node_after
 
 
 
+// This function is ever so slightly slower than it used to be, but it
+// allows more flexiblity since some functions will call unlink_at (or
+// erase_at) instead of calling this function directly.  
+// 
+// Functions that call this one directly are still able to pass in a
+// pointer to the node_at_index.
 void* list_backend::internal_func_unlink_at( s32 index, 
 	node_contents* node_at_index_ptr )
 {
+	--get_size();
+	
 	s32& the_front_index = get_front_index();
 	s32& the_back_index = get_back_index();
 	
@@ -579,39 +659,33 @@ void* list_backend::internal_func_unlink_at( s32 index,
 	}
 	
 	
-	if ( the_back_index != old_back_index )
-	{
-		debug_arr_group::gdb_breakpoint_helper = 0;
-	}
-	
-	
 	return local_node_at_index_ptr->data_ptr;
 }
 
 
-void list_backend::internal_func_unlink_from_connected_index_at
-	( s32 index, u32 index_to_vec2 )
-{
-	vec2_s16& index_pair_at_index = *get_index_pair_at_index(index);
-	
-	const s32 old_other_index = index_pair_at_index[index_to_vec2];
-	
-	
-	// Check whether index is at the front or back of the list.
-	if ( old_other_index < 0 )
-	{
-		return;
-	}
-	
-	index_pair_at_index[index_to_vec2] = -1;
-	
-	vec2_s16& index_pair_at_other_index = *get_index_pair_at_index
-		(old_other_index);
-	
-	// Generic code
-	index_pair_at_other_index[!index_to_vec2] = -1;
-	
-}
+//void list_backend::internal_func_unlink_from_connected_index_at
+//	( s32 index, u32 index_to_vec2 )
+//{
+//	vec2_s16& index_pair_at_index = *get_index_pair_at_index(index);
+//	
+//	const s32 old_other_index = index_pair_at_index[index_to_vec2];
+//	
+//	
+//	// Check whether index is at the front or back of the list.
+//	if ( old_other_index < 0 )
+//	{
+//		return;
+//	}
+//	
+//	index_pair_at_index[index_to_vec2] = -1;
+//	
+//	vec2_s16& index_pair_at_other_index = *get_index_pair_at_index
+//		(old_other_index);
+//	
+//	// Generic code
+//	index_pair_at_other_index[!index_to_vec2] = -1;
+//	
+//}
 
 
 
@@ -655,7 +729,7 @@ s32 list_backend::insertion_sort()
 	{
 		s32 index_low = i;
 		
-		call_insertion_sort_inner_loop_fp(index_low);
+		call_insertion_sort_inner_loop_func(index_low);
 		
 		node_contents node_at_index_low = get_node_contents_at(index_low);
 		
@@ -674,6 +748,8 @@ s32 list_backend::insertion_sort()
 	
 	the_front_index = temp_front_index;
 	the_back_index = sorted_list.get_back_index();
+	get_size() = sorted_list.get_size();
+	
 	
 	// Prevent any nodes from being erased when sorted_list's destructor is
 	// called.
@@ -993,7 +1069,7 @@ void list_backend::internal_func_subarr_merge
 			out_subarr[k] = right_subarr[j];
 			++j;
 		}
-		else if ( j >= left_subarr_size )
+		else if ( j >= right_subarr_size )
 		{
 			out_subarr[k] = left_subarr[i];
 			++i;
@@ -1014,175 +1090,235 @@ void list_backend::internal_func_subarr_merge
 		}
 	}
 	
+	
 }
-
-class ndai_dyn_arr
-{
-public:		// variables
-	node_data_and_index* arr = NULL;
-	
-public:		// functions
-	ndai_dyn_arr( u32 s_size )
-	{
-		arr = new node_data_and_index[s_size];
-	}
-	~ndai_dyn_arr()
-	{
-		delete [] arr;
-	}
-	
-	inline node_data_and_index* get_arr()
-	{
-		return arr;
-	}
-	
-	inline node_data_and_index& operator [] ( size_t index )
-	{
-		return get_arr()[index];
-	}
-	
-} __attribute__((_align4));
-
 
 
 // Top-down merge sort using an array of node_data_and_index_and_index's.
 s32 list_backend::merge_sort_via_array()
 {
+	//memfill8( temp_sram_buf, 0, get_temp_sram_buf_size() );
+	
+	
 	s32& the_front_index = get_front_index();
 	s32& the_back_index = get_back_index();
 	
 	const s32 old_front_index = the_front_index, old_back_index 
 		= the_back_index;
 	
-	
+	//return the_front_index;
 	
 	
 	//std::unique_ptr<node_data_and_index[]> arr_a, work_arr;
-	
 	
 	//arr_a.reset(new node_data_and_index[get_total_num_nodes()]);
 	//work_arr.reset(new node_data_and_index[get_total_num_nodes()]);
 	
 	
 	
+	//// The number of used nodes
+	//size_t real_num_nodes_raw = 0;
+	//
+	//for ( s32 i=old_front_index; 
+	//	i!=-1;
+	//	i=get_next_index_at_index(i) )
+	//{
+	//	//arr_a[real_num_nodes_raw] = get_node_data_and_index_at(i);
+	//	
+	//	++real_num_nodes_raw;
+	//}
+	//
+	//const size_t& real_num_nodes = real_num_nodes_raw;
+	
 	// The number of used nodes
-	size_t real_num_nodes_raw = 0;
+	const size_t real_num_nodes = get_size();
 	
-	for ( s32 i=old_front_index; 
-		i!=-1;
-		i=get_next_index_at_index(i) )
-	{
-		//arr_a[real_num_nodes_raw] = get_node_data_and_index_at(i);
-		
-		++real_num_nodes_raw;
-	}
-	
-	const size_t& real_num_nodes = real_num_nodes_raw;
-	
+	//debug_arr_group::write_u32_and_inc(real_num_nodes);
 	
 	
 	// This is slower than filling arr_a in the previous for loop, but it
 	// can use SIGNIFICANTLY less memory in the general case if the sa_list
 	// is not full.  This might be a good use case for an std::vector.
-	//arr_a.reset(new node_data_and_index[real_num_nodes]);
-	//work_arr.reset(new node_data_and_index[real_num_nodes]);
 	ndai_dyn_arr arr_a(real_num_nodes), work_arr(real_num_nodes);
 	
 	
 	{
+		size_t temp = 0;
+		node_contents temp_node;
+		
+		for ( s32 i=old_front_index; i!=-1; i=temp_node.next_index() )
+		{
+			temp_node = get_node_contents_at(i);
+			
+			//arr_a[temp] = get_node_at(i);
+			arr_a[temp] = node_data_and_index( temp_node.data_ptr, i );
+			
+			++temp;
+		}
+	}
 	
-	size_t temp = 0;
-	node_contents temp_node;
 	
-	for ( s32 i=old_front_index; i!=-1; i=temp_node.next_index() )
+	
+	static constexpr size_t first_subarr_size = 1; 
+	//static constexpr size_t first_subarr_size = 4; 
+	
+	if ( first_subarr_size > 1 )
 	{
-		temp_node = get_node_contents_at(i);
+		//// This is an insertion sort of PORTIONS of arr_a.
+		//auto subarr_insertion_sort = [&]( size_t subarr_offset, 
+		//	const size_t subarr_size ) -> void
+		//{
+		//	for ( size_t i=1; i<subarr_size; ++i )
+		//	{
+		//		size_t j = i + subarr_offset;
+		//		
+		//		////while ( j > 0 && call_specific_type_qscmp_fp
+		//		////	( arr_a[j - 1].data_ptr, arr_a[j].data_ptr ) > 0 )
+		//		//while ( j > 0 && call_specific_type_greater_func
+		//		//	( arr_a[j - 1].data_ptr, arr_a[j].data_ptr ) )
+		//		//{
+		//		//	call_specific_type_swap_func( arr_a[j].data_ptr,
+		//		//		arr_a[j - 1].data_ptr );
+		//		//	--j;
+		//		//}
+		//		
+		//		call_arr_insertion_sort_func( arr_a, j );
+		//	}
+		//	
+		//};
 		
-		//arr_a[temp] = get_node_at(i);
-		arr_a[temp] = node_data_and_index( temp_node.data_ptr, 
-			i );
 		
-		++temp;
+		size_t subarr_offset, subarr_size;
+		
+		for ( subarr_offset=0;
+			subarr_offset<real_num_nodes;
+			subarr_offset+=subarr_size )
+		{
+			subarr_size = first_subarr_size;
+			
+			if ( subarr_offset + subarr_size >= real_num_nodes )
+			{
+				subarr_size = real_num_nodes - subarr_offset;
+			}
+			
+			//subarr_insertion_sort( subarr_offset, subarr_size );
+			get_the_extras_fp_group().get_subarr_insertion_sort_fp()
+				( arr_a, subarr_offset, subarr_size );
+			
+		}
+		
+		//debug_arr_group::gdb_breakpoint_helper = 0;
 	}
 	
-	}
 	
 	
 	
 	//bool use_arr_a = false;
 	
+	size_t left_subarr_offset = 0, right_subarr_offset = 0;
 	node_data_and_index * left_subarr, * right_subarr;
 	size_t left_subarr_size = 0, right_subarr_size = 0;
 	
+	
+	static constexpr bool do_swap = true;
+	
+	bool main_arr_is_arr_a = false;
+	prev_curr_pair<ndai_dyn_arr*> main_arr_pc_pair, secondary_arr_pc_pair;
+	
+	
+	//if (!do_swap)
+	{
+		main_arr_pc_pair.prev = main_arr_pc_pair.curr = &arr_a;
+		secondary_arr_pc_pair.prev = secondary_arr_pc_pair.curr 
+			= &work_arr;
+	}
+	
 	// Avoid recursion
-	for ( size_t subarr_size=1;
-		subarr_size<real_num_nodes;
+	for ( size_t subarr_size=first_subarr_size;
+		subarr_size<=real_num_nodes;
 		subarr_size*=2 )
 	{
-		auto get_merge_args = [&]( node_data_and_index* n_left_subarr )
-			-> void
+		if (do_swap)
 		{
-			left_subarr = n_left_subarr;
-			left_subarr_size = subarr_size;
-			
+			if (main_arr_is_arr_a)
+			{
+				main_arr_pc_pair.back_up_and_update(&work_arr);
+				secondary_arr_pc_pair.back_up_and_update(&arr_a);
+				main_arr_is_arr_a = false;
+			}
+			else // if (!main_arr_is_arr_a)
+			{
+				main_arr_pc_pair.back_up_and_update(&arr_a);
+				secondary_arr_pc_pair.back_up_and_update(&work_arr);
+				main_arr_is_arr_a = true;
+			}
+		}
+		
+		//auto get_merge_args = [&]( node_data_and_index* n_left_subarr )
+		auto get_merge_args = [&]( ndai_dyn_arr& specific_arr, 
+			size_t n_left_subarr_offset ) -> void
+		{
+			right_subarr_offset = 0;
 			right_subarr = NULL;
 			right_subarr_size = 0;
 			
 			
-			if ( left_subarr_size >= real_num_nodes )
+			left_subarr_offset = n_left_subarr_offset;
+			left_subarr = &(specific_arr[left_subarr_offset]);
+			left_subarr_size = subarr_size;
+			
+			
+			if ( left_subarr_offset + left_subarr_size >= real_num_nodes )
 			{
-				left_subarr_size = real_num_nodes;
+				left_subarr_size = real_num_nodes - left_subarr_offset;
 				return;
 			}
 			
-			right_subarr = &(left_subarr[left_subarr_size]);
 			
+			right_subarr_offset = left_subarr_offset + left_subarr_size;
+			right_subarr = &(specific_arr[right_subarr_offset]);
+			right_subarr_size = subarr_size;
 			
-			if ( left_subarr_size + subarr_size >= real_num_nodes )
+			if ( right_subarr_offset + right_subarr_size 
+				>= real_num_nodes )
 			{
-				right_subarr_size = real_num_nodes - left_subarr_size;
+				right_subarr_size = real_num_nodes - right_subarr_offset;
 			}
-			else
-			{
-				right_subarr_size = subarr_size;
-			}
+			
 			
 		};
 		
-		get_merge_args(&(arr_a[0]));
+		//get_merge_args(&(arr_a[0]));
+		//get_merge_args( arr_a, 0 );
+		get_merge_args( *main_arr_pc_pair.curr, 0 );
 		
 		for ( size_t i=0; i<real_num_nodes; i+=subarr_size*2 )
 		{
+			//internal_func_subarr_merge( left_subarr, left_subarr_size,
+			//	right_subarr, right_subarr_size, &(work_arr[i]) );
 			internal_func_subarr_merge( left_subarr, left_subarr_size,
-				right_subarr, right_subarr_size, &(work_arr[i]) );
+				right_subarr, right_subarr_size,
+				&((*secondary_arr_pc_pair.curr)[i]) );
 			
 			if ( i + ( subarr_size * 2 ) < real_num_nodes )
 			{
-				get_merge_args( &(arr_a[i + ( subarr_size * 2 )]) );
+				//get_merge_args( &(arr_a[i + ( subarr_size * 2 )]) );
+				//get_merge_args( arr_a, i + ( subarr_size * 2 ) );
+				get_merge_args( *main_arr_pc_pair.curr, 
+					i + ( subarr_size * 2 ) );
 			}
 		}
 		
-		for ( s32 i=real_num_nodes-1; i>=0; --i )
+		if (!do_swap)
 		{
-			arr_a[i] = work_arr[i];
+			for ( s32 i=real_num_nodes-1; i>=0; --i )
+			{
+				arr_a[i] = work_arr[i];
+			}
 		}
+		
 	}
 	
-	//for ( s32 i=real_num_nodes-1; i>=0; --i )
-	//{
-	//	node_contents temp_node = get_node_contents_at(arr_a[i].index);
-	//	
-	//	internal_func_move_unlinked_node_to_front( i, temp_node );
-	//}
-	
-	//for ( u32 i=0; i<real_num_nodes; ++i )
-	//{
-	//	debug_arr_group::write_s32_and_inc(*(u32*)(arr_a[i].data_ptr));
-	//}
-	
-	
-	
-	list_backend out_list(*this);
 	
 	while ( the_front_index >= 0 )
 	{
@@ -1190,26 +1326,56 @@ s32 list_backend::merge_sort_via_array()
 		// Part of the strategy here is to avoid allocating and
 		// deallocating node array indices.
 		internal_func_unlink_at(the_front_index);
-		
-		
-		////out_list.push_back(unlink_at_with_dealloc(the_front_index));
-		//node_contents the_front_node 
-		//	= get_node_contents_at(the_front_index);
-		//move_linked_node_to_back( 
 	}
 	
-	for ( u32 i=0; i<real_num_nodes; ++i )
+	
+	
+	//s32 curr_index;
+	//node_contents temp_node;
+	
+	//for ( u32 i=0; i<real_num_nodes; ++i )
+	for ( s32 i=real_num_nodes-1; i>=0; --i )
 	{
-		const s32& curr_index = arr_a[i].index;
+		//s32 curr_index = arr_a[i].index;
+		s32 curr_index = (*main_arr_pc_pair.prev)[i].index;
 		node_contents temp_node = get_node_contents_at(curr_index);
 		
-		internal_func_move_unlinked_node_to_back( curr_index, temp_node );
+		//internal_func_move_unlinked_node_to_back( curr_index, temp_node );
+		internal_func_move_unlinked_node_to_front( curr_index, temp_node );
 	}
 	
-	//the_front_index = out_list.get_front_index();
-	//the_back_index = out_list.get_back_index();
 	
-	//out_list.get_front_index() = -1;
+	//asm_comment("SRAM thing");
+	//
+	//{
+	//
+	//s32 i;
+	//
+	//for ( i=real_num_nodes-1; i>=0; --i )
+	//{
+	//	//u8* buf = reinterpret_cast<u8*>(&arr_a[i].index);
+	//	
+	//	asm_comment("Inner for loop");
+	//	//for ( s32 j=sizeof(arr_a[i].index)-1; j>=0; --j )
+	//	//{
+	//	//	temp_sram_buf[ ( i * sizeof(s32) ) + j ] = buf[j];
+	//	//}
+	//	single_write_as_bytes( temp_sram_buf, i, arr_a[i].index );
+	//}
+	//
+	//asm_comment("Write \"done\"");
+	//
+	////temp_sram_buf[ ( real_num_nodes * sizeof(s32) ) + 0 ] = 'd';
+	////temp_sram_buf[ ( real_num_nodes * sizeof(s32) ) + 1 ] = 'o';
+	////temp_sram_buf[ ( real_num_nodes * sizeof(s32) ) + 2 ] = 'n';
+	////temp_sram_buf[ ( real_num_nodes * sizeof(s32) ) + 3 ] = 'e';
+	//
+	//
+	//memcpy8( &temp_sram_buf[real_num_nodes * sizeof(s32)], "done", 4 );
+	//
+	//}
+	//
+	//asm_comment("SRAM thing done");
 	
 	return the_front_index;
 }

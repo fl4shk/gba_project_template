@@ -58,31 +58,32 @@ inline size_t arr_byte_size( size_t the_num_arr_elems )
 class sa_pod_stack_backend
 {
 protected:		// variables
-	u8* ptr_to_the_array_u8;
-	u32* ptr_to_next_index;
+	u8* the_array_u8;
+	u32* next_index_ptr;
 	u32 type_size, num_elems;
 	
 public:		// functions
 	sa_pod_stack_backend();
-	sa_pod_stack_backend( u8* s_ptr_to_the_array_u8, 
-		u32* s_ptr_to_next_index, u32 s_type_size, u32 s_num_elems );
+	sa_pod_stack_backend( u8* s_the_array_u8, u32* s_next_index_ptr, 
+		u32 s_type_size, u32 s_num_elems );
+	sa_pod_stack_backend( const sa_pod_stack_backend& to_copy );
 	
 	inline u8* get_the_array_u8()
 	{
-		return ptr_to_the_array_u8;
+		return the_array_u8;
 	}
 	inline const u8* get_the_array_u8() const
 	{
-		return ptr_to_the_array_u8;
+		return the_array_u8;
 	}
 	
 	inline u32& get_next_index()
 	{
-		return *ptr_to_next_index;
+		return *next_index_ptr;
 	}
 	inline const u32 get_next_index() const
 	{
-		return *ptr_to_next_index;
+		return *next_index_ptr;
 	}
 	
 	inline const u32 get_type_size() const
@@ -132,10 +133,11 @@ public:		// constants
 	
 public:		// functions
 	sa_free_list_backend();
-	sa_free_list_backend( u8* s_ptr_to_the_array_u8, 
-		u32* s_ptr_to_next_index, u32 s_num_elems );
-	sa_free_list_backend( s16* s_ptr_to_the_array, 
-		u32* s_ptr_to_next_index, u32 s_num_elems );
+	sa_free_list_backend( u8* s_the_array_u8, 
+		u32* s_next_index_ptr, u32 s_num_elems );
+	sa_free_list_backend( s16* s_the_array, 
+		u32* s_next_index_ptr, u32 s_num_elems );
+	sa_free_list_backend( const sa_free_list_backend& to_copy );
 	
 	void init();
 	
@@ -203,33 +205,33 @@ public:		// functions
 
 
 // A backend to a more generic statically allocated stack which is used
-// because it reduces the number of template parameters
+// because it reduces the number of template parameters.
 template< typename type >
 class sa_stack_backend
 {
 public:		// variables
-	//type* ptr_to_the_array;
+	//type* the_array;
 	//u32 num_elems;
 	array_helper<type> the_array_helper;
-	u32* ptr_to_next_index;
+	u32* next_index_ptr;
 	
 public:		// functions
-	sa_stack_backend() : the_array_helper(), ptr_to_next_index(NULL)
+	sa_stack_backend() : the_array_helper(), next_index_ptr(NULL)
 	{
 	}
 	
-	sa_stack_backend( type* s_ptr_to_the_array, u32 s_num_elems, 
-		u32* s_ptr_to_next_index ) 
-		: the_array_helper( s_ptr_to_the_array, s_num_elems ), 
-		ptr_to_next_index(s_ptr_to_next_index)
+	sa_stack_backend( type* s_the_array, u32 s_num_elems, 
+		u32* s_next_index_ptr ) 
+		: the_array_helper( s_the_array, s_num_elems ), 
+		next_index_ptr(s_next_index_ptr)
 	{
 	}
 	
-	void init( type* s_ptr_to_the_array, u32 s_num_elems, 
-		u32* s_ptr_to_next_index )
+	void init( type* s_the_array, u32 s_num_elems, 
+		u32* s_next_index_ptr )
 	{
-		the_array_helper.init( s_ptr_to_the_array, s_num_elems );
-		ptr_to_next_index = s_ptr_to_next_index;
+		the_array_helper.init( s_the_array, s_num_elems );
+		next_index_ptr = s_next_index_ptr;
 	}
 	
 	type* get_the_array()
@@ -243,11 +245,11 @@ public:		// functions
 	
 	inline u32& get_next_index()
 	{
-		return *ptr_to_next_index;
+		return *next_index_ptr;
 	}
 	inline const u32 get_next_index() const
 	{
-		return *ptr_to_next_index;
+		return *next_index_ptr;
 	}
 	
 	inline u32 get_size() const
@@ -399,6 +401,18 @@ public:		// functions
 		//	push(i);
 		//}
 	}
+	inline sa_free_list( const sa_free_list<size>& to_copy )
+		: the_sa_free_list_backend( the_array.data(), &next_index,
+		get_size() )
+	{
+		arr_memcpy( the_array, to_copy.the_array );
+	}
+	
+	//inline sa_free_list<size>& operator = 
+	//	( const sa_free_list<size>& to_copy )
+	//{
+	//	the_sa_free_list_backend
+	//}
 	
 	inline u32& get_next_index()
 	{

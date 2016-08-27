@@ -162,6 +162,7 @@ inline void arr_memfill8( std::array< type, size >& dst, u32 src )
 }
 
 
+
 template< typename dst_type, typename src_type, size_t size >
 inline void* arr_memcpy( std::array< dst_type, size >& dst, 
 	std::array< src_type, size >& src )
@@ -178,6 +179,69 @@ inline void* arr_memset( std::array< type, size >& dst, u32 src )
 {
 	return arr_memset<type>( dst.data(), src, size );
 }
+
+
+
+
+// Some inline template functions intended for use with SRAM
+template< typename type >
+inline void single_memcpy8( u8* dst, const type& to_write )
+{
+	memcpy8( dst, &to_write, sizeof(type) );
+}
+
+template< typename type >
+inline void single_write_as_bytes( u8* dst, const type& to_write )
+{
+	const u8* src = reinterpret_cast<const u8*>(&to_write);
+	
+	for ( s32 i=sizeof(type)-1; i>=0; --i )
+	{
+		dst[i] = src[i];
+	}
+}
+
+
+template< typename type >
+inline void single_memcpy8( u8* dst_start, size_t type_offset, 
+	const type& to_write )
+{
+	u8* dst = &(dst_start[type_offset * sizeof(type)]);
+	
+	memcpy8( dst, &to_write, sizeof(type) );
+}
+
+template< typename type >
+inline void single_write_as_bytes( u8* dst_start, size_t type_offset, 
+	const type& to_write )
+{
+	u8* dst = &(dst_start[type_offset * sizeof(type)]);
+	const u8* src = reinterpret_cast<const u8*>(&to_write);
+	
+	for ( s32 i=sizeof(type)-1; i>=0; --i )
+	{
+		dst[i] = src[i];
+	}
+}
+
+
+template< typename type >
+inline void struct_memcpy32( type& dst, const type& src )
+{
+	memcpy32( &dst, &src, sizeof(type) / sizeof(u32) );
+}
+template< typename type >
+inline void struct_memcpy8( type& dst, const type& src )
+{
+	memcpy8( &dst, &src, sizeof(type) );
+}
+template< typename type >
+inline void* struct_memcpy( type& dst, const type& src )
+{
+	return memcpy( &dst, &src, sizeof(type) );
+}
+
+
 
 
 

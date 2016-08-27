@@ -84,8 +84,9 @@ ARM_BASE_FLAGS=$(GLOBAL_BASE_FLAGS) -marm -mthumb-interwork
 
 
 # Eventually I'll use -std=c++17
-CXX_FLAGS=-std=c++14 $(THUMB_BASE_FLAGS) -D __thumb__  -Wall
-ARM_CXX_FLAGS=-std=c++14 $(ARM_BASE_FLAGS)  -Wall
+# Ah screw it, I'm switching now.
+CXX_FLAGS=-std=c++17 $(THUMB_BASE_FLAGS) -D __thumb__  -Wall
+ARM_CXX_FLAGS=-std=c++17 $(ARM_BASE_FLAGS)  -Wall
 S_FLAGS=-mcpu=arm7tdmi -mthumb -mthumb-interwork
 
 

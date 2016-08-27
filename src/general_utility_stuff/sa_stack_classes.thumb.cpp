@@ -18,15 +18,14 @@
 
 #include "sa_stack_classes.hpp"
 
-sa_pod_stack_backend::sa_pod_stack_backend() : ptr_to_the_array_u8(0),
-	ptr_to_next_index(0), type_size(0), num_elems(0)
+sa_pod_stack_backend::sa_pod_stack_backend() : the_array_u8(0),
+	next_index_ptr(0), type_size(0), num_elems(0)
 {
 }
-sa_pod_stack_backend::sa_pod_stack_backend( u8* s_ptr_to_the_array_u8, 
-	u32* s_ptr_to_next_index, u32 s_type_size, u32 s_num_elems )
-	: ptr_to_the_array_u8(s_ptr_to_the_array_u8),
-	ptr_to_next_index(s_ptr_to_next_index), type_size(s_type_size),
-	num_elems(s_num_elems)
+sa_pod_stack_backend::sa_pod_stack_backend( u8* s_the_array_u8, 
+	u32* s_next_index_ptr, u32 s_type_size, u32 s_num_elems )
+	: the_array_u8(s_the_array_u8), next_index_ptr(s_next_index_ptr), 
+	type_size(s_type_size), num_elems(s_num_elems)
 {
 }
 
@@ -50,17 +49,17 @@ void sa_pod_stack_backend::write_to_the_array_u8( const u8* to_write_u8,
 sa_free_list_backend::sa_free_list_backend() : sa_pod_stack_backend()
 {
 }
-sa_free_list_backend::sa_free_list_backend( u8* s_ptr_to_the_array_u8, 
-	u32* s_ptr_to_next_index, u32 s_num_elems ) 
-	: sa_pod_stack_backend( s_ptr_to_the_array_u8, s_ptr_to_next_index,
+sa_free_list_backend::sa_free_list_backend( u8* s_the_array_u8, 
+	u32* s_next_index_ptr, u32 s_num_elems ) 
+	: sa_pod_stack_backend( s_the_array_u8, s_next_index_ptr,
 	get_the_const_type_size(), s_num_elems )
 {
 	init();
 }
 
-sa_free_list_backend::sa_free_list_backend( s16* s_ptr_to_the_array,
-	u32* s_ptr_to_next_index, u32 s_num_elems ) 
-	: sa_pod_stack_backend( (u8*)s_ptr_to_the_array, s_ptr_to_next_index,
+sa_free_list_backend::sa_free_list_backend( s16* s_the_array,
+	u32* s_next_index_ptr, u32 s_num_elems ) 
+	: sa_pod_stack_backend( (u8*)s_the_array, s_next_index_ptr,
 	get_the_const_type_size(), s_num_elems )
 {
 	init();

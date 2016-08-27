@@ -27,8 +27,10 @@
 #include "../gba_specific_stuff/asm_funcs.hpp"
 
 #include "generic_funcptr_stuff.hpp"
+#include "dyn_arr_class.hpp"
+#include "prev_curr_pair_class.hpp"
 
-
+#include <type_traits>
 #include <functional>
 
 
@@ -101,6 +103,36 @@ public:		// functions
 	}
 	
 } __attribute__((_align4));
+
+
+//class ndai_dyn_arr
+//{
+//protected:		// variables
+//	node_data_and_index* arr;
+//	
+//public:		// functions
+//	ndai_dyn_arr( size_t s_size )
+//	{
+//		arr = new node_data_and_index[s_size];
+//	}
+//	~ndai_dyn_arr()
+//	{
+//		delete [] arr;
+//	}
+//	
+//	inline node_data_and_index* get_arr()
+//	{
+//		return arr;
+//	}
+//	
+//	inline node_data_and_index& operator [] ( size_t index )
+//	{
+//		return get_arr()[index];
+//	}
+//	
+//} __attribute__((_align4));
+
+typedef dyn_arr<node_data_and_index> ndai_dyn_arr;
 
 
 
@@ -198,12 +230,12 @@ public:		// classes
 		} alignas_regular;
 		
 	protected:  // variables
-		const circ_buf_helper* cbuf_helper_ptr;
+		circ_buf_helper *const cbuf_helper_ptr;
 		size_t pos;
 		index_type the_index_type;
 		
 	public:		// functions
-		inline iterator( const circ_buf_helper* s_cbuf_helper_ptr, 
+		inline iterator( circ_buf_helper* s_cbuf_helper_ptr, 
 			size_t s_pos, 
 			index_type s_the_index_type=index_type::it_other ) 
 			: cbuf_helper_ptr(s_cbuf_helper_ptr), pos(s_pos),
@@ -211,7 +243,7 @@ public:		// classes
 		{
 		}
 		
-		inline const circ_buf_helper* get_cbuf_helper_ptr() const
+		inline circ_buf_helper *const get_cbuf_helper_ptr() const
 		{
 			return cbuf_helper_ptr;
 		}
@@ -332,7 +364,7 @@ public:		// classes
 	friend const s32 iterator::operator * () const;
 	
 public:		// functions
-	circ_buf_helper( s32* s_the_array, u32 s_max_size )
+	circ_buf_helper( s32* s_the_array, size_t s_max_size )
 		: the_array(s_the_array), max_size(s_max_size)
 	{
 		//// Don't call reset() here since it's called by
@@ -371,16 +403,16 @@ public:		// functions
 	{
 		return real_size;
 	}
-	inline s32 at( u32 offset ) const
+	inline s32 at( size_t offset ) const
 	{
 		return the_array[offset];
 	}
 	
-	inline iterator begin() const
+	inline iterator begin()
 	{
 		return iterator( this, get_head(), iterator::index_type::it_head );
 	}
-	inline iterator end() const
+	inline iterator end()
 	{
 		return iterator( this, get_tail(), iterator::index_type::it_tail );
 	}
@@ -425,13 +457,163 @@ public:		// functions
 	
 } __attribute__((_align4));
 
+class extras_fp_group
+{
+public:		// typedefs
+	typedef void (*sis_fp)( ndai_dyn_arr&, const size_t, const size_t );
+	
+public:		// function pointers
+	// Function pointers used by various functions in the list_backend
+	// class.
+	
+	generic_void_2arg_fp specific_type_copy_fp = NULL;
+	generic_void_2arg_fp specific_type_move_fp = NULL;
+	generic_void_1arg_fp specific_type_reset_fp = NULL;
+	generic_void_2arg_fp specific_type_swap_fp = NULL;
+	
+	
+	generic_u32_2arg_fp specific_type_less_fp = NULL;
+	generic_u32_2arg_fp specific_type_greater_fp = NULL;
+	qscmp_fp specific_type_qscmp_fp = NULL;
+	
+	
+	generic_void_ptr_1arg_fp get_node_data_fp = NULL;
+	generic_vec2_s16_ptr_1arg_fp get_index_pair_fp = NULL;
+	generic_void_2arg_fp conv_node_to_contents_fp = NULL;
+	generic_void_2arg_fp insertion_sort_inner_loop_fp = NULL;
+	
+	sis_fp subarr_insertion_sort_fp = NULL;
+	
+	
+	
+	//// The only reason this static_assert is wrapped inside a class that
+	//// has nothing else in it is to work around a bug in a Vim plugin that
+	//// I use (Taghighlight specifically).  I don't have any idea why this
+	//// is even an issue, but oh well.
+	//class wrapped_static_asserts
+	//{
+	//public:		// functions
+	//	inline wrapped_static_asserts()
+	//	{
+	//		static_assert( std::is_trivially_copyable<extras_fp_group>
+	//			::value,
+	//			"Can't use struct_memcpy() in extras_fp_group::operator = "
+	//			"() !" );
+	//	}
+	//} __attribute__((_align4));
+	
+public:		// functions
+	inline extras_fp_group()
+	{
+	}
+	inline extras_fp_group( generic_void_2arg_fp s_specific_type_copy_fp,
+		generic_void_2arg_fp s_specific_type_move_fp,
+		generic_void_1arg_fp s_specific_type_reset_fp,
+		generic_void_2arg_fp s_specific_type_swap_fp,
+		
+		generic_u32_2arg_fp s_specific_type_less_fp,
+		generic_u32_2arg_fp s_specific_type_greater_fp,
+		qscmp_fp s_specific_type_qscmp_fp,
+		
+		generic_void_ptr_1arg_fp s_get_node_data_fp,
+		generic_vec2_s16_ptr_1arg_fp s_get_index_pair_fp,
+		generic_void_2arg_fp s_conv_node_to_contents_fp,
+		generic_void_2arg_fp s_insertion_sort_inner_loop_fp,
+		sis_fp s_subarr_insertion_sort_fp )
+	{
+		specific_type_copy_fp = s_specific_type_copy_fp;
+		specific_type_move_fp = s_specific_type_move_fp;
+		specific_type_reset_fp = s_specific_type_reset_fp;
+		specific_type_swap_fp = s_specific_type_swap_fp;
+		
+		
+		specific_type_less_fp = s_specific_type_less_fp;
+		specific_type_greater_fp = s_specific_type_greater_fp;
+		specific_type_qscmp_fp = s_specific_type_qscmp_fp;
+		
+		
+		get_node_data_fp = s_get_node_data_fp;
+		get_index_pair_fp = s_get_index_pair_fp;
+		conv_node_to_contents_fp = s_conv_node_to_contents_fp;
+		insertion_sort_inner_loop_fp = s_insertion_sort_inner_loop_fp;
+		subarr_insertion_sort_fp = s_subarr_insertion_sort_fp;
+	}
+	
+	inline extras_fp_group( const extras_fp_group& to_copy )
+	{
+		*this = to_copy;
+	}
+	
+	//inline extras_fp_group& operator = ( const extras_fp_group& to_copy )
+	//{
+	//	struct_memcpy( *this, to_copy );
+	//	
+	//	return *this;
+	//}
+	
+	
+	inline generic_void_2arg_fp get_specific_type_copy_fp() const
+	{
+		return specific_type_copy_fp;
+	}
+	inline generic_void_2arg_fp get_specific_type_move_fp() const
+	{
+		return specific_type_move_fp;
+	}
+	inline generic_void_1arg_fp get_specific_type_reset_fp() const
+	{
+		return specific_type_reset_fp;
+	}
+	inline generic_void_2arg_fp get_specific_type_swap_fp() const
+	{
+		return specific_type_swap_fp;
+	}
+	
+	
+	inline generic_u32_2arg_fp get_specific_type_less_fp() const
+	{
+		return specific_type_less_fp;
+	}
+	inline generic_u32_2arg_fp get_specific_type_greater_fp() const
+	{
+		return specific_type_greater_fp;
+	}
+	inline qscmp_fp get_specific_type_qscmp_fp() const
+	{
+		return specific_type_qscmp_fp;
+	}
+	
+	
+	inline generic_void_ptr_1arg_fp get_get_node_data_fp() const
+	{
+		return get_node_data_fp;
+	}
+	inline generic_vec2_s16_ptr_1arg_fp get_get_index_pair_fp() const
+	{
+		return get_index_pair_fp;
+	}
+	inline generic_void_2arg_fp get_conv_node_to_contents_fp() const
+	{
+		return conv_node_to_contents_fp;
+	}
+	inline generic_void_2arg_fp get_insertion_sort_inner_loop_fp() const
+	{
+		return insertion_sort_inner_loop_fp;
+	}
+	inline sis_fp get_subarr_insertion_sort_fp() const
+	{
+		return subarr_insertion_sort_fp;
+	}
+	
+} __attribute__((_align4));
+
 
 // A group of functions to use as function pointers in the list_backend
 // class.
 template< typename type >
 class list_extras
 {
-protected:		// functions
+protected:		// functions to point to
 	static void specific_type_copy( type* a, type* b )
 		__attribute__((_text_hot_section))
 	{
@@ -447,10 +629,42 @@ protected:		// functions
 	{
 		*to_reset = type();
 	}
+	static void specific_type_swap( type* a, type* b )
+		__attribute__((_text_hot_section))
+	{
+		//type temp = std::move(*a);
+		//*a = std::move(*b);
+		//*b = std::move(temp);
+		std::swap( *a, *b );
+	}
+	
 	static u32 specific_type_less( type* a, type* b )
 		__attribute__((_text_hot_section))
 	{
 		return ( (*a) < (*b) );
+	}
+	static u32 specific_type_greater( type* a, type* b )
+		__attribute__((_text_hot_section))
+	{
+		return ( (*a) > (*b) );
+	}
+	
+	// qsort() comparison function
+	static int specific_type_qscmp( const type* a, const type* b )
+		__attribute__((_text_hot_section))
+	{
+		if ( (*a) < (*b) )
+		{
+			return -1;
+		}
+		else if ( (*a) == (*b) )
+		{
+			return 0;
+		}
+		else // if ( (*a) > (*b) )
+		{
+			return 1;
+		}
 	}
 	
 	static void* get_node_data( node<type>* to_get_from )
@@ -508,7 +722,34 @@ protected:		// functions
 	}
 	
 	
-public:		// functions
+	static void subarr_insertion_sort( ndai_dyn_arr& arr_a,
+		const size_t subarr_offset, const size_t subarr_size )
+		//__attribute__((_text_hot_section))
+	{
+		size_t curr_offset = subarr_offset;
+		
+		
+		for ( size_t i=1; i<subarr_size; ++i )
+		{
+			size_t j = ++curr_offset;
+			
+			while ( j > 0 && *(type*)arr_a[j - 1].data_ptr
+				> *(type*)arr_a[j].data_ptr )
+			{
+				type temp = std::move(*(type*)arr_a[j - 1].data_ptr);
+				
+				*(type*)arr_a[j - 1].data_ptr 
+					= std::move(*(type*)arr_a[j].data_ptr);
+				*(type*)arr_a[j].data_ptr = std::move(temp);
+				
+				--j;
+			}
+		}
+	}
+	
+	
+	
+public:		// function pointer stuff
 	// This is the first time I've used an "auto" return type much, but it
 	// makes plenty of sense for this case.
 	static inline auto get_specific_type_copy_fp()
@@ -523,10 +764,27 @@ public:		// functions
 	{
 		return get_generic_void_1arg_fp(&specific_type_reset);
 	}
+	
+	static inline auto get_specific_type_swap_fp()
+	{
+		return get_generic_void_2arg_fp(&specific_type_swap);
+	}
+	
+	
+	
 	static inline auto get_specific_type_less_fp()
 	{
 		return get_generic_u32_2arg_fp(&specific_type_less);
 	}
+	static inline auto get_specific_type_greater_fp()
+	{
+		return get_generic_u32_2arg_fp(&specific_type_greater);
+	}
+	static inline auto get_specific_type_qscmp_fp()
+	{
+		return get_qscmp_fp(&specific_type_qscmp);
+	}
+	
 	
 	static inline auto get_get_node_data_fp()
 	{
@@ -546,8 +804,67 @@ public:		// functions
 	{
 		return get_generic_void_2arg_fp(&insertion_sort_inner_loop);
 	}
+	static inline extras_fp_group::sis_fp get_subarr_insertion_sort_fp()
+	{
+		//return reinterpret_cast<extras_fp_group::sis_fp>
+		//	(&subarr_insertion_sort);
+		return &subarr_insertion_sort;
+	}
+	
+	static inline extras_fp_group get_extras_fp_group()
+	{
+		return extras_fp_group( get_specific_type_copy_fp(),
+			get_specific_type_move_fp(),
+			get_specific_type_reset_fp(),
+			get_specific_type_swap_fp(),
+			
+			get_specific_type_less_fp(),
+			get_specific_type_greater_fp(),
+			get_specific_type_qscmp_fp(),
+			
+			get_get_node_data_fp(),
+			get_get_index_pair_fp(),
+			get_conv_node_to_contents_fp(),
+			get_insertion_sort_inner_loop_fp(),
+			get_subarr_insertion_sort_fp() );
+	}
+	
+	
+public:		// functions to not point to
+	static inline void subarr_insertion_sort( dyn_arr<type>& arr_a,
+		const size_t subarr_offset, const size_t subarr_size )
+		__attribute__((always_inline))
+	{
+		//if ( subarr_offset + subarr_size >= real_num_nodes )
+		//{
+		//	subarr_size = real_num_nodes - subarr_offset;
+		//}
+		
+		size_t curr_offset = subarr_offset;
+		
+		for ( size_t i=1; i<subarr_size; ++i )
+		{
+			size_t j = ++curr_offset;
+			
+			while ( j > 0 && ( arr_a[j - 1] > arr_a[j] ) )
+			{
+				std::swap( arr_a[j], arr_a[j - 1] );
+				
+				--j;
+			}
+		}
+	}
+	
+	//static void subarr_merge( node_data_and_index* left_subarr, 
+	//	const size_t left_subarr_size, node_data_and_index* right_subarr,
+	//	const size_t right_subarr_size, node_data_and_index* out_subarr )
+	//{
+	//	
+	//}
 	
 } __attribute__((_align4));
+
+
 
 
 
@@ -555,154 +872,8 @@ public:		// functions
 // and I can put code in IWRAM this way!
 class list_backend
 {
-//protected:		// types
-public:		// types
-	//class merge_args
-	//{
-	//public:		// variables
-	//	// left_index and right_index are used for traversal along the list
-	//	// during list_backend::internal_func_merge().
-	//	s32 left_index = -1, right_index = -1;
-	//	
-	//protected:		// variables
-	//	s32 left_head = -1, left_tail = -1;
-	//	s32 right_head = -1, right_tail = -1;
-	//	
-	//public:		// functions
-	//	inline merge_args()
-	//	{
-	//	}
-	//	inline merge_args( s32 s_left_head, s32 s_left_tail,
-	//		s32 s_right_head, s32 s_right_tail )
-	//	{
-	//		init( s_left_head, s_left_tail, s_right_head, s_right_tail );
-	//	}
-	//	inline void init( s32 n_left_head, s32 n_left_tail,
-	//		s32 n_right_head, s32 n_right_tail )
-	//	{
-	//		left_index = n_left_head;
-	//		right_index = n_right_head;
-	//		
-	//		left_head = n_left_head;
-	//		left_tail = n_left_tail;
-	//		
-	//		right_head = n_right_head;
-	//		right_tail = n_right_tail;
-	//	}
-	//	
-	//	inline s32 get_left_index() const
-	//	{
-	//		return left_index;
-	//	}
-	//	inline s32 get_right_index() const
-	//	{
-	//		return right_index;
-	//	}
-	//	
-	//	inline node_contents get_left_node( list_backend* the_list ) const
-	//	{
-	//		return the_list->get_node_contents_at(get_left_index());
-	//	}
-	//	inline node_contents get_right_node( list_backend* the_list ) const
-	//	{
-	//		return the_list->get_node_contents_at(get_right_index());
-	//	}
-	//	inline node_contents get_left_head_node( list_backend* the_list )
-	//		const
-	//	{
-	//		return the_list->get_node_contents_at(get_left_head());
-	//	}
-	//	inline node_contents get_right_head_node( list_backend* the_list )
-	//		const
-	//	{
-	//		return the_list->get_node_contents_at(get_right_head());
-	//	}
-	//	inline node_contents get_left_tail_node( list_backend* the_list )
-	//		const
-	//	{
-	//		return the_list->get_node_contents_at(get_left_tail());
-	//	}
-	//	inline node_contents get_right_tail_node( list_backend* the_list )
-	//		const
-	//	{
-	//		return the_list->get_node_contents_at(get_right_tail());
-	//	}
-	//	
-	//	inline s32 get_left_head() const
-	//	{
-	//		return left_head;
-	//	}
-	//	inline s32 get_right_head() const
-	//	{
-	//		return right_head;
-	//	}
-	//	
-	//	inline s32 get_left_tail() const
-	//	{
-	//		return left_tail;
-	//	}
-	//	inline s32 get_right_tail() const
-	//	{
-	//		return right_tail;
-	//	}
-	//	
-	//	
-	//	//inline void init_nae_stuff()
-	//	//{
-	//	//	index_after_end = -1;
-	//	//	node_after_end_ptr = NULL;
-	//	//}
-	//	//inline bool nae_exists() const
-	//	//{
-	//	//	return ( get_index_after_end() >= 0 );
-	//	//}
-	//	//inline void set_nae_prev_index( s32 n_nae_prev_index )
-	//	//{
-	//	//	node_after_end.prev_index() = n_nae_prev_index;
-	//	//}
-	//	//inline void update_nae_stuff( list_backend* the_list, 
-	//	//	s32 the_index )
-	//	//{
-	//	//	index_after_end = the_index;
-	//	//	node_after_end = the_list->get_node_contents_at(the_index);
-	//	//	node_after_end_ptr = &node_after_end;
-	//	//}
-	//	//
-	//	//
-	//	//inline s32 get_index_after_end() const
-	//	//{
-	//	//	return index_after_end;
-	//	//}
-	//	//inline const node_contents& get_node_after_end() const
-	//	//{
-	//	//	return node_after_end;
-	//	//}
-	//	//inline const node_contents* get_node_after_end_ptr() const
-	//	//{
-	//	//	return node_after_end_ptr;
-	//	//}
-	//	
-	//	
-	//} __attribute__((_align4));
-	//
-	//friend node_contents merge_args::get_left_node
-	//	( list_backend* the_list ) const;
-	//friend node_contents merge_args::get_right_node
-	//	( list_backend* the_list ) const;
-	//friend node_contents merge_args::get_left_head_node
-	//	( list_backend* the_list ) const;
-	//friend node_contents merge_args::get_right_head_node
-	//	( list_backend* the_list ) const;
-	//friend node_contents merge_args::get_left_tail_node
-	//	( list_backend* the_list ) const;
-	//friend node_contents merge_args::get_right_tail_node
-	//	( list_backend* the_list ) const;
-	//
-	////friend void merge_args::update_nae_stuff( list_backend* the_list, 
-	////	s32 the_index );
-	
 protected:		// variables
-	u32 size = 0;
+	size_t size = 0;
 	
 	s32 front_index = -1, back_index = -1;
 	
@@ -719,28 +890,12 @@ protected:		// variables
 		whole_node_size = 0;
 	
 	
-	// Function pointers used by various functions
-	
-	// Pointers to the copying and moving functions (created using the
-	// assignment operators of the specific type)
-	generic_void_2arg_fp specific_type_copy_fp = NULL, 
-		specific_type_move_fp = NULL;
-	// A pointer to a function that does node = type()
-	generic_void_1arg_fp specific_type_reset_fp = NULL;
-	// A pointer to the less function (created by using the less operator
-	// of the specific type)
-	generic_u32_2arg_fp specific_type_less_fp = NULL;
-	
-	generic_void_ptr_1arg_fp get_node_data_fp = NULL;
-	generic_vec2_s16_ptr_1arg_fp get_index_pair_fp = NULL;
-	
-	generic_void_2arg_fp conv_node_to_contents_fp = NULL,
-		insertion_sort_inner_loop_fp = NULL;
+	extras_fp_group the_extras_fp_group;
 	
 	template< typename type > friend class externally_allocated_list;
 	
 protected:		// functions
-	inline list_backend()
+	inline list_backend() : size(0)
 	{
 	}
 	// Dang, I had no idea it'd be this nice to get types automatically
@@ -750,27 +905,11 @@ protected:		// functions
 		u32 s_total_num_nodes, u32 s_specific_type_size,
 		u32 s_whole_node_size, 
 		
-		generic_void_2arg_fp s_specific_type_copy_fp, 
-		generic_void_2arg_fp s_specific_type_move_fp,
-		generic_void_1arg_fp s_specific_type_reset_fp, 
-		generic_u32_2arg_fp s_specific_type_less_fp, 
-		
-		generic_void_ptr_1arg_fp s_get_node_data_fp, 
-		generic_vec2_s16_ptr_1arg_fp s_get_index_pair_fp,
-		generic_void_2arg_fp s_conv_node_to_contents_fp,
-		generic_void_2arg_fp s_insertion_sort_inner_loop_fp )
+		const extras_fp_group& s_the_extras_fp_group )
 	{
 		init( s_node_array, s_the_free_list_backend_ptr,
 			s_total_num_nodes, s_specific_type_size, s_whole_node_size,
-			s_specific_type_copy_fp, 
-			s_specific_type_move_fp,
-			s_specific_type_reset_fp,
-			s_specific_type_less_fp,
-			
-			s_get_node_data_fp, 
-			s_get_index_pair_fp,
-			s_conv_node_to_contents_fp,
-			s_insertion_sort_inner_loop_fp );
+			s_the_extras_fp_group );
 	}
 	inline list_backend( list_backend& to_copy )
 	{
@@ -782,15 +921,7 @@ protected:		// functions
 		u32 n_total_num_nodes, u32 n_specific_type_size,
 		u32 n_whole_node_size, 
 		
-		generic_void_2arg_fp n_specific_type_copy_fp, 
-		generic_void_2arg_fp n_specific_type_move_fp,
-		generic_void_1arg_fp n_specific_type_reset_fp, 
-		generic_u32_2arg_fp n_specific_type_less_fp, 
-		
-		generic_void_ptr_1arg_fp n_get_node_data_fp, 
-		generic_vec2_s16_ptr_1arg_fp n_get_index_pair_fp,
-		generic_void_2arg_fp n_conv_node_to_contents_fp,
-		generic_void_2arg_fp n_insertion_sort_inner_loop_fp );
+		const extras_fp_group& n_the_extras_fp_group );
 	
 	inline void init( list_backend& to_copy )
 	{
@@ -800,17 +931,18 @@ protected:		// functions
 			to_copy.get_specific_type_size(),
 			to_copy.get_whole_node_size(), 
 			
-			to_copy.get_specific_type_copy_fp(), 
-			to_copy.get_specific_type_move_fp(), 
-			to_copy.get_specific_type_reset_fp(),
-			to_copy.get_specific_type_less_fp(), 
-			
-			to_copy.get_get_node_data_fp(), 
-			to_copy.get_get_index_pair_fp(),
-			to_copy.get_conv_node_to_contents_fp(),
-			to_copy.get_insertion_sort_inner_loop_fp() );
+			to_copy.get_the_extras_fp_group() );
 	}
 	
+	
+	inline size_t& get_size()
+	{
+		return size;
+	}
+	inline const size_t get_size() const
+	{
+		return size;
+	}
 	
 	inline s32& get_front_index()
 	{
@@ -869,38 +1001,11 @@ protected:		// functions
 		return whole_node_size;
 	}
 	
-	inline generic_void_2arg_fp get_specific_type_copy_fp()
+	inline const extras_fp_group& get_the_extras_fp_group()
 	{
-		return specific_type_copy_fp;
+		return the_extras_fp_group;
 	}
-	inline generic_void_2arg_fp get_specific_type_move_fp()
-	{
-		return specific_type_move_fp;
-	}
-	inline generic_void_1arg_fp get_specific_type_reset_fp()
-	{
-		return specific_type_reset_fp;
-	}
-	inline generic_u32_2arg_fp get_specific_type_less_fp()
-	{
-		return specific_type_less_fp;
-	}
-	inline generic_void_ptr_1arg_fp get_get_node_data_fp()
-	{
-		return get_node_data_fp;
-	}
-	inline generic_vec2_s16_ptr_1arg_fp get_get_index_pair_fp()
-	{
-		return get_index_pair_fp;
-	}
-	inline generic_void_2arg_fp get_conv_node_to_contents_fp()
-	{
-		return conv_node_to_contents_fp;
-	}
-	inline generic_void_2arg_fp get_insertion_sort_inner_loop_fp()
-	{
-		return insertion_sort_inner_loop_fp;
-	}
+	
 	
 	
 	inline uintptr_t get_node_addr_at( s32 index ) const
@@ -935,11 +1040,13 @@ protected:		// functions
 	
 	inline void* get_node_data_at( uintptr_t addr )
 	{
-		return get_get_node_data_fp()(reinterpret_cast<void*>(addr));
+		return get_the_extras_fp_group().get_get_node_data_fp()
+			(reinterpret_cast<void*>(addr));
 	}
 	inline vec2_s16* get_index_pair_at( uintptr_t addr )
 	{
-		return get_get_index_pair_fp()(reinterpret_cast<void*>(addr));
+		return get_the_extras_fp_group().get_get_index_pair_fp()
+			(reinterpret_cast<void*>(addr));
 	}
 	inline s16& get_next_index_at( uintptr_t addr )
 	{
@@ -961,7 +1068,7 @@ protected:		// functions
 		
 		node_contents ret;
 		
-		get_conv_node_to_contents_fp()( &ret, 
+		get_the_extras_fp_group().get_conv_node_to_contents_fp()( &ret, 
 			reinterpret_cast<void*>(node_addr) );
 		
 		return ret;
@@ -969,27 +1076,17 @@ protected:		// functions
 	
 	
 	// Make sure to call this with node DATA!
-	inline void copy_node_data( void* dst_node_data, void* src_node_data )
-	{
-		get_specific_type_copy_fp()( dst_node_data,
-			const_cast<void*>(src_node_data) );
-	}
 	inline void copy_node_data( void* dst_node_data, 
 		const void* src_node_data )
 	{
-		get_specific_type_copy_fp()( dst_node_data, 
-			const_cast<void*>(src_node_data) );
-	}
-	inline void move_node_data( void* dst_node_data, void* src_node_data )
-	{
-		get_specific_type_move_fp()( dst_node_data,
-			const_cast<void*>(src_node_data) );
+		get_the_extras_fp_group().get_specific_type_copy_fp()
+			( dst_node_data, const_cast<void*>(src_node_data) );
 	}
 	inline void move_node_data( void* dst_node_data, 
 		const void* src_node_data )
 	{
-		get_specific_type_move_fp()( dst_node_data,
-			const_cast<void*>(src_node_data) );
+		get_the_extras_fp_group().get_specific_type_move_fp()
+			( dst_node_data, const_cast<void*>(src_node_data) );
 	}
 	
 	
@@ -1017,41 +1114,36 @@ protected:		// functions
 	
 	
 	// Make sure to call this with node DATA!
+	inline void call_specific_type_swap_func( void* node_a_data, 
+		void* node_b_data )
+	{
+		get_the_extras_fp_group().get_specific_type_swap_fp()
+			( node_a_data, node_b_data );
+	}
 	inline u32 call_specific_type_less_func( void* node_a_data, 
 		void* node_b_data )
 	{
-		return get_specific_type_less_fp()
-			( const_cast<void*>(node_a_data), 
-			const_cast<void*>(node_b_data) );
+		return get_the_extras_fp_group().get_specific_type_less_fp()
+			( node_a_data, node_b_data );
 	}
-	inline u32 call_specific_type_less_func( const void* node_a_data, 
+	inline u32 call_specific_type_greater_func( void* node_a_data, 
 		void* node_b_data )
 	{
-		return get_specific_type_less_fp()
-			( const_cast<void*>(node_a_data), 
-			const_cast<void*>(node_b_data) );
+		return get_the_extras_fp_group().get_specific_type_greater_fp()
+			( node_a_data, node_b_data );
 	}
-	inline u32 call_specific_type_less_func( void* node_a_data, 
+	inline int call_specific_type_qscmp_func( const void* node_a_data,
 		const void* node_b_data )
 	{
-		return get_specific_type_less_fp()
-			( const_cast<void*>(node_a_data), 
-			const_cast<void*>(node_b_data) );
+		return get_the_extras_fp_group().get_specific_type_qscmp_fp()
+			( node_a_data, node_b_data );
 	}
-	inline u32 call_specific_type_less_func( const void* node_a_data, 
-		const void* node_b_data )
+	
+	inline void call_insertion_sort_inner_loop_func( s32& index_low )
 	{
-		return get_specific_type_less_fp()
-			( const_cast<void*>(node_a_data), 
-			const_cast<void*>(node_b_data) );
+		get_the_extras_fp_group().get_insertion_sort_inner_loop_fp()
+			( get_node_array(), &index_low );
 	}
-	
-	inline void call_insertion_sort_inner_loop_fp( s32& index_low )
-	{
-		get_insertion_sort_inner_loop_fp()( get_node_array(), &index_low );
-	}
-	
-	
 	
 	
 	void fully_deallocate() __attribute__((_iwram_code));
@@ -1177,13 +1269,11 @@ protected:		// functions
 		}
 	}
 	s32 internal_func_move_unlinked_node_before( s32 to_move_before_index, 
-		s32 to_move_index, node_contents& node_to_move )
-		__attribute__((_iwram_code));
+		s32 to_move_index, node_contents& node_to_move );
 		//__attribute__((_iwram_code));
 		//__attribute__((noinline));
 	s32 internal_func_move_unlinked_node_after( s32 to_move_after_index, 
-		s32 to_move_index, node_contents& node_to_move )
-		__attribute__((_iwram_code));
+		s32 to_move_index, node_contents& node_to_move );
 		//__attribute__((_iwram_code));
 		//__attribute__((noinline));
 	
@@ -1192,24 +1282,26 @@ protected:		// functions
 	// speed, to this function by allowing a pointer to the
 	// node_at_index be passed to it.
 	void* internal_func_unlink_at( s32 index, 
-		node_contents* node_at_index_ptr=NULL )
-		__attribute__((_iwram_code));
+		node_contents* node_at_index_ptr=NULL );
+		//__attribute__((_iwram_code));
 		//__attribute__((noinline));
 	
 	
-	void internal_func_unlink_from_connected_index_at( s32 index, 
-		u32 index_to_vec2 ) __attribute__((_iwram_code));
+	//void internal_func_unlink_from_connected_index_at( s32 index, 
+	//	u32 index_to_vec2 ); 
+	//	//__attribute__((_iwram_code));
+	//
+	//inline void unlink_from_next_at( s32 index )
+	//{
+	//	internal_func_unlink_from_connected_index_at( index, 
+	//		node_contents::vec2_index_for_next_index );
+	//}
+	//inline void unlink_from_prev_at( s32 index )
+	//{
+	//	internal_func_unlink_from_connected_index_at( index, 
+	//		node_contents::vec2_index_for_prev_index );
+	//}
 	
-	inline void unlink_from_next_at( s32 index )
-	{
-		internal_func_unlink_from_connected_index_at( index, 
-			node_contents::vec2_index_for_next_index );
-	}
-	inline void unlink_from_prev_at( s32 index )
-	{
-		internal_func_unlink_from_connected_index_at( index, 
-			node_contents::vec2_index_for_prev_index );
-	}
 	
 	inline void move_linked_node_to_front( s32 to_move_index, 
 		node_contents& node_to_move, list_backend& dst )
@@ -1257,7 +1349,8 @@ protected:		// functions
 	
 	inline void erase_at( s32 index )
 	{
-		get_specific_type_reset_fp()(unlink_at_with_dealloc(index));
+		get_the_extras_fp_group().get_specific_type_reset_fp()
+			(unlink_at_with_dealloc(index));
 	}
 	
 	
@@ -1265,7 +1358,7 @@ protected:		// functions
 	
 	//s32 insertion_sort() __attribute__((_iwram_code));
 	//s32 insertion_sort() __attribute__((_text_hot_section));
-	s32 insertion_sort() __attribute__((_iwram_code));
+	s32 insertion_sort(); //__attribute__((_iwram_code));
 	
 	
 	
@@ -1280,11 +1373,11 @@ protected:		// functions
 	
 	void internal_func_subarr_merge( node_data_and_index* left_subarr,
 		const size_t left_subarr_size, node_data_and_index* right_subarr, 
-		const size_t right_subarr_size, node_data_and_index* out_subarr )
-		__attribute__((_iwram_code));
+		const size_t right_subarr_size, node_data_and_index* out_subarr );
+		//__attribute__((_iwram_code));
 	
 	// Top-down merge sort using an array of node_data_and_index's.
-	s32 merge_sort_via_array() __attribute__((_iwram_code));
+	s32 merge_sort_via_array(); //__attribute__((_iwram_code));
 	
 	
 	//s32 heapsort_via_array();
@@ -1344,15 +1437,7 @@ public:		// functions
 		the_list_backend.init( get_node_array(),
 			the_free_list_backend_ptr, get_total_num_nodes(),
 			sizeof(type), sizeof(node<type>),
-			extras_type::get_specific_type_copy_fp(),
-			extras_type::get_specific_type_move_fp(),
-			extras_type::get_specific_type_reset_fp(),
-			extras_type::get_specific_type_less_fp(), 
-			
-			extras_type::get_get_node_data_fp(),
-			extras_type::get_get_index_pair_fp(),
-			extras_type::get_conv_node_to_contents_fp(),
-			extras_type::get_insertion_sort_inner_loop_fp() );
+			extras_type::get_extras_fp_group() );
 		
 		//static auto specific_type_copy = []( type* a, type* b ) -> void 
 		//	{ *a = *b; };
@@ -1377,6 +1462,15 @@ public:		// functions
 		//	extras_type::get_get_node_data_fp(),
 		//	extras_type::get_get_index_pair_fp(),
 		//	extras_type::get_conv_node_to_contents_fp() );
+	}
+	
+	inline size_t& get_size()
+	{
+		return the_list_backend.get_size();
+	}
+	inline const size_t get_size() const
+	{
+		return the_list_backend.get_size();
 	}
 	
 	inline s32& get_front_index()
@@ -2183,6 +2277,226 @@ public:		// functions
 	inline s32 merge_sort_via_array()
 	{
 		return the_list_backend.merge_sort_via_array();
+	}
+	
+	
+protected:		// functions
+	inline void internal_func_subarr_merge_2( type* left_subarr,
+		const size_t left_subarr_size, type* right_subarr, 
+		const size_t right_subarr_size, type* out_subarr )
+		__attribute__((always_inline))
+	{
+		const size_t out_subarr_size = left_subarr_size 
+			+ right_subarr_size;
+		
+		size_t i = 0, j = 0;
+		
+		for ( size_t k=0; k<out_subarr_size; ++k )
+		{
+			if ( i >= left_subarr_size )
+			{
+				out_subarr[k] = right_subarr[j];
+				++j;
+			}
+			else if ( j >= right_subarr_size )
+			{
+				out_subarr[k] = left_subarr[i];
+				++i;
+			}
+			else // if ( i < left_subarr_size && j < right_subarr_size )
+			{
+				if ( left_subarr[i] < right_subarr[j] )
+				{
+					out_subarr[k] = left_subarr[i];
+					++i;
+				}
+				else
+				{
+					out_subarr[k] = right_subarr[j];
+					++j;
+				}
+			}
+		}
+	}
+	
+public:		// functions
+	s32 merge_sort_via_array_2() 
+		__attribute__((noinline))
+	{
+		s32& the_front_index = get_front_index();
+		
+		const size_t real_num_nodes = get_size();
+		
+		
+		dyn_arr<type> arr_a(real_num_nodes), work_arr(real_num_nodes);
+		
+		
+		{
+		
+		size_t temp = 0;
+		while ( the_front_index >= 0 )
+		{
+			arr_a[temp++] = std::move(get_node_array()[the_front_index]
+				.data);
+			
+			pop_front_basic();
+		}
+		
+		}
+		
+		//static constexpr size_t last_subarr_size = 20;
+		static constexpr size_t last_subarr_size = 1;
+		
+		
+		if ( last_subarr_size > 1 )
+		{
+			asm_comment("last_subarr_size > 1; before");
+			
+			size_t subarr_offset, subarr_size;
+			
+			// This is an insertion sort of PORTIONS of arr_a.
+			for ( subarr_offset=0;
+				subarr_offset<real_num_nodes;
+				subarr_offset+=subarr_size )
+			{
+				subarr_size = last_subarr_size;
+				
+				if ( subarr_offset + subarr_size >= real_num_nodes )
+				{
+					subarr_size = real_num_nodes - subarr_offset;
+				}
+				
+				extras_type::subarr_insertion_sort( arr_a, subarr_offset,
+					subarr_size );
+			}
+			
+			asm_comment("last_subarr_size > 1; after");
+		}
+		
+		
+		
+		size_t left_subarr_offset = 0, right_subarr_offset = 0;
+		type * left_subarr, * right_subarr;
+		size_t left_subarr_size = 0, right_subarr_size = 0;
+		
+		
+		static constexpr bool do_swap = true;
+		
+		bool main_arr_is_arr_a = false;
+		prev_curr_pair<dyn_arr<type>*> main_arr_pc_pair,
+			secondary_arr_pc_pair;
+		
+		//if (!do_swap)
+		{
+			main_arr_pc_pair.prev = main_arr_pc_pair.curr = &arr_a;
+			secondary_arr_pc_pair.prev = secondary_arr_pc_pair.curr 
+				= &work_arr;
+		}
+		
+		// Avoid recursion
+		//for ( size_t subarr_size=first_subarr_size;
+		//	subarr_size<real_num_nodes;
+		//	subarr_size*=2 )
+		for ( size_t subarr_size=real_num_nodes;
+			subarr_size>=last_subarr_size;
+			subarr_size/=2 )
+		{
+			if (do_swap)
+			{
+				if (main_arr_is_arr_a)
+				{
+					main_arr_pc_pair.back_up_and_update(&work_arr);
+					secondary_arr_pc_pair.back_up_and_update(&arr_a);
+					main_arr_is_arr_a = false;
+				}
+				else // if (!main_arr_is_arr_a)
+				{
+					main_arr_pc_pair.back_up_and_update(&arr_a);
+					secondary_arr_pc_pair.back_up_and_update(&work_arr);
+					main_arr_is_arr_a = true;
+				}
+			}
+			
+			auto get_merge_args = [&]( dyn_arr<type>& specific_arr, 
+				size_t n_left_subarr_offset ) -> void
+			{
+				right_subarr_offset = 0;
+				right_subarr = NULL;
+				right_subarr_size = 0;
+				
+				
+				left_subarr_offset = n_left_subarr_offset;
+				left_subarr = &(specific_arr[left_subarr_offset]);
+				left_subarr_size = subarr_size;
+				
+				
+				if ( left_subarr_offset + left_subarr_size 
+					>= real_num_nodes )
+				{
+					left_subarr_size = real_num_nodes - left_subarr_offset;
+					return;
+				}
+				
+				
+				right_subarr_offset = left_subarr_offset 
+					+ left_subarr_size;
+				right_subarr = &(specific_arr[right_subarr_offset]);
+				right_subarr_size = subarr_size;
+				
+				if ( right_subarr_offset + right_subarr_size 
+					>= real_num_nodes )
+				{
+					right_subarr_size = real_num_nodes 
+						- right_subarr_offset;
+				}
+				
+				
+			};
+			
+			get_merge_args( *main_arr_pc_pair.curr, 0 );
+			
+			for ( size_t i=0; i<real_num_nodes; i+=subarr_size*2 )
+			{
+				internal_func_subarr_merge_2( left_subarr, 
+					left_subarr_size, right_subarr, right_subarr_size,
+					&((*secondary_arr_pc_pair.curr)[i]) );
+				
+				//if ( i + ( subarr_size * 2 ) < real_num_nodes )
+				{
+					get_merge_args( *main_arr_pc_pair.curr, 
+						i + ( subarr_size * 2 ) );
+				}
+			}
+			
+			if (!do_swap)
+			{
+				for ( s32 i=real_num_nodes-1; i>=0; --i )
+				{
+					arr_a[i] = work_arr[i];
+				}
+			}
+			
+		}
+		
+		//if ( last_subarr_size > 1 )
+		//{
+		//	extras_type::subarr_insertion_sort( (*main_arr_pc_pair.prev), 
+		//		0, real_num_nodes );
+		//}
+		
+		for ( s32 i=real_num_nodes-1; i>=0; --i )
+		{
+			//s32 curr_index = (*main_arr_pc_pair.prev)[i]
+			push_front((*main_arr_pc_pair.prev)[i]);
+		}
+		
+		//if ( last_subarr_size > 1 )
+		//{
+		//	insertion_sort();
+		//}
+		
+		
+		return the_front_index;
 	}
 	
 	//inline s32 heapsort_via_array()

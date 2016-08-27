@@ -193,6 +193,10 @@ protected:		// functions
 	{
 		return the_externally_allocated_list.merge_sort_via_array();
 	}
+	inline s32 merge_sort_via_array_2()
+	{
+		return the_externally_allocated_list.merge_sort_via_array_2();
+	}
 	
 } __attribute__((_align4));
 
@@ -342,6 +346,10 @@ public:		// functions
 	{
 		return base::merge_sort_via_array();
 	}
+	inline s32 merge_sort_via_array_2()
+	{
+		return base::merge_sort_via_array_2();
+	}
 	
 } __attribute__((_align4));
 
@@ -451,15 +459,17 @@ public:		// functions
 	
 	inline s32 insert_and_sort( const type& to_insert )
 	{
-		base::push_front(to_insert);
+		push_front(to_insert);
 		
-		return base::insertion_sort();
+		//return base::insertion_sort();
+		return merge_sort_via_array_2();
 	}
 	inline s32 insert_and_sort( type&& to_insert )
 	{
-		base::push_front(std::move(to_insert));
+		push_front(std::move(to_insert));
 		
-		return base::insertion_sort();
+		//return base::insertion_sort();
+		return merge_sort_via_array_2();
 	}
 	
 	
@@ -484,6 +494,10 @@ public:		// functions
 	inline s32 merge_sort_via_array()
 	{
 		return base::merge_sort_via_array();
+	}
+	inline s32 merge_sort_via_array_2()
+	{
+		return base::merge_sort_via_array_2();
 	}
 	
 } __attribute__((_align4));

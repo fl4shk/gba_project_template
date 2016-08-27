@@ -51,6 +51,21 @@ static const u32 test_str_size = ( sizeof(test_str) / sizeof(char) ) - 1;
 
 
 
+//static constexpr u32 total_num_nodes = 200;
+static constexpr u32 total_num_nodes = 1000;
+
+
+static constexpr size_t temp_sram_buf_size = ( total_num_nodes + 2 ) 
+	* sizeof(s32);
+u8 temp_sram_buf[temp_sram_buf_size] __attribute__((_sram));
+
+const size_t get_temp_sram_buf_size()
+{
+	return temp_sram_buf_size;
+}
+
+
+
 void sa_list_test() __attribute__((noinline));
 void tasks_test() __attribute__((noinline));
 
@@ -92,8 +107,6 @@ int main()
 }
 
 
-
-static constexpr u32 total_num_nodes = 200;
 //typedef sa_list_stuff::sorted_always_list< u32, total_num_nodes >
 //	the_sorted_always_list_type;
 //
@@ -219,38 +232,51 @@ void reinit_test_list_and_profile_deallocate()
 	test_list.fully_deallocate_via_unlink();
 	show_profile_stop();
 	
-	//if ( test_list.get_front_index() == 105 )
+	
+	//s32& test_list_front_index = test_list.get_front_index();
+	//
+	//s32 test_list_end = test_list.push_back('g');
+	//
+	//for ( u32 i=0; i<5; ++i )
 	//{
-	//	debug_arr_group::gdb_breakpoint_helper = 0;
+	//	test_list.push_front('1' + i );
 	//}
-	
-	s32& test_list_front_index = test_list.get_front_index();
-	
-	s32 test_list_end = test_list.push_back('g');
-	
-	for ( u32 i=0; i<5; ++i )
-	{
-		test_list.push_front('1' + i );
-	}
-	
-	//s32 second_index = test_list.insert_before( test_list_front_index, 
+	//
+	////s32 second_index = test_list.insert_before( test_list_front_index, 
+	////	'h' );
+	////test_list.insert_before( test_list_end, 'f' );
+	//
+	//s32 second_index = test_list.insert_after( test_list_front_index, 
 	//	'h' );
-	//test_list.insert_before( test_list_end, 'f' );
-	
-	s32 second_index = test_list.insert_after( test_list_front_index, 
-		'h' );
-	//s32 third_index = test_list.get_node_at(second_index).next_index();
-	
-	test_list_end = test_list.insert_after( test_list_end, 'f' );
+	////s32 third_index = test_list.get_node_at(second_index).next_index();
+	//
+	//test_list_end = test_list.insert_after( test_list_end, 'f' );
 	
 	
+	dyn_arr< sa_free_list<3> > test_arr(1);
 	
-	
-	for ( u32 i=0; i<150; ++i )
+	////for ( u32 i=0; i<57; ++i )
+	////for ( u32 i=0; i<20; ++i )
+	for ( u32 i=0; i<320; ++i )
 	{
-		//test_list.push_front('a' + ( i % 25 ) );
-		test_list.push_front('a' + ( i % 4 ) );
+		test_list.push_front( '1' + ( i % 25 ) );
+		//test_list.push_back( 'a' + ( i % 25 ) );
+		//test_list.push_front('a' + ( i % 4 ) );
 	}
+	
+	for ( u32 i=0; i<320; ++i )
+	{
+		//test_list.push_front( 'a' + ( i % 25 ) );
+		test_list.push_back( '1' + ( i % 25 ) );
+		//test_list.push_front('a' + ( i % 4 ) );
+	}
+	
+	//test_list.push_back('3');
+	//test_list.push_back('a');
+	//test_list.push_back('d');
+	//test_list.push_front('z');
+	//test_list.push_back('2');
+	//test_list.push_back('9');
 }
 
 //static constexpr size_t test_cbuf_size = 4;
@@ -275,16 +301,18 @@ void sa_list_test()
 	show_test_list();
 	
 	
+	
 	// Part 3
 	asm_comment("Part 3");
 	reinit_test_list_and_profile_deallocate();
 	show_test_list();
 	
+	
 	// Part 4
 	asm_comment("Part 4");
 	profile_start();
-	test_list.insertion_sort();
-	//test_list.merge_sort_via_array();
+	//test_list.insertion_sort();
+	test_list.merge_sort_via_array_2();
 	show_profile_stop();
 	show_test_list();
 	
