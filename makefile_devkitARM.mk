@@ -3,6 +3,31 @@
 # creation of the LD_FLAGS variable are supposed to be the same.
 
 
+# These directories specify where source code files are located.
+# Edit these variables if more directories are needed.
+# Separate each entry by spaces.
+
+# Directories containing music files in .bin form
+MUSIC_DIRS:=src/audio
+
+# THUMB Mode C++ Code
+CXX_DIRS:=$(CURDIR) src src/borrowed_stuff src/general_utility_stuff src/game_engine_stuff src/game_engine_stuff/block_stuff src/game_engine_stuff/level_stuff src/game_engine_stuff/sprite_stuff src/gba_specific_stuff src/test_level src/audio src/gfx
+
+# ARM Mode C++ Code
+ARM_CXX_DIRS:=$(CXX_DIRS)
+
+# ARM or THUMB Mode ASM Code
+S_DIRS:=$(CXX_DIRS)
+
+
+# End of source directory variables
+
+
+# This compiler prefix is ARM-specific
+COMP_PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-
+#COMP_PREFIX:=arm-none-eabi-
+
+
 ALWAYS_DEBUG_SUFFIX:=_debug
 
 
@@ -17,7 +42,7 @@ endif
 
 # Comment out or un-comment out the next line to enable debugging stuff to
 # be generated
-#DEBUG:=yeah do debug
+DEBUG:=yeah do debug
 
 # Optimization levels
 DEBUG_OPTIMIZATION_LEVEL:=-O0
@@ -52,10 +77,6 @@ VERBOSE_ASM_FLAG:=
 #VERBOSE_ASM_FLAG:=-fverbose-asm
 
 
-# This compiler prefix is ARM-specific
-COMP_PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-
-#COMP_PREFIX:=arm-none-eabi-
-
 
 # Compilers, assemblers, and the linker
 CXX:=$(COMP_PREFIX)g++
@@ -89,6 +110,9 @@ S_FLAGS:=-mcpu=arm7tdmi -mthumb -mthumb-interwork
 
 
 
+
+
+
 # Linker flags
 COMMON_LD_FLAGS:=--specs=nosys.specs -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -Wl,--entry=_start2 -lgcc -lc -lstdc++ `$(CXX) -print-file-name=thumb/libgcc.a` `$(CXX) -print-file-name=thumb/libc.a` `$(CXX) -print-file-name=thumb/libstdc++.a` -lmm
 #COMMON_LD_FLAGS:=--specs=nosys.specs -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -Wl,--entry=_start2 -lgcc -lc -lstdc++ `$(CC) -print-file-name=thumb/libgcc.a` `$(CC) -print-file-name=thumb/libc.a` `$(CC) -print-file-name=thumb/libstdc++.a` -lmm 
@@ -97,33 +121,9 @@ COMMON_LD_FLAGS:=--specs=nosys.specs -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -
 ##LD_FLAGS:=$(EXTRA_LD_FLAGS) -g -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -Wl,--entry=_start2 -lgcc -lc -lstdc++ -lmm $(DEBUG_FLAGS) 
 ##LD_FLAGS:=$(EXTRA_LD_FLAGS) -g -L$(DEVKITPRO)/libgba/lib -nostartfiles -T $(LD_SCRIPT) -Wl,--entry=_start2 -lmm $(DEBUG_FLAGS) 
 
+
+
 LD_FLAGS:=$(COMMON_LD_FLAGS) $(EXTRA_LD_FLAGS)
-
-
-
-# These directories specify where source code files are located.
-# Edit these variables if more directories are needed.
-# Separate each entry by spaces.
-
-# Directories containing music files in .bin form
-MUSIC_DIRS:=src/audio
-
-# THUMB Mode C++ Code
-CXX_DIRS:=$(CURDIR) src src/borrowed_stuff src/general_utility_stuff src/game_engine_stuff src/game_engine_stuff/block_stuff src/game_engine_stuff/level_stuff src/game_engine_stuff/sprite_stuff src/gba_specific_stuff src/test_level src/audio src/gfx
-
-# ARM Mode C++ Code
-ARM_CXX_DIRS:=$(CXX_DIRS)
-
-# ARM or THUMB Mode ASM Code
-S_DIRS:=$(CXX_DIRS)
-
-
-# End of source directory variables
-
-## The music file's basename
-#MUSIC_FILE_BASENAME:=practice_17
-
-
 
 
 # Generated directories

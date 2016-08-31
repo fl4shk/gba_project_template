@@ -3,6 +3,31 @@
 # creation of the LD_FLAGS variable are supposed to be the same.
 
 
+# These directories specify where source code files are located.
+# Edit these variables if more directories are needed.
+# Separate each entry by spaces.
+
+# Directories containing music files in .bin form
+MUSIC_DIRS:=src/audio
+
+# THUMB Mode C++ Code
+CXX_DIRS:=$(CURDIR) src src/borrowed_stuff src/general_utility_stuff src/game_engine_stuff src/game_engine_stuff/block_stuff src/game_engine_stuff/level_stuff src/game_engine_stuff/sprite_stuff src/gba_specific_stuff src/test_level src/audio src/gfx
+
+# ARM Mode C++ Code
+ARM_CXX_DIRS:=$(CXX_DIRS)
+
+# ARM or THUMB Mode ASM Code
+S_DIRS:=$(CXX_DIRS)
+
+
+# End of source directory variables
+
+
+# This compiler prefix is ARM-specific
+#COMP_PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-
+COMP_PREFIX:=arm-none-eabi-
+
+
 ALWAYS_DEBUG_SUFFIX:=_debug
 
 
@@ -52,10 +77,6 @@ VERBOSE_ASM_FLAG:=
 #VERBOSE_ASM_FLAG:=-fverbose-asm
 
 
-# This compiler prefix is ARM-specific
-COMP_PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-
-#COMP_PREFIX:=arm-none-eabi-
-
 
 # Compilers, assemblers, and the linker
 CXX:=$(COMP_PREFIX)g++
@@ -71,9 +92,9 @@ LD_SCRIPT:=linkscript.ld
 
 
 
-GLOBAL_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi \\
-	-I$(DEVKITPRO)/libgba/include -nostartfiles \\
-	-fno-rtti -ffast-math $(OPTIMIZATION_LEVEL) \\
+GLOBAL_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi \
+	-I$(DEVKITPRO)/libgba/include -nostartfiles \
+	-fno-rtti -ffast-math $(OPTIMIZATION_LEVEL) \
 	$(EXTRA_DEBUG_FLAGS)
 
 
@@ -89,41 +110,20 @@ S_FLAGS:=-mcpu=arm7tdmi -mthumb -mthumb-interwork
 
 
 
+
+
+
 # Linker flags
-COMMON_LD_FLAGS:=--specs=nosys.specs -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -Wl,--entry=_start2 -lgcc -lc -lstdc++ `$(CXX) -print-file-name=thumb/libgcc.a` `$(CXX) -print-file-name=thumb/libc.a` `$(CXX) -print-file-name=thumb/libstdc++.a` -lmm
-#COMMON_LD_FLAGS:=--specs=nosys.specs -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -Wl,--entry=_start2 -lgcc -lc -lstdc++ `$(CC) -print-file-name=thumb/libgcc.a` `$(CC) -print-file-name=thumb/libc.a` `$(CC) -print-file-name=thumb/libstdc++.a` -lmm 
-## This is the LD_FLAGS for devkitARM
-#LD_FLAGS:=$(EXTRA_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -Wl,--entry=_start2 -lgcc -lc -lstdc++ -lmm $(DEBUG_FLAGS)
-##LD_FLAGS:=$(EXTRA_LD_FLAGS) -g -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -Wl,--entry=_start2 -lgcc -lc -lstdc++ -lmm $(DEBUG_FLAGS) 
-##LD_FLAGS:=$(EXTRA_LD_FLAGS) -g -L$(DEVKITPRO)/libgba/lib -nostartfiles -T $(LD_SCRIPT) -Wl,--entry=_start2 -lmm $(DEBUG_FLAGS) 
+# This is the LD_FLAGS for non-devkitARM GCC
+COMMON_LD_FLAGS:=--specs=nosys.specs -lgcc -lc -lstdc++ -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -Wl,--entry=_start2 `$(CXX) -print-file-name=thumb/libgcc.a` `$(CXX) -print-file-name=thumb/libc.a` `$(CXX) -print-file-name=thumb/libstdc++.a` -lmm 
+#LD_FLAGS:=--specs=nosys.specs -lgcc -lc -lstdc++ $(EXTRA_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -Wl,--entry=_start2 `$(CC) -print-file-name=thumb/libgcc.a` `$(CC) -print-file-name=thumb/libc.a` `$(CC) -print-file-name=thumb/libstdc++.a` -lmm $(DEBUG_FLAGS) -g
+
+#LD_FLAGS:=--specs=nosys.specs -nostartfiles -lgcc -lc -lstdc++ $(EXTRA_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) `$(CC) -print-file-name=thumb/libgcc.a` `$(CC) -print-file-name=thumb/libc.a` `$(CC) -print-file-name=thumb/libstdc++.a` -lmm $(DEBUG_FLAGS)
+#LD_FLAGS:=--specs=nosys.specs -lgcc -lc -lstdc++ $(EXTRA_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) `$(CC) -print-file-name=thumb/libgcc.a` `$(CC) -print-file-name=thumb/libc.a` `$(CC) -print-file-name=thumb/libstdc++.a` -lmm $(DEBUG_FLAGS)
+
+
 
 LD_FLAGS:=$(COMMON_LD_FLAGS) $(EXTRA_LD_FLAGS)
-
-
-
-# These directories specify where source code files are located.
-# Edit these variables if more directories are needed.
-# Separate each entry by spaces.
-
-# Directories containing music files in .bin form
-MUSIC_DIRS:=src/audio
-
-# THUMB Mode C++ Code
-CXX_DIRS:=$(CURDIR) src src/borrowed_stuff src/general_utility_stuff src/game_engine_stuff src/game_engine_stuff/block_stuff src/game_engine_stuff/level_stuff src/game_engine_stuff/sprite_stuff src/gba_specific_stuff src/test_level src/audio src/gfx
-
-# ARM Mode C++ Code
-ARM_CXX_DIRS:=$(CXX_DIRS)
-
-# ARM or THUMB Mode ASM Code
-S_DIRS:=$(CXX_DIRS)
-
-
-# End of source directory variables
-
-## The music file's basename
-#MUSIC_FILE_BASENAME:=practice_17
-
-
 
 
 # Generated directories
@@ -134,42 +134,39 @@ OBJDIR_TEMP:=objs_temp$(DEBUG_SUFFIX)
 OBJDIR_DIS:=objs_dis$(DEBUG_SUFFIX)
 PREPROCDIR:=preprocs$(DEBUG_SUFFIX)
 
-#define concat #1#2
 
 
 # Source code files
-#define gen_sources( outname, dirname_prefix, src_ext ) outname:=$(foreach DIR,$(concat(dirname_prefix,_DIRS)),$(notdir $(wildcard $(DIR)/*.src_ext)))
 # MUSIC_BINFILES:=$(foreach DIR,$(MUSIC_DIRS),$(notdir $(wildcard $(DIR)/*.bin)))
 # CXX_SOURCES:=$(foreach DIR,$(CXX_DIRS),$(notdir $(wildcard $(DIR)/*.thumb.cpp)))
-# ARM_CXX_SOURCES:=$(foreach DIR,$(ARM_CXX_DIRS), \\
+# ARM_CXX_SOURCES:=$(foreach DIR,$(ARM_CXX_DIRS), \
 # 	$(notdir $(wildcard $(DIR)/*.arm.cpp)))
 # S_SOURCES:=$(foreach DIR,$(S_DIRS),$(notdir $(wildcard $(DIR)/*.s)))
-gen_sources(MUSIC_BINFILES,MUSIC,bin)
-gen_sources(CXX_SOURCES,CXX,thumb.cpp)
-gen_sources(ARM_CXX_SOURCES,ARM_CXX,arm.cpp)
-gen_sources(S_SOURCES,S,s)
+MUSIC_BINFILES:=$(foreach DIR,$(MUSIC_DIRS),$(notdir $(wildcard $(DIR)/*.bin)))
+CXX_SOURCES:=$(foreach DIR,$(CXX_DIRS),$(notdir $(wildcard $(DIR)/*.thumb.cpp)))
+ARM_CXX_SOURCES:=$(foreach DIR,$(ARM_CXX_DIRS),$(notdir $(wildcard $(DIR)/*.arm.cpp)))
+S_SOURCES:=$(foreach DIR,$(S_DIRS),$(notdir $(wildcard $(DIR)/*.s)))
 
 
 # Directories to search, specified above
-export VPATH	:=	$(foreach DIR,$(MUSIC_DIRS),$(CURDIR)/$(DIR)) \\
-	$(foreach DIR,$(CXX_DIRS),$(CURDIR)/$(DIR)) \\
-	$(foreach DIR,$(ARM_CXX_DIRS),$(CURDIR)/$(DIR)) \\
-	$(foreach DIR,$(S_DIRS),$(CURDIR)/$(DIR)) \\
+export VPATH	:=	$(foreach DIR,$(MUSIC_DIRS),$(CURDIR)/$(DIR)) \
+	$(foreach DIR,$(CXX_DIRS),$(CURDIR)/$(DIR)) \
+	$(foreach DIR,$(ARM_CXX_DIRS),$(CURDIR)/$(DIR)) \
+	$(foreach DIR,$(S_DIRS),$(CURDIR)/$(DIR)) \
 
-#define gen_group( first, second, ext_prefix, src_ext_suffix, dst_ext_suffix, dst_dir ) first:=$(second:%.concat(ext_prefix,src_ext_suffix)=$(dst_dir)/%.concat(ext_prefix,dst_ext_suffix))
 
 # Object code files
 # MUSIC_OFILES:=$(patsubst %.bin,$(OBJDIR)/%.bin.o,$(MUSIC_BINFILES))
 # CXX_OFILES:=$(patsubst %.thumb.cpp,$(OBJDIR)/%.thumb.o,$(CXX_SOURCES))
 # ARM_CXX_OFILES:=$(patsubst %.arm.cpp,$(OBJDIR)/%.arm.o,$(ARM_CXX_SOURCES))
 # S_OFILES:=$(patsubst %.s,$(OBJDIR)/%.o,$(S_SOURCES))
-gen_group(MUSIC_OFILES,MUSIC_BINFILES,,bin,bin.o,OBJDIR)
-gen_group(CXX_OFILES,CXX_SOURCES,thumb.,cpp,o,OBJDIR)
-gen_group(ARM_CXX_OFILES,ARM_CXX_SOURCES,arm.,cpp,o,OBJDIR)
-gen_group(S_OFILES,S_SOURCES,,s,o,OBJDIR)
+MUSIC_OFILES:=$(MUSIC_BINFILES:%.bin=$(OBJDIR)/%.bin.o)
+CXX_OFILES:=$(CXX_SOURCES:%.thumb.cpp=$(OBJDIR)/%.thumb.o)
+ARM_CXX_OFILES:=$(ARM_CXX_SOURCES:%.arm.cpp=$(OBJDIR)/%.arm.o)
+S_OFILES:=$(S_SOURCES:%.s=$(OBJDIR)/%.o)
 
 
-#OFILES:=$(MUSIC_FILE_BASENAME).bin.o $(CXX_OFILES) \\
+#OFILES:=$(MUSIC_FILE_BASENAME).bin.o $(CXX_OFILES) \
 #	$(ARM_CXX_OFILES) $(S_OFILES)
 OFILES:=$(MUSIC_OFILES) $(CXX_OFILES) $(ARM_CXX_OFILES) $(S_OFILES) 
 
@@ -178,10 +175,10 @@ OFILES:=$(MUSIC_OFILES) $(CXX_OFILES) $(ARM_CXX_OFILES) $(S_OFILES)
 # CXX_PFILES:=$(patsubst %.thumb.cpp,$(DEPDIR)/%.thumb.P,$(CXX_SOURCES))
 # ARM_CXX_PFILES:=$(patsubst %.arm.cpp,$(DEPDIR)/%.arm.P,$(ARM_CXX_SOURCES))
 # S_PFILES:=$(patsubst %.s,$(DEPDIR)/%.P,$(S_SOURCES))
-gen_group(CXX_PFILES,CXX_SOURCES,thumb.,cpp,P,DEPDIR)
-gen_group(ARM_CXX_PFILES,ARM_CXX_SOURCES,arm.,cpp,P,DEPDIR)
-gen_group(S_PFILES,S_SOURCES,,s,P,DEPDIR)
-PFILES:=$(CXX_PFILES) $(ARM_CXX_PFILES)  \\
+CXX_PFILES:=$(CXX_SOURCES:%.thumb.cpp=$(DEPDIR)/%.thumb.P)
+ARM_CXX_PFILES:=$(ARM_CXX_SOURCES:%.arm.cpp=$(DEPDIR)/%.arm.P)
+S_PFILES:=$(S_SOURCES:%.s=$(DEPDIR)/%.P)
+PFILES:=$(CXX_PFILES) $(ARM_CXX_PFILES)  \
 	$(S_PFILES)
 
 
@@ -190,11 +187,11 @@ PFILES:=$(CXX_PFILES) $(ARM_CXX_PFILES)  \\
 # CXX_OFILES_TEMP:=$(patsubst %.thumb.cpp,$(OBJDIR_TEMP)/%.thumb.o,$(CXX_SOURCES))
 # ARM_CXX_OFILES_TEMP:=$(patsubst %.arm.cpp,$(OBJDIR_TEMP)/%.arm.o,$(ARM_CXX_SOURCES))
 # S_OFILES_TEMP:=$(patsubst %.s,$(OBJDIR_TEMP)/%.o,$(S_SOURCES))
-gen_group(MUSIC_OFILES_TEMP,MUSIC_BINFILES,,bin,bin.o,OBJDIR_TEMP)
-gen_group(CXX_OFILES_TEMP,CXX_SOURCES,thumb.,cpp,o,OBJDIR_TEMP)
-gen_group(ARM_CXX_OFILES_TEMP,ARM_CXX_SOURCES,arm.,cpp,o,OBJDIR_TEMP)
-gen_group(S_OFILES_TEMP,S_SOURCES,,s,o,OBJDIR_TEMP)
-OFILES_TEMP:=$(MUSIC_OFILES_TEMP) $(CXX_OFILES_TEMP) \\
+MUSIC_OFILES_TEMP:=$(MUSIC_BINFILES:%.bin=$(OBJDIR_TEMP)/%.bin.o)
+CXX_OFILES_TEMP:=$(CXX_SOURCES:%.thumb.cpp=$(OBJDIR_TEMP)/%.thumb.o)
+ARM_CXX_OFILES_TEMP:=$(ARM_CXX_SOURCES:%.arm.cpp=$(OBJDIR_TEMP)/%.arm.o)
+S_OFILES_TEMP:=$(S_SOURCES:%.s=$(OBJDIR_TEMP)/%.o)
+OFILES_TEMP:=$(MUSIC_OFILES_TEMP) $(CXX_OFILES_TEMP) \
 	$(ARM_CXX_OFILES_TEMP) $(S_OFILES_TEMP)
 
 
@@ -203,7 +200,7 @@ OFILES_TEMP:=$(MUSIC_OFILES_TEMP) $(CXX_OFILES_TEMP) \\
 #CXX_OFILES_DIS:=$(patsubst %.thumb.cpp,$(OBJDIR_DIS)/%.thumb.armasm,$(CXX_SOURCES))
 #ARM_CXX_OFILES_DIS:=$(patsubst %.arm.cpp,$(OBJDIR_DIS)/%.arm.armasm,$(ARM_CXX_SOURCES))
 #S_OFILES_DIS:=$(patsubst %.s,$(OBJDIR_DIS)/%.armasm,$(S_SOURCES))
-#OFILES_DIS:=$(MUSIC_OFILES_DIS) $(CXX_OFILES_DIS) \\
+#OFILES_DIS:=$(MUSIC_OFILES_DIS) $(CXX_OFILES_DIS) \
 #	$(ARM_CXX_OFILES_DIS) $(S_OFILES_DIS)
 
 
@@ -211,16 +208,16 @@ OFILES_TEMP:=$(MUSIC_OFILES_TEMP) $(CXX_OFILES_TEMP) \\
 # Assembly source code generated by gcc/g++
 # CXX_ASMOUTS:=$(patsubst %.thumb.cpp,$(ASMOUTDIR)/%.thumb.s,$(CXX_SOURCES))
 # ARM_CXX_ASMOUTS:=$(patsubst %.arm.cpp,$(ASMOUTDIR)/%.arm.s,$(ARM_CXX_SOURCES))
-gen_group(CXX_ASMOUTS,CXX_SOURCES,thumb.,cpp,s,ASMOUTDIR)
-gen_group(ARM_CXX_ASMOUTS,ARM_CXX_SOURCES,arm.,cpp,s,ASMOUTDIR)
+CXX_ASMOUTS:=$(CXX_SOURCES:%.thumb.cpp=$(ASMOUTDIR)/%.thumb.s)
+ARM_CXX_ASMOUTS:=$(ARM_CXX_SOURCES:%.arm.cpp=$(ASMOUTDIR)/%.arm.s)
 ASMOUTS:=$(CXX_ASMOUTS) $(ARM_CXX_ASMOUTS)
 
 
 # Preprocessed output of only C++ files
 # CXX_EFILES:=$(patsubst %.thumb.cpp,$(PREPROCDIR)/%.thumb.E,$(CXX_SOURCES))
 # ARM_CXX_EFILES:=$(patsubst %.arm.cpp,$(PREPROCDIR)/%.arm.E,$(ARM_CXX_SOURCES))
-gen_group(CXX_EFILES,CXX_SOURCES,thumb.,cpp,E,PREPROCDIR)
-gen_group(ARM_CXX_EFILES,ARM_CXX_SOURCES,arm.,cpp,E,PREPROCDIR)
+CXX_EFILES:=$(CXX_SOURCES:%.thumb.cpp=$(PREPROCDIR)/%.thumb.E)
+ARM_CXX_EFILES:=$(ARM_CXX_SOURCES:%.arm.cpp=$(PREPROCDIR)/%.arm.E)
 EFILES:=$(CXX_EFILES) $(ARM_CXX_EFILES)
 
 
@@ -260,52 +257,31 @@ $(MUSIC_OFILES) : $(OBJDIR)/%.bin.o : %.bin
 
 
 # This sed script is basically a hack for dependency generation stuff.
-sed_script:=$(shell echo "sed -e 's/\\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\\\$$//' -e '/^$$/ d' -e 's/$$/ :/'")
+sed_script:=$(shell echo "sed -e 's/\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' -e '/^$$/ d' -e 's/$$/ :/'")
 
 
-#define ANY_BUILD_PART_1( first_prefix, src_ext_suffix, ext_prefix, dst_ext_suffix, first_suffix, dst_dir ) $(concat(first_prefix,first_suffix)) : $(dst_dir)/%.concat(ext_prefix,dst_ext_suffix) : %.concat(ext_prefix,src_ext_suffix)
-#define ANY_BUILD_PART_2 @#echo "Generating dependency information for "$@"...."
-#define ANY_BUILD_PART_3( arg_1 ) @echo $@" was updated or has no object file.  (Re)arg_1...."
-#define ANY_HLL_BUILD_PART_4( compiler, flags_prefix, compile_mode ) $(compiler) $(concat(flags_prefix,_FLAGS)) -MMD compile_mode $< -o $@
-#define ANY_BUILD_PART_5( src_dir, dst_dir, ext_prefix ) @cp $(src_dir)/$*.concat(ext_prefix,d) $(dst_dir)/$*.concat(ext_prefix,P)
-#define ANY_BUILD_PART_6( src_dir, dst_dir, ext_prefix ) @$(sed_script) < $(src_dir)/$*.concat(ext_prefix,d) >> $(dst_dir)/$*.concat(ext_prefix,P)
-#define ANY_BUILD_PART_7( src_dir, ext_prefix ) @rm -f $(src_dir)/$*.concat(ext_prefix,d)
-
-#define SHARED_REGULAR_BUILD_PART_1( first_prefix, src_ext_suffix, ext_prefix ) ANY_BUILD_PART_1(first_prefix,src_ext_suffix,ext_prefix,o,_OFILES,OBJDIR)
-#define SHARED_REGULAR_BUILD_PART_2 ANY_BUILD_PART_2
-#define HLL_REGULAR_BUILD_PART_3 ANY_BUILD_PART_3(Compiling)
-#define HLL_REGULAR_BUILD_PART_4( compiler, flags_prefix ) ANY_HLL_BUILD_PART_4(compiler,flags_prefix,-c)
-#define HLL_REGULAR_BUILD_PART_5( ext_prefix ) ANY_BUILD_PART_5(OBJDIR,DEPDIR,ext_prefix)
-#define HLL_REGULAR_BUILD_PART_6( ext_prefix ) ANY_BUILD_PART_6(OBJDIR,DEPDIR,ext_prefix)
-#define HLL_REGULAR_BUILD_PART_7( ext_prefix ) ANY_BUILD_PART_7(OBJDIR,ext_prefix)
 
 
-#define HLL_ASMOUTS_BUILD_PART_1( first_prefix, src_ext_suffix, ext_prefix ) ANY_BUILD_PART_1(first_prefix,src_ext_suffix,ext_prefix,s,_ASMOUTS,ASMOUTDIR)
-#define HLL_ASMOUTS_BUILD_PART_2A( compiler, flags_prefix ) @#ANY_HLL_BUILD_PART_4(compiler,flags_prefix,-S -fverbose-asm)
-#define HLL_ASMOUTS_BUILD_PART_2B( compiler, flags_prefix ) @#ANY_HLL_BUILD_PART_4(compiler,flags_prefix,-S)
-#define HLL_ASMOUTS_BUILD_PART_2( compiler, flags_prefix ) ANY_HLL_BUILD_PART_4(compiler,flags_prefix,-S $(VERBOSE_ASM_FLAG))
-#define HLL_ASMOUTS_BUILD_PART_3( ext_prefix ) ANY_BUILD_PART_5(ASMOUTDIR,DEPDIR,ext_prefix)
-#define HLL_ASMOUTS_BUILD_PART_4( ext_prefix ) ANY_BUILD_PART_6(ASMOUTDIR,DEPDIR,ext_prefix)
-#define HLL_ASMOUTS_BUILD_PART_5( ext_prefix ) ANY_BUILD_PART_7(ASMOUTDIR,ext_prefix)
+
 
 # Here's where things get really messy.
 $(CXX_OFILES) : $(OBJDIR)/%.thumb.o : %.thumb.cpp
-	SHARED_REGULAR_BUILD_PART_2
-	HLL_REGULAR_BUILD_PART_3
+	@#echo "Generating dependency information for "$@"...."
+	@echo $@" was updated or has no object file.  (Re)Compiling...."
 	$(CXX) $(CXX_FLAGS) -MMD -c $< -o $@
-	HLL_REGULAR_BUILD_PART_5(thumb.)
-	HLL_REGULAR_BUILD_PART_6(thumb.)
-	HLL_REGULAR_BUILD_PART_7(thumb.)
+	@cp $(OBJDIR)/$*.thumb.d $(DEPDIR)/$*.thumb.P
+	@$(sed_script) < $(OBJDIR)/$*.thumb.d >> $(DEPDIR)/$*.thumb.P
+	@rm -f $(OBJDIR)/$*.thumb.d
 
 
 
 $(ARM_CXX_OFILES) : $(OBJDIR)/%.arm.o : %.arm.cpp
-	SHARED_REGULAR_BUILD_PART_2
-	HLL_REGULAR_BUILD_PART_3
+	@#echo "Generating dependency information for "$@"...."
+	@echo $@" was updated or has no object file.  (Re)Compiling...."
 	$(CXX) $(ARM_CXX_FLAGS) -MMD -c $< -o $@
-	HLL_REGULAR_BUILD_PART_5(arm.)
-	HLL_REGULAR_BUILD_PART_6(arm.)
-	HLL_REGULAR_BUILD_PART_7(arm.)
+	@cp $(OBJDIR)/$*.arm.d $(DEPDIR)/$*.arm.P
+	@$(sed_script) < $(OBJDIR)/$*.arm.d >> $(DEPDIR)/$*.arm.P
+	@rm -f $(OBJDIR)/$*.arm.d
 
 
 
@@ -313,11 +289,11 @@ $(ARM_CXX_OFILES) : $(OBJDIR)/%.arm.o : %.arm.cpp
 # (Yes, I wrote both this comment and the makefile GPP "source").
 $(S_OFILES) : $(OBJDIR)/%.o : %.s
 	@#echo "Generating dependency information for "$@"...."
-	ANY_BUILD_PART_3(Assembling)
+	@echo $@" was updated or has no object file.  (Re)Assembling...."
 	$(AS) $(S_FLAGS) -MD $(OBJDIR)/$*.d -c $< -o $@
-	HLL_REGULAR_BUILD_PART_5
-	HLL_REGULAR_BUILD_PART_6
-	HLL_REGULAR_BUILD_PART_7
+	@cp $(OBJDIR)/$*.d $(DEPDIR)/$*.P
+	@$(sed_script) < $(OBJDIR)/$*.d >> $(DEPDIR)/$*.P
+	@rm -f $(OBJDIR)/$*.d
 
 
 
@@ -325,23 +301,23 @@ $(S_OFILES) : $(OBJDIR)/%.o : %.s
 
 # Here we have stuff for outputting assembly source code instead of an object file.
 $(CXX_ASMOUTS) : $(ASMOUTDIR)/%.thumb.s : %.thumb.cpp
-	HLL_ASMOUTS_BUILD_PART_2A(CXX,CXX,thumb.)
-	HLL_ASMOUTS_BUILD_PART_2B(CXX,CXX,thumb.)
+	@#$(CXX) $(CXX_FLAGS) -MMD -S -fverbose-asm $< -o $@
+	@#$(CXX) $(CXX_FLAGS) -MMD -S $< -o $@
 	$(CXX) $(CXX_FLAGS) -MMD -S $(VERBOSE_ASM_FLAG) $< -o $@
-	HLL_ASMOUTS_BUILD_PART_3(thumb.)
-	HLL_ASMOUTS_BUILD_PART_4(thumb.)
-	HLL_ASMOUTS_BUILD_PART_5(thumb.)
+	@cp $(ASMOUTDIR)/$*.thumb.d $(DEPDIR)/$*.thumb.P
+	@$(sed_script) < $(ASMOUTDIR)/$*.thumb.d >> $(DEPDIR)/$*.thumb.P
+	@rm -f $(ASMOUTDIR)/$*.thumb.d
 
 
 
 # Here we have stuff for outputting assembly source code instead of an object file.
 $(ARM_CXX_ASMOUTS) : $(ASMOUTDIR)/%.arm.s : %.arm.cpp
-	HLL_ASMOUTS_BUILD_PART_2A(CXX,ARM_CXX,arm.)
-	HLL_ASMOUTS_BUILD_PART_2B(CXX,ARM_CXX,arm.)
+	@#$(CXX) $(ARM_CXX_FLAGS) -MMD -S -fverbose-asm $< -o $@
+	@#$(CXX) $(ARM_CXX_FLAGS) -MMD -S $< -o $@
 	$(CXX) $(ARM_CXX_FLAGS) -MMD -S $(VERBOSE_ASM_FLAG) $< -o $@
-	HLL_ASMOUTS_BUILD_PART_3(arm.)
-	HLL_ASMOUTS_BUILD_PART_4(arm.)
-	HLL_ASMOUTS_BUILD_PART_5(arm.)
+	@cp $(ASMOUTDIR)/$*.arm.d $(DEPDIR)/$*.arm.P
+	@$(sed_script) < $(ASMOUTDIR)/$*.arm.d >> $(DEPDIR)/$*.arm.P
+	@rm -f $(ASMOUTDIR)/$*.arm.d
 
 
 
@@ -364,7 +340,7 @@ $(ARM_CXX_EFILES) : $(PREPROCDIR)/%.arm.E : %.arm.cpp
 
 
 
-#¯\\(°_o)/¯
+#¯\(°_o)/¯
 
 .PHONY : clean
 clean :
@@ -375,22 +351,22 @@ clean_objs_with_no_source :
 	@mkdir -p $(OBJDIR_TEMP)
 	@#ls $(OBJDIR)
 	@echo "Removing object files that don't have corresponding source files...."
-	@for objfile in $(OFILES); \\
-	do \\
-		if [ -f $$objfile ]; \\
-		then \\
-			mv $$objfile $(OBJDIR_TEMP); \\
-		fi; \\
+	@for objfile in $(OFILES); \
+	do \
+		if [ -f $$objfile ]; \
+		then \
+			mv $$objfile $(OBJDIR_TEMP); \
+		fi; \
 	done;
 	@#ls $(OBJDIR_TEMP)
 	@rm -rf $(OBJDIR)
 	@mkdir -p $(OBJDIR)
-	@for objfile in $(OFILES_TEMP); \\
-	do \\
-		if [ -f $$objfile ]; \\
-		then \\
-			mv $$objfile $(OBJDIR); \\
-		fi; \\
+	@for objfile in $(OFILES_TEMP); \
+	do \
+		if [ -f $$objfile ]; \
+		then \
+			mv $$objfile $(OBJDIR); \
+		fi; \
 	done;
 	@#ls $(OBJDIR)
 	@rmdir $(OBJDIR_TEMP)
@@ -437,54 +413,54 @@ disassemble_all_2 :
 .PHONY : disassemble_3
 disassemble_3 :
 	@mkdir -p $(OBJDIR_DIS)
-	@for objfile in $(OBJDIR)/*.o; \\
-	do \\
-		out=`basename $$objfile`;\\
-		if [ -f $$objfile ]; \\
-		then \\
-			$(OBJDUMP) $(DISASSEMBLE_3_FLAGS) $$objfile \\
-				> $(OBJDIR_DIS)/$$out.armasm; \\
-		fi; \\
+	@for objfile in $(OBJDIR)/*.o; \
+	do \
+		out=`basename $$objfile`;\
+		if [ -f $$objfile ]; \
+		then \
+			$(OBJDUMP) $(DISASSEMBLE_3_FLAGS) $$objfile \
+				> $(OBJDIR_DIS)/$$out.armasm; \
+		fi; \
 	done;
 
 
 .PHONY : disassemble_all_3
 disassemble_all_3 :
 	@mkdir -p $(OBJDIR_DIS)
-	@for objfile in $(OBJDIR)/*.o; \\
-	do \\
-		out=`basename $$objfile`;\\
-		if [ -f $$objfile ]; \\
-		then \\
-			$(OBJDUMP) $(DISASSEMBLE_ALL_3_FLAGS) $$objfile \\
-				> $(OBJDIR_DIS)/$$out.armasm; \\
-		fi; \\
+	@for objfile in $(OBJDIR)/*.o; \
+	do \
+		out=`basename $$objfile`;\
+		if [ -f $$objfile ]; \
+		then \
+			$(OBJDUMP) $(DISASSEMBLE_ALL_3_FLAGS) $$objfile \
+				> $(OBJDIR_DIS)/$$out.armasm; \
+		fi; \
 	done;
 
 
 .PHONY : disassemble_4
 disassemble_4 :
 	@mkdir -p $(OBJDIR_DIS)
-	@for objfile in $(OBJDIR)/*.o; \\
-	do \\
-		out=`basename $$objfile`;\\
-		if [ -f $$objfile ]; \\
-		then \\
-			$(OBJDUMP) $(DISASSEMBLE_4_FLAGS) $$objfile \\
-				> $(OBJDIR_DIS)/$$out.armasm; \\
-		fi; \\
+	@for objfile in $(OBJDIR)/*.o; \
+	do \
+		out=`basename $$objfile`;\
+		if [ -f $$objfile ]; \
+		then \
+			$(OBJDUMP) $(DISASSEMBLE_4_FLAGS) $$objfile \
+				> $(OBJDIR_DIS)/$$out.armasm; \
+		fi; \
 	done;
 
 
 .PHONY : disassemble_all_4
 disassemble_all_4 :
 	@mkdir -p $(OBJDIR_DIS)
-	@for objfile in $(OBJDIR)/*.o; \\
-	do \\
-		out=`basename $$objfile`;\\
-		if [ -f $$objfile ]; \\
-		then \\
-			$(OBJDUMP) $(DISASSEMBLE_ALL_4_FLAGS) $$objfile \\
-				> $(OBJDIR_DIS)/$$out.armasm; \\
-		fi; \\
+	@for objfile in $(OBJDIR)/*.o; \
+	do \
+		out=`basename $$objfile`;\
+		if [ -f $$objfile ]; \
+		then \
+			$(OBJDUMP) $(DISASSEMBLE_ALL_4_FLAGS) $$objfile \
+				> $(OBJDIR_DIS)/$$out.armasm; \
+		fi; \
 	done;
