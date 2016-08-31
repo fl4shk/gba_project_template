@@ -17,3 +17,5 @@ disassembly*.armasm
 *.gdb_history*
 tags
 types_*.taghl
+*.gpp
+makefile_temp

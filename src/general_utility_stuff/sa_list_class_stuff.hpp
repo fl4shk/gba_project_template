@@ -63,13 +63,18 @@ public:		// functions
 		return static_cast<type*>(data_ptr);
 	}
 	
+	inline vec2_s16& get_index_pair()
+	{
+		return *index_pair_ptr;
+	}
+	
 	inline s16& next_index()
 	{
-		return (*index_pair_ptr)[vec2_index_for_next_index];
+		return get_index_pair()[vec2_index_for_next_index];
 	}
 	inline s16& prev_index()
 	{
-		return (*index_pair_ptr)[vec2_index_for_prev_index];
+		return get_index_pair()[vec2_index_for_prev_index];
 	}
 	
 } __attribute__((_align4));

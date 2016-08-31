@@ -1,57 +1,3 @@
-# In both this makefile (makefile_devkitARM.mk) and the makefile for
-# updated GCC (makefile_for_updated_gcc.mk), the contents after the
-# creation of the LD_FLAGS variable are supposed to be the same.
-
-
-ALWAYS_DEBUG_SUFFIX:=_debug
-
-
-# Comment out or un-comment out the next line to enable profiling stuff to
-# be generated
-#PROFILE:=yeah do profile
-
-ifdef PROFILE
-	PROFILE_FLAGS:=-pg
-endif
-
-
-# Comment out or un-comment out the next line to enable debugging stuff to
-# be generated
-#DEBUG:=yeah do debug
-
-# Optimization levels
-DEBUG_OPTIMIZATION_LEVEL:=-O0
-#DEBUG_OPTIMIZATION_LEVEL:=-Og
-#DEBUG_OPTIMIZATION_LEVEL:=-O3
-
-#REGULAR_OPTIMIZATION_LEVEL:=-O1
-REGULAR_OPTIMIZATION_LEVEL:=-O3
-
-
-ifdef DEBUG
-	EXTRA_DEBUG_FLAGS:=-g 
-	##DEBUG_FLAGS:=-gdwarf-2 -ggdb -gstrict-dwarf $(EXTRA_DEBUG_FLAGS)
-	DEBUG_FLAGS:=-gdwarf-3 $(EXTRA_DEBUG_FLAGS)
-	
-	OPTIMIZATION_LEVEL:=$(DEBUG_OPTIMIZATION_LEVEL)
-	
-	# Only do profiling stuff when debugging stuff is enabled
-	EXTRA_LD_FLAGS:=$(PROFILE_FLAGS) $(DEBUG_FLAGS)
-	
-	DEBUG_SUFFIX:=$(ALWAYS_DEBUG_SUFFIX)
-else
-	OPTIMIZATION_LEVEL:=$(REGULAR_OPTIMIZATION_LEVEL)
-endif
-
-
-# This is likely specific to *nix... but then again, the entire makefile is
-# probably specific to *nix!
-PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
-
-VERBOSE_ASM_FLAG:=
-#VERBOSE_ASM_FLAG:=-fverbose-asm
-
-
 # This compiler prefix is ARM-specific
 COMP_PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-
 #COMP_PREFIX:=arm-none-eabi-
@@ -71,22 +17,51 @@ LD_SCRIPT:=linkscript.ld
 
 
 
-GLOBAL_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi \
-	-I$(DEVKITPRO)/libgba/include -nostartfiles \
-	-fno-rtti -ffast-math $(OPTIMIZATION_LEVEL) \
-	$(EXTRA_DEBUG_FLAGS)
+# In both this makefile (makefile_devkitARM.mk) and the makefile for
+# updated GCC (makefile_for_updated_gcc.mk), the contents after the
+# creation of the LD_FLAGS variable are supposed to be the same.
 
 
-# Thumb/ARM compiler flags
-THUMB_BASE_FLAGS:=$(GLOBAL_BASE_FLAGS) -mthumb -mthumb-interwork
-ARM_BASE_FLAGS:=$(GLOBAL_BASE_FLAGS) -marm -mthumb-interwork
+ALWAYS_DEBUG_SUFFIX:=_debug
 
-# Eventually I'll use -std=c++17
-# Ah screw it, I'm switching now.
-CXX_FLAGS:=-std=c++17 $(THUMB_BASE_FLAGS) -D __thumb__  -Wall
-ARM_CXX_FLAGS:=-std=c++17 $(ARM_BASE_FLAGS) -Wall
-S_FLAGS:=-mcpu=arm7tdmi -mthumb -mthumb-interwork
+# This is likely specific to *nix... but then again, the entire makefile is
+# probably specific to *nix!
+REGULAR_PROJ=$(shell basename $(CURDIR))
 
+
+# Comment out or un-comment out the next line to enable profiling stuff to
+# be generated
+#PROFILE:=yeah do profile
+
+ifdef PROFILE
+	PROFILE_FLAGS:=-pg
+endif
+
+
+# Comment out or un-comment out the next line to enable debugging stuff to
+# be generated
+DEBUG:=yeah do debug
+
+# Optimization levels
+DEBUG_OPTIMIZATION_LEVEL:=-O0
+DEBUG_OPTIMIZATION_LEVEL:=-O3
+
+REGULAR_OPTIMIZATION_LEVEL:=-O3
+
+ifdef DEBUG
+	EXTRA_DEBUG_FLAGS:=-g 
+	##DEBUG_FLAGS:=-gdwarf-2 -ggdb -gstrict-dwarf $(EXTRA_DEBUG_FLAGS)
+	DEBUG_FLAGS:=-gdwarf-3 $(EXTRA_DEBUG_FLAGS)
+	
+	OPTIMIZATION_LEVEL:=$(DEBUG_OPTIMIZATION_LEVEL)
+	
+	# Only do profiling stuff when debugging stuff is enabled
+	EXTRA_LD_FLAGS:=$(PROFILE_FLAGS) $(DEBUG_FLAGS)
+	
+	DEBUG_SUFFIX:=$(ALWAYS_DEBUG_SUFFIX)
+else
+	OPTIMIZATION_LEVEL:=$(REGULAR_OPTIMIZATION_LEVEL)
+endif
 
 
 # Linker flags
@@ -100,8 +75,6 @@ COMMON_LD_FLAGS:=--specs=nosys.specs -L$(DEVKITPRO)/libgba/lib -T $(LD_SCRIPT) -
 LD_FLAGS:=$(COMMON_LD_FLAGS) $(EXTRA_LD_FLAGS)
 
 
-
-# These directories specify where source code files are located.
 # Edit these variables if more directories are needed.
 # Separate each entry by spaces.
 
@@ -118,10 +91,41 @@ ARM_CXX_DIRS:=$(CXX_DIRS)
 S_DIRS:=$(CXX_DIRS)
 
 
-# End of source directory variables
+# End of directory variables
 
-## The music file's basename
-#MUSIC_FILE_BASENAME:=practice_17
+
+
+
+# This is likely specific to *nix... but then again, the entire makefile is
+# probably specific to *nix!
+PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
+
+# The music file's basename
+MUSIC_FILE_BASENAME:=practice_17
+
+
+
+VERBOSE_ASM_FLAG:=
+#VERBOSE_ASM_FLAG:=-fverbose-asm
+
+
+
+GLOBAL_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi \
+	-I$(DEVKITPRO)/libgba/include -nostartfiles \
+	-fno-rtti -ffast-math $(OPTIMIZATION_LEVEL) \
+	$(EXTRA_DEBUG_FLAGS)
+
+
+# Thumb/ARM compiler flags
+THUMB_BASE_FLAGS:=$(GLOBAL_BASE_FLAGS) -mthumb -mthumb-interwork
+ARM_BASE_FLAGS:=$(GLOBAL_BASE_FLAGS) -marm -mthumb-interwork
+
+
+# Eventually I'll use -std=c++17
+# Ah screw it, I'm switching now.
+CXX_FLAGS:=-std=c++17 $(THUMB_BASE_FLAGS) -D __thumb__  -Wall
+ARM_CXX_FLAGS:=-std=c++17 $(ARM_BASE_FLAGS) -Wall
+S_FLAGS:=-mcpu=arm7tdmi -mthumb -mthumb-interwork
 
 
 
@@ -134,21 +138,31 @@ OBJDIR_TEMP:=objs_temp$(DEBUG_SUFFIX)
 OBJDIR_DIS:=objs_dis$(DEBUG_SUFFIX)
 PREPROCDIR:=preprocs$(DEBUG_SUFFIX)
 
+# Flags for make disassemble*
+DISASSEMBLE_FLAGS:=-marm7tdmi -C -d 
+DISASSEMBLE_ALL_FLAGS:=-marm7tdmi -C -D 
+
+DISASSEMBLE_2_FLAGS:=-marm7tdmi -C -S -l -d 
+DISASSEMBLE_ALL_2_FLAGS:=-marm7tdmi -C -S -l -D 
+
+DISASSEMBLE_3_FLAGS:=$(DISASSEMBLE_FLAGS)
+DISASSEMBLE_ALL_3_FLAGS:=$(DISASSEMBLE_ALL_FLAGS)
+
+DISASSEMBLE_4_FLAGS:=$(DISASSEMBLE_2_FLAGS)
+DISASSEMBLE_ALL_4_FLAGS:=$(DISASSEMBLE_ALL_2_FLAGS)
+
+
 
 
 # Source code files
-# MUSIC_BINFILES:=$(foreach DIR,$(MUSIC_DIRS),$(notdir $(wildcard $(DIR)/*.bin)))
-# CXX_SOURCES:=$(foreach DIR,$(CXX_DIRS),$(notdir $(wildcard $(DIR)/*.thumb.cpp)))
-# ARM_CXX_SOURCES:=$(foreach DIR,$(ARM_CXX_DIRS), \
-# 	$(notdir $(wildcard $(DIR)/*.arm.cpp)))
-# S_SOURCES:=$(foreach DIR,$(S_DIRS),$(notdir $(wildcard $(DIR)/*.s)))
 MUSIC_BINFILES:=$(foreach DIR,$(MUSIC_DIRS),$(notdir $(wildcard $(DIR)/*.bin)))
 CXX_SOURCES:=$(foreach DIR,$(CXX_DIRS),$(notdir $(wildcard $(DIR)/*.thumb.cpp)))
-ARM_CXX_SOURCES:=$(foreach DIR,$(ARM_CXX_DIRS),$(notdir $(wildcard $(DIR)/*.arm.cpp)))
+ARM_CXX_SOURCES:=$(foreach DIR,$(ARM_CXX_DIRS), \
+	$(notdir $(wildcard $(DIR)/*.arm.cpp)))
 S_SOURCES:=$(foreach DIR,$(S_DIRS),$(notdir $(wildcard $(DIR)/*.s)))
 
 
-# Directories to search, specified above
+# Directories to search, specified at the top of this makefile
 export VPATH	:=	$(foreach DIR,$(MUSIC_DIRS),$(CURDIR)/$(DIR)) \
 	$(foreach DIR,$(CXX_DIRS),$(CURDIR)/$(DIR)) \
 	$(foreach DIR,$(ARM_CXX_DIRS),$(CURDIR)/$(DIR)) \
@@ -156,14 +170,10 @@ export VPATH	:=	$(foreach DIR,$(MUSIC_DIRS),$(CURDIR)/$(DIR)) \
 
 
 # Object code files
-# MUSIC_OFILES:=$(patsubst %.bin,$(OBJDIR)/%.bin.o,$(MUSIC_BINFILES))
-# CXX_OFILES:=$(patsubst %.thumb.cpp,$(OBJDIR)/%.thumb.o,$(CXX_SOURCES))
-# ARM_CXX_OFILES:=$(patsubst %.arm.cpp,$(OBJDIR)/%.arm.o,$(ARM_CXX_SOURCES))
-# S_OFILES:=$(patsubst %.s,$(OBJDIR)/%.o,$(S_SOURCES))
-MUSIC_OFILES:=$(MUSIC_BINFILES:%.bin=$(OBJDIR)/%.bin.o)
-CXX_OFILES:=$(CXX_SOURCES:%.thumb.cpp=$(OBJDIR)/%.thumb.o)
-ARM_CXX_OFILES:=$(ARM_CXX_SOURCES:%.arm.cpp=$(OBJDIR)/%.arm.o)
-S_OFILES:=$(S_SOURCES:%.s=$(OBJDIR)/%.o)
+MUSIC_OFILES:=$(patsubst %.bin,$(OBJDIR)/%.bin.o,$(MUSIC_BINFILES))
+CXX_OFILES:=$(patsubst %.thumb.cpp,$(OBJDIR)/%.thumb.o,$(CXX_SOURCES))
+ARM_CXX_OFILES:=$(patsubst %.arm.cpp,$(OBJDIR)/%.arm.o,$(ARM_CXX_SOURCES))
+S_OFILES:=$(patsubst %.s,$(OBJDIR)/%.o,$(S_SOURCES))
 
 
 #OFILES:=$(MUSIC_FILE_BASENAME).bin.o $(CXX_OFILES) \
@@ -172,25 +182,18 @@ OFILES:=$(MUSIC_OFILES) $(CXX_OFILES) $(ARM_CXX_OFILES) $(S_OFILES)
 
 
 # Automatically-Generated Dependency Files
-# CXX_PFILES:=$(patsubst %.thumb.cpp,$(DEPDIR)/%.thumb.P,$(CXX_SOURCES))
-# ARM_CXX_PFILES:=$(patsubst %.arm.cpp,$(DEPDIR)/%.arm.P,$(ARM_CXX_SOURCES))
-# S_PFILES:=$(patsubst %.s,$(DEPDIR)/%.P,$(S_SOURCES))
-CXX_PFILES:=$(CXX_SOURCES:%.thumb.cpp=$(DEPDIR)/%.thumb.P)
-ARM_CXX_PFILES:=$(ARM_CXX_SOURCES:%.arm.cpp=$(DEPDIR)/%.arm.P)
-S_PFILES:=$(S_SOURCES:%.s=$(DEPDIR)/%.P)
+CXX_PFILES:=$(patsubst %.thumb.cpp,$(DEPDIR)/%.thumb.P,$(CXX_SOURCES))
+ARM_CXX_PFILES:=$(patsubst %.arm.cpp,$(DEPDIR)/%.arm.P,$(ARM_CXX_SOURCES))
+S_PFILES:=$(patsubst %.s,$(DEPDIR)/%.P,$(S_SOURCES))
 PFILES:=$(CXX_PFILES) $(ARM_CXX_PFILES)  \
 	$(S_PFILES)
 
 
 # This is for cleaning object files with no source.
-# MUSIC_OFILES_TEMP:=$(patsubst %.bin,$(OBJDIR_TEMP)/%.bin.o,$(MUSIC_BINFILES))
-# CXX_OFILES_TEMP:=$(patsubst %.thumb.cpp,$(OBJDIR_TEMP)/%.thumb.o,$(CXX_SOURCES))
-# ARM_CXX_OFILES_TEMP:=$(patsubst %.arm.cpp,$(OBJDIR_TEMP)/%.arm.o,$(ARM_CXX_SOURCES))
-# S_OFILES_TEMP:=$(patsubst %.s,$(OBJDIR_TEMP)/%.o,$(S_SOURCES))
-MUSIC_OFILES_TEMP:=$(MUSIC_BINFILES:%.bin=$(OBJDIR_TEMP)/%.bin.o)
-CXX_OFILES_TEMP:=$(CXX_SOURCES:%.thumb.cpp=$(OBJDIR_TEMP)/%.thumb.o)
-ARM_CXX_OFILES_TEMP:=$(ARM_CXX_SOURCES:%.arm.cpp=$(OBJDIR_TEMP)/%.arm.o)
-S_OFILES_TEMP:=$(S_SOURCES:%.s=$(OBJDIR_TEMP)/%.o)
+MUSIC_OFILES_TEMP:=$(patsubst %.bin,$(OBJDIR_TEMP)/%.bin.o,$(MUSIC_BINFILES))
+CXX_OFILES_TEMP:=$(patsubst %.thumb.cpp,$(OBJDIR_TEMP)/%.thumb.o,$(CXX_SOURCES))
+ARM_CXX_OFILES_TEMP:=$(patsubst %.arm.cpp,$(OBJDIR_TEMP)/%.arm.o,$(ARM_CXX_SOURCES))
+S_OFILES_TEMP:=$(patsubst %.s,$(OBJDIR_TEMP)/%.o,$(S_SOURCES))
 OFILES_TEMP:=$(MUSIC_OFILES_TEMP) $(CXX_OFILES_TEMP) \
 	$(ARM_CXX_OFILES_TEMP) $(S_OFILES_TEMP)
 
@@ -206,18 +209,14 @@ OFILES_TEMP:=$(MUSIC_OFILES_TEMP) $(CXX_OFILES_TEMP) \
 
 
 # Assembly source code generated by gcc/g++
-# CXX_ASMOUTS:=$(patsubst %.thumb.cpp,$(ASMOUTDIR)/%.thumb.s,$(CXX_SOURCES))
-# ARM_CXX_ASMOUTS:=$(patsubst %.arm.cpp,$(ASMOUTDIR)/%.arm.s,$(ARM_CXX_SOURCES))
-CXX_ASMOUTS:=$(CXX_SOURCES:%.thumb.cpp=$(ASMOUTDIR)/%.thumb.s)
-ARM_CXX_ASMOUTS:=$(ARM_CXX_SOURCES:%.arm.cpp=$(ASMOUTDIR)/%.arm.s)
+CXX_ASMOUTS:=$(patsubst %.thumb.cpp,$(ASMOUTDIR)/%.thumb.s,$(CXX_SOURCES))
+ARM_CXX_ASMOUTS:=$(patsubst %.arm.cpp,$(ASMOUTDIR)/%.arm.s,$(ARM_CXX_SOURCES))
 ASMOUTS:=$(CXX_ASMOUTS) $(ARM_CXX_ASMOUTS)
 
 
 # Preprocessed output of only C++ files
-# CXX_EFILES:=$(patsubst %.thumb.cpp,$(PREPROCDIR)/%.thumb.E,$(CXX_SOURCES))
-# ARM_CXX_EFILES:=$(patsubst %.arm.cpp,$(PREPROCDIR)/%.arm.E,$(ARM_CXX_SOURCES))
-CXX_EFILES:=$(CXX_SOURCES:%.thumb.cpp=$(PREPROCDIR)/%.thumb.E)
-ARM_CXX_EFILES:=$(ARM_CXX_SOURCES:%.arm.cpp=$(PREPROCDIR)/%.arm.E)
+CXX_EFILES:=$(patsubst %.thumb.cpp,$(PREPROCDIR)/%.thumb.E,$(CXX_SOURCES))
+ARM_CXX_EFILES:=$(patsubst %.arm.cpp,$(PREPROCDIR)/%.arm.E,$(ARM_CXX_SOURCES))
 EFILES:=$(CXX_EFILES) $(ARM_CXX_EFILES)
 
 
@@ -259,11 +258,6 @@ $(MUSIC_OFILES) : $(OBJDIR)/%.bin.o : %.bin
 # This sed script is basically a hack for dependency generation stuff.
 sed_script:=$(shell echo "sed -e 's/\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' -e '/^$$/ d' -e 's/$$/ :/'")
 
-
-
-
-
-
 # Here's where things get really messy.
 $(CXX_OFILES) : $(OBJDIR)/%.thumb.o : %.thumb.cpp
 	@#echo "Generating dependency information for "$@"...."
@@ -285,8 +279,6 @@ $(ARM_CXX_OFILES) : $(OBJDIR)/%.arm.o : %.arm.cpp
 
 
 
-# Yeah, Assembly is *TOTALLY* a High Level Language.  Good job naming that.
-# (Yes, I wrote both this comment and the makefile GPP "source").
 $(S_OFILES) : $(OBJDIR)/%.o : %.s
 	@#echo "Generating dependency information for "$@"...."
 	@echo $@" was updated or has no object file.  (Re)Assembling...."
@@ -374,21 +366,6 @@ clean_objs_with_no_source :
 	
 	
 	@#rm -rfv $(OBJDIR_TEMP)
-
-
-
-# Flags for make disassemble*
-DISASSEMBLE_FLAGS:=-marm7tdmi -C -d 
-DISASSEMBLE_ALL_FLAGS:=-marm7tdmi -C -D 
-
-DISASSEMBLE_2_FLAGS:=-marm7tdmi -C -S -l -d 
-DISASSEMBLE_ALL_2_FLAGS:=-marm7tdmi -C -S -l -D 
-
-DISASSEMBLE_3_FLAGS:=$(DISASSEMBLE_FLAGS)
-DISASSEMBLE_ALL_3_FLAGS:=$(DISASSEMBLE_ALL_FLAGS)
-
-DISASSEMBLE_4_FLAGS:=$(DISASSEMBLE_2_FLAGS)
-DISASSEMBLE_ALL_4_FLAGS:=$(DISASSEMBLE_ALL_2_FLAGS)
 
 
 .PHONY : disassemble

@@ -22,7 +22,7 @@
 #include "../general_utility_stuff/misc_types.hpp"
 #include "attribute_defines.hpp"
 
-#define asm_comment(stuff) \
+#define asm_comment( stuff ) \
 	asm volatile( "@ ---" stuff " ---" )
 
 #include <array>

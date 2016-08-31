@@ -273,6 +273,7 @@ $(ARM_CXX_OFILES) : $(OBJDIR)/%.arm.o : %.arm.cpp
 	@#echo "Generating dependency information for "$@"...."
 	@echo $@" was updated or has no object file.  (Re)Compiling...."
 	$(CXX) $(ARM_CXX_FLAGS) -MMD -c $< -o $@
+	@cp $(OBJDIR)/$*.arm.d $(DEPDIR)/$*.arm.P
 	@$(sed_script) < $(OBJDIR)/$*.arm.d >> $(DEPDIR)/$*.arm.P
 	@rm -f $(OBJDIR)/$*.arm.d
 
@@ -280,7 +281,7 @@ $(ARM_CXX_OFILES) : $(OBJDIR)/%.arm.o : %.arm.cpp
 
 $(S_OFILES) : $(OBJDIR)/%.o : %.s
 	@#echo "Generating dependency information for "$@"...."
-	@echo $@" was updated or has no object file.  (Re)Compiling...."
+	@echo $@" was updated or has no object file.  (Re)Assembling...."
 	$(AS) $(S_FLAGS) -MD $(OBJDIR)/$*.d -c $< -o $@
 	@cp $(OBJDIR)/$*.d $(DEPDIR)/$*.P
 	@$(sed_script) < $(OBJDIR)/$*.d >> $(DEPDIR)/$*.P
