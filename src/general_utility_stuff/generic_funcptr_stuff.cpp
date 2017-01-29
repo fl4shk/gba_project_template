@@ -1,6 +1,6 @@
 // This file is part of GBA Project Template.
 // 
-// Copyright 2015-2016 by Andrew Clark (FL4SHK).
+// Copyright 2015-2017 by Andrew Clark (FL4SHK).
 // 
 // GBA Project Template is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as published
@@ -16,9 +16,22 @@
 // with GBA Project Template.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "gfx_reg_stuff.hpp"
-
-#include "../general_utility_stuff/fixed_classes.hpp"
+#include "generic_funcptr_stuff.hpp"
 
 
+extern "C"
+{
 
+void generic_binary_func_shared_backend( void* a, void* b,
+	generic_void_2arg_fp the_fp )
+{
+	(*the_fp)( a, b );
+}
+
+u32 generic_u32_func_shared_backend( void* a, void* b,
+	generic_u32_2arg_fp the_fp )
+{
+	return (*the_fp)( a, b );
+}
+
+}

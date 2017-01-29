@@ -1,6 +1,6 @@
 // This file is part of GBA Project Template.
 // 
-// Copyright 2015-2016 by Andrew Clark (FL4SHK).
+// Copyright 2015-2017 by Andrew Clark (FL4SHK).
 // 
 // GBA Project Template is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as published
@@ -40,6 +40,9 @@
 #define _ewram_code section(".ewram_code")
 #define _iwram_code section(".iwram_code")
 
+
+// Generate ARM-mode code instead of THUMB-mode code
+#define _target_arm target("arm")
 
 // There's a bug that I encountered in GCC (as of 5.3.0) that causes the
 // section attribute to be ignored when dealing with template functions.

@@ -1,6 +1,6 @@
 // This file is part of GBA Project Template.
 // 
-// Copyright 2015-2016 by Andrew Clark (FL4SHK).
+// Copyright 2015-2017 by Andrew Clark (FL4SHK).
 // 
 // GBA Project Template is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as published
@@ -87,7 +87,7 @@ public:		// functions
 	//inline fixed24p8 operator * ( const fixed24p8& to_mul ) const;
 	inline fixed24p8 operator * ( const fixed8p8& to_mul ) const;
 	fixed24p8 guaranteed_f24p8_by_f8p8_multiplication
-		( const fixed8p8& to_mul ) __attribute__((_iwram_code));
+		( const fixed8p8& to_mul ) __attribute__((_iwram_code,_target_arm));
 	inline fixed24p8 operator / ( const fixed8p8& den ) const
 	{
 		return f24p8_div_by_f8p8( (fixed24p8){data}, den );

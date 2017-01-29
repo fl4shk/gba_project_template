@@ -1,6 +1,6 @@
 @ This file is part of GBA Project Template.
 @ 
-@ Copyright 2015-2016 by Andrew Clark (FL4SHK).
+@ Copyright 2015-2017 by Andrew Clark (FL4SHK).
 @ 
 @ GBA Project Template is free software: you can redistribute it and/or
 @ modify it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 .include "include/all_includes.s"
 
 .section ".iwram_code","ax",%progbits
-.align 2
+.align 4
 
 @ --Input Registers--
 @ r0 = numerator
@@ -41,11 +41,8 @@
 lut_udiv:
 	.fnstart
 	cmp r1, #0x01
-	bgt .Llut_udiv_continue
-	mov r1, #0x00
-	bx lr
+	bls .Lreturn_zero
 	
-.Llut_udiv_continue:
 	@ r2 and r3 are scratch registers
 	mov r2, r0
 	mov r3, r1
@@ -58,6 +55,11 @@ lut_udiv:
 	
 	umull r0, r1, r2, r3
 	
+	bx lr
+	
+.Lreturn_zero:
+	mov r0, #0x00
+	mov r1, r0
 	bx lr
 	
 	.fnend

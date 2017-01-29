@@ -1,6 +1,6 @@
 // This file is part of GBA Project Template.
 // 
-// Copyright 2015-2016 by Andrew Clark (FL4SHK).
+// Copyright 2015-2017 by Andrew Clark (FL4SHK).
 // 
 // GBA Project Template is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as published
@@ -135,7 +135,7 @@ void irq_init();
 void irq_dummy() __attribute__((_iwram_code));
 
 
-void isr_main() __attribute__((_iwram_code));
+void isr_main() __attribute__((_iwram_code,_target_arm));
 
 //#define isr_main_counter *((vu16*)(mem_ewram + 0x8000))
 //#define isr_main_arr0 ((vu16*)(mem_ewram + 0x8002))

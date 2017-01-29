@@ -1,6 +1,6 @@
 // This file is part of GBA Project Template.
 // 
-// Copyright 2015-2016 by Andrew Clark (FL4SHK).
+// Copyright 2015-2017 by Andrew Clark (FL4SHK).
 // 
 // GBA Project Template is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as published
@@ -33,9 +33,9 @@ extern "C"
 // These two functions should now be much faster, and I can feel free to
 // allocate more stuffs on the stack!
 void* memcpy( void* dst, const void* src, size_t n )
-	__attribute__((_iwram_code));
+	__attribute__((_iwram_code,_target_arm));
 void* memset( void* dst, int c, size_t n )
-	__attribute__((_iwram_code));
+	__attribute__((_iwram_code,_target_arm));
 
 
 // This function is used by crt0.s
