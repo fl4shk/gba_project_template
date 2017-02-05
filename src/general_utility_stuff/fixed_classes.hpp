@@ -31,9 +31,9 @@ class fixed8p8;
 //extern fixed24p8 f24p8_div_by_f8p8( const fixed24p8& num, 
 //	const fixed8p8& den ) __attribute__((_iwram_code));
 fixed24p8 f24p8_div_by_f8p8( const fixed24p8& num, const fixed8p8& den ) 
-	__attribute__((_iwram_code));
+	__attribute__((_iwram_code,_target_arm));
 fixed24p8 f24p8_div_by_u16( const fixed24p8& num, u16 den )
-	__attribute__((_iwram_code));
+	__attribute__((_iwram_code,_target_arm));
 
 
 // Underlying type is s32, with 8 fraction bits
@@ -437,7 +437,7 @@ inline bool fixed8p8::operator >= ( const fixed8p8& to_cmp ) const
 
 
 
-inline fixed24p8::operator fixed8p8 () const
+inline fixed24p8::operator fixed8p8() const
 {
 	if ( data < 0 )
 	{

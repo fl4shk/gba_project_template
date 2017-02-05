@@ -42,9 +42,6 @@ void* memset( void* dst, int c, size_t n )
 void* slower_memcpy( void* dst, const void* src, size_t n );
 
 
-// lut_udiv should actually take a u16 dem, not a u32 dem
-extern u64 lut_udiv( u32 num, u32 dem );
-
 // memcpy32 is from TONC
 extern void memcpy32( void* dst, const void* src, u32 wordcount );
 

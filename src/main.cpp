@@ -66,8 +66,11 @@ const size_t get_temp_sram_buf_size()
 
 
 
+
+
+
+
 void sa_list_test() __attribute__((noinline));
-void tasks_test() __attribute__((noinline));
 
 
 int main()
@@ -84,15 +87,25 @@ int main()
 	//memcpy( &ewram_test_arr[1], test_str, 5 );
 	memset( &ewram_test_arr[1], '3', 9 );
 	
-	sa_list_test();
-	//tasks_test();
+	//sa_list_test();
+	fixed24p8 temp0;
+	fixed8p8 temp1;
+	fixed24p8 temp2;
 	
+	temp0 = make_f24p8( 20, 0xa9 );
+	temp1 = make_f8p8( 10, 0x82 );;
+	temp2 = temp0 / temp1;
+	show_debug_f24p8_group( temp0, (fixed24p8)temp1, temp2 );
 	
+	temp0 = make_f24p8( -20, 0xa9 );
+	temp1 = make_f8p8( 10, 0x82 );
+	temp2 = temp0 / temp1;
+	show_debug_f24p8_group( temp0, (fixed24p8)temp1, temp2 );
 	
 	for (;;)
 	{
 		//debug_arr_group::clear_debug_vars();
-		//clear_oam_mirror();
+		clear_oam_mirror();
 		
 		// In Sherwin's Adventure, key polling is done in
 		// game_manager::vblank_func().  
@@ -253,7 +266,7 @@ void reinit_test_list_and_profile_deallocate()
 	//test_list_end = test_list.insert_after( test_list_end, 'f' );
 	
 	
-	dyn_arr< sa_free_list<3> > test_arr(1);
+	//dyn_arr< sa_free_list<3> > test_arr(1);
 	
 	////for ( u32 i=0; i<57; ++i )
 	////for ( u32 i=0; i<20; ++i )
@@ -366,53 +379,3 @@ void sa_list_test()
 
 
 
-void test_func_0()
-{
-	show_debug_str_group("test_func_0");
-}
-
-void test_func_1()
-{
-	show_debug_str_group("test_func_1");
-}
-
-class test_class
-{
-public:		// variables
-	
-	
-public:		// functions
-	static void test_func_2()
-	{
-		show_debug_str_group("test_func_2");
-	}
-	
-	static void test_func_3()
-	{
-		show_debug_str_group("test_func_3");
-	}
-	
-} __attribute__((_align4));
-
-
-void tasks_test()
-{
-	static constexpr size_t max_num_tasks = 20;
-	static constexpr size_t tasks_arr_size = max_num_tasks;
-	task tasks_arr[tasks_arr_size];
-	
-	tasks_arr[0].set_func(&test_func_0);
-	tasks_arr[1].set_func(&test_func_1);
-	tasks_arr[2].set_func(&test_class::test_func_2);
-	tasks_arr[3].set_func(&test_class::test_func_3);
-	
-	for ( s32 i=tasks_arr_size-1; i>=0; --i )
-	{
-		task& curr_task = tasks_arr[i];
-		
-		if ( curr_task.has_func() )
-		{
-			curr_task();
-		}
-	}
-}
