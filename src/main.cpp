@@ -70,7 +70,7 @@ const size_t get_temp_sram_buf_size()
 
 
 
-void sa_list_test() __attribute__((noinline));
+void fixed_point_division_test() __attribute__((noinline));
 
 
 int main()
@@ -88,19 +88,6 @@ int main()
 	memset( &ewram_test_arr[1], '3', 9 );
 	
 	//sa_list_test();
-	fixed24p8 temp0;
-	fixed8p8 temp1;
-	fixed24p8 temp2;
-	
-	temp0 = make_f24p8( 20, 0xa9 );
-	temp1 = make_f8p8( 10, 0x82 );;
-	temp2 = temp0 / temp1;
-	show_debug_f24p8_group( temp0, (fixed24p8)temp1, temp2 );
-	
-	temp0 = make_f24p8( -20, 0xa9 );
-	temp1 = make_f8p8( 10, 0x82 );
-	temp2 = temp0 / temp1;
-	show_debug_f24p8_group( temp0, (fixed24p8)temp1, temp2 );
 	
 	for (;;)
 	{
@@ -120,262 +107,20 @@ int main()
 }
 
 
-//typedef sa_list_stuff::sorted_always_list< u32, total_num_nodes >
-//	the_sorted_always_list_type;
-//
-//the_sorted_always_list_type test_list __attribute__((_ewram));
-
-sa_list_stuff::regular_list< u32, total_num_nodes > test_list 
-	__attribute__((_iwram));
-//sa_list_stuff::regular_list< temp_data_type, total_num_nodes > test_list 
-//	__attribute__((_iwram));
-
-
-
-
-// This is intended for debugging sa_list stuff.
-class temp_debug_vars_group
+void fixed_point_division_test()
 {
-public:		// variables and constants
-	static constexpr size_t max_num_nodes_per_loop = debug_str::max_size,
-		max_num_loops = 20;
+	fixed24p8 temp0;
+	fixed8p8 temp1;
+	fixed24p8 temp2;
 	
-	static constexpr size_t total_num_indices_per_arr_2d 
-		= max_num_nodes_per_loop * max_num_loops;
+	temp0 = make_f24p8( 20, 0xa9 );
+	temp1 = make_f8p8( 10, 0x82 );;
+	temp2 = temp0 / temp1;
+	show_debug_f24p8_group( temp0, (fixed24p8)temp1, temp2 );
 	
-	
-	u32 outer_index = 0, inner_index = 0;
-	
-	debug_str str_arr[max_num_loops];
-	
-	
-	static constexpr size_t num_indices_per_index_group = 3;
-	// Technically, this is a 3D array.
-	s16 index_group_arr_2d[max_num_loops][max_num_nodes_per_loop]
-		[num_indices_per_index_group];
-	
-public:		// functions
-	inline temp_debug_vars_group()
-	{
-		reset();
-	}
-	
-	inline void reset()
-	{
-		outer_index = inner_index = 0;
-		
-		for ( u32 i=0; i<max_num_loops; ++i )
-		{
-			str_arr[i].total_clear();
-		}
-		
-		memfill32( reinterpret_cast<void*>(index_group_arr_2d), -1,
-			sizeof(index_group_arr_2d) / sizeof(u32) );
-		
-	}
-	
-	inline void write_str_and_inc_outer_index( const char* to_write )
-	{
-		str_arr[outer_index++] = to_write;
-	}
-	inline void write_three_indices_and_inc_inner_index
-		( s32 the_index, s32 the_next_index, 
-		s32 the_prev_index )
-	{
-		index_group_arr_2d[outer_index][inner_index][0] = the_index;
-		index_group_arr_2d[outer_index][inner_index][1] = the_next_index;
-		index_group_arr_2d[outer_index][inner_index][2] = the_prev_index;
-		
-		++inner_index;
-	}
-	
-} __attribute__((_align4));
-
-temp_debug_vars_group tdvg;
-
-
-template< typename type, u32 the_total_num_nodes >
-void show_small_regular_sa_list
-	( sa_list_stuff::regular_list< type, the_total_num_nodes >& to_show )
-{
-	asm_comment("show_small_regular_sa_list_as_str()");
-	
-	tdvg.inner_index = 0;
-	
-	
-	static constexpr u32 to_write_max_size = debug_str::max_size;
-	char to_write[to_write_max_size];
-	
-	memset( to_write, 0, to_write_max_size );
-	
-	u32 real_size = 0;
-	
-	for ( int i=to_show.get_front_index();
-		i!=-1;
-		i=to_show.get_node_array()[i].next_index() )
-	{
-		to_write[real_size++] = (char)(to_show.get_node_array()[i]
-			.data);
-		
-		tdvg.write_three_indices_and_inc_inner_index( i, 
-			to_show.get_node_array()[i].next_index(),
-			to_show.get_node_array()[i].prev_index() );
-		
-		if ( real_size >= to_write_max_size )
-		{
-			break;
-		}
-	}
-	
-	//debug_arr_group::write_str_and_inc(static_cast<const char*>(to_write));
-	
-	tdvg.write_str_and_inc_outer_index(static_cast<const char*>(to_write));
-	
+	temp0 = make_f24p8( -20, 0xa9 );
+	//temp1 = make_f8p8( 10, 0x82 );
+	temp2 = temp0 / temp1;
+	show_debug_f24p8_group( temp0, (fixed24p8)temp1, temp2 );
 }
-inline void show_test_list()
-{
-	show_small_regular_sa_list(test_list);
-}
-
-
-
-void reinit_test_list_and_profile_deallocate()
-{
-	profile_start();
-	test_list.fully_deallocate_via_unlink();
-	show_profile_stop();
-	
-	
-	//s32& test_list_front_index = test_list.get_front_index();
-	//
-	//s32 test_list_end = test_list.push_back('g');
-	//
-	//for ( u32 i=0; i<5; ++i )
-	//{
-	//	test_list.push_front('1' + i );
-	//}
-	//
-	////s32 second_index = test_list.insert_before( test_list_front_index, 
-	////	'h' );
-	////test_list.insert_before( test_list_end, 'f' );
-	//
-	//s32 second_index = test_list.insert_after( test_list_front_index, 
-	//	'h' );
-	////s32 third_index = test_list.get_node_at(second_index).next_index();
-	//
-	//test_list_end = test_list.insert_after( test_list_end, 'f' );
-	
-	
-	//dyn_arr< sa_free_list<3> > test_arr(1);
-	
-	////for ( u32 i=0; i<57; ++i )
-	////for ( u32 i=0; i<20; ++i )
-	for ( u32 i=0; i<320; ++i )
-	{
-		test_list.push_front( '1' + ( i % 25 ) );
-		//test_list.push_back( 'a' + ( i % 25 ) );
-		//test_list.push_front('a' + ( i % 4 ) );
-	}
-	
-	for ( u32 i=0; i<320; ++i )
-	{
-		//test_list.push_front( 'a' + ( i % 25 ) );
-		test_list.push_back( '1' + ( i % 25 ) );
-		//test_list.push_front('a' + ( i % 4 ) );
-	}
-	
-	//test_list.push_back('3');
-	//test_list.push_back('a');
-	//test_list.push_back('d');
-	//test_list.push_front('z');
-	//test_list.push_back('2');
-	//test_list.push_back('9');
-}
-
-//static constexpr size_t test_cbuf_size = 4;
-//s32 test_cbuf[test_cbuf_size];
-//sa_list_stuff::circ_buf_helper test_cbuf_helper( test_cbuf, 
-//	test_cbuf_size );
-
-
-void sa_list_test()
-{
-	// Part 1
-	asm_comment("Part 1");
-	reinit_test_list_and_profile_deallocate();
-	show_test_list();
-	
-	
-	// Part 2
-	asm_comment("Part 2");
-	profile_start();
-	test_list.merge_sort_via_array();
-	show_profile_stop();
-	show_test_list();
-	
-	
-	
-	// Part 3
-	asm_comment("Part 3");
-	reinit_test_list_and_profile_deallocate();
-	show_test_list();
-	
-	
-	// Part 4
-	asm_comment("Part 4");
-	profile_start();
-	//test_list.insertion_sort();
-	test_list.merge_sort_via_array_2();
-	show_profile_stop();
-	show_test_list();
-	
-	
-	
-	// Part 5
-	asm_comment("Part 5");
-	reinit_test_list_and_profile_deallocate();
-	show_test_list();
-	
-	// Part 6
-	asm_comment("Part 6");
-	profile_start();
-	test_list.insertion_sort();
-	//test_list.merge_sort_via_array();
-	show_profile_stop();
-	show_test_list();
-	
-	
-	
-	
-	
-	//profile_start();
-	//
-	//for ( u32 i=0; i<total_num_nodes; ++i )
-	//{
-	//	test_list.insert_and_sort(i);
-	//}
-	//
-	//test_profile_result_0 = profile_stop();
-	//
-	//
-	//
-	//
-	//test_list.fully_deallocate();
-	//
-	//profile_start();
-	//for ( u32 i=0; i<total_num_nodes; ++i )
-	//{
-	//	test_list.push_front(i);
-	//}
-	//test_list.insertion_sort();
-	//
-	//test_profile_result_1 = profile_stop();
-	
-	
-}
-
-
-
-
-
 
