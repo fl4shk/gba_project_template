@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # This file is part of GBA Project Template.
 # 
 # Copyright 2015-2017 Andrew Clark (FL4SHK).
@@ -18,12 +16,14 @@
 # with GBA Project Template.  If not, see <http://www.gnu.org/licenses/>.
 
 
-if [ ! -d "$DEVKITARM" ]
-then
-	echo 'Please set $DEVKITARM in your environment'
-	echo "Exiting...."
-	exit 1
-fi
 
-#$DEVKITARM/bin/bin2s "$1" | $DEVKITARM/bin/arm-none-eabi-as -o "$1".o
-$DEVKITARM/bin/bin2s "$1" | $DEVKITARM/bin/arm-none-eabi-as -o "$2"
+# Yes, I use a tiny makefile to generate other makefiles, along with gpp.
+
+OUTFILES:=makefile_for_non_dka_gcc.mk makefile_devkitARM.mk
+
+all : $(OUTFILES)
+	@#
+
+$(OUTFILES) : %.mk : %_src.gpp
+	gpp +c '///*' '*///' $< > ../$@
+

@@ -94,7 +94,7 @@ int main()
 		//debug_arr_group::clear_debug_vars();
 		clear_oam_mirror();
 		
-		// In Sherwin's Adventure, key polling is done in
+		// In GBA Project Template, key polling is done in
 		// game_manager::vblank_func().  
 		// However, as of this comment being written, GBA Project Template
 		// doesn't have a game_manager class.

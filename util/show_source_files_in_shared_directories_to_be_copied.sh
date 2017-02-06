@@ -2,7 +2,7 @@
 
 # This file is part of GBA Project Template.
 # 
-# Copyright 2015-2017 by Andrew Clark (FL4SHK).
+# Copyright 2015-2017 Andrew Clark (FL4SHK).
 # 
 # GBA Project Template is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
@@ -72,7 +72,7 @@ shared_src_dirs=($("$third_script" . "$1"))
 
 for dir in "${shared_src_dirs[@]}"
 do
-	bash -c "rsync -avuh --progress --dry-run \
+	bash -c "rsync -avh --progress --dry-run \
 		$most_rsync_args[@] \
 		--exclude=\"$second_script\" \
 		\"$1\"/\"$dir\"/ ./\"$dir\""
