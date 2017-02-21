@@ -35,6 +35,7 @@
 
 
 #include "general_utility_stuff/extended_sa_list_class_stuff.hpp"
+#include "general_utility_stuff/array_2d_helper_classes.hpp"
 
 
 // This is an assembly function.  It doesn't do very much.
@@ -64,16 +65,14 @@ const size_t get_temp_sram_buf_size()
 	return temp_sram_buf_size;
 }
 
-
-
-
-
-
+static constexpr vec2_u32 test_size_2d = { 8, 8 };
+int test_arr_2d[test_size_2d.x][test_size_2d.y];
+array_csz_2d_helper< int, test_size_2d.x, test_size_2d.y > test_arr_csz_2d;
 
 void fixed_point_division_test() __attribute__((noinline));
 
 
-int main()
+int main( int argc, char** argv )
 {
 	irq_init();
 	irqEnable(irq_vblank);
@@ -82,12 +81,17 @@ int main()
 	//arr_memfill8( (u8*)ewram_test_arr, '#', ewram_test_arr_size );
 	memset( ewram_test_arr, '#', ewram_test_arr_size );
 	
+	test_arr_csz_2d.init(&(test_arr_2d[0][0]));
+	
 	ewram_test_arr[0] = '9';
 	
 	//memcpy( &ewram_test_arr[1], test_str, 5 );
 	memset( &ewram_test_arr[1], '3', 9 );
 	
 	//sa_list_test();
+	
+	test_arr_csz_2d.at( argc, (int)argv[0] ) = 9;
+	
 	
 	for (;;)
 	{
